@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服务器规则 - 凌云城-轻RP 4.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0d0d0d; --bg2: #141414; --card: #1a1a1a;
+            --accent: #e8a87c; --text: #f5f5f5; --text2: #a0a0a0; --border: #2a2a2a;
+        }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: var(--bg); color: var(--text); }
+        a { text-decoration: none; color: inherit; }
+
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            padding: 0 4rem; height: 72px;
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(13,13,13,0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+        .logo { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.1em; color: var(--accent); }
+        .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+        .nav-links a { font-size: 0.85rem; color: var(--text2); transition: color 0.2s; letter-spacing: 0.05em; }
+        .nav-links a:hover, .nav-links a.active { color: var(--text); }
+        .nav-links .cta { background: var(--accent); color: var(--bg); padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: 500; }
+        .nav-links .cta:hover { background: var(--accent); color: var(--bg); }
+        .mobile-menu { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+        .mobile-menu span { width: 22px; height: 1.5px; background: var(--text); }
+
+        .page-header { padding: 8rem 2rem 4rem; text-align: center; }
+        .page-header h1 { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .page-header p { color: var(--text2); font-size: 0.95rem; }
+
+        .rules-content { max-width: 800px; margin: 0 auto; padding: 4rem 2rem 6rem; }
+        .rule-cat { margin-bottom: 3rem; }
+        .rule-cat h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--accent); margin-bottom: 1.2rem; font-weight: 500; }
+
+        .rule-item {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1.2rem 1.5rem; margin-bottom: 0.8rem;
+            display: flex; align-items: flex-start; gap: 1.2rem;
+        }
+        .rule-num { font-size: 0.8rem; color: var(--accent); font-weight: 600; min-width: 30px; }
+        .rule-text h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.3rem; }
+        .rule-text p { font-size: 0.85rem; color: var(--text2); line-height: 1.5; }
+
+        .penalty-section { background: var(--bg2); padding: 4rem 2rem; }
+        .penalty-section h2 { font-size: 1.3rem; font-weight: 600; text-align: center; margin-bottom: 2.5rem; }
+        .penalty-grid { max-width: 700px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+
+        .penalty {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1.8rem; text-align: center;
+        }
+        .penalty h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.4rem; }
+        .penalty p { font-size: 0.8rem; color: var(--text2); }
+
+        footer { background: var(--bg); padding: 3rem 4rem; border-top: 1px solid var(--border); }
+        .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .footer-links { display: flex; gap: 2rem; }
+        .footer-links a { font-size: 0.85rem; color: var(--text2); transition: color 0.2s; }
+        .footer-links a:hover { color: var(--accent); }
+        .footer-copy { text-align: center; padding-top: 2rem; margin-top: 2rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text2); max-width: 1100px; margin-left: auto; margin-right: auto; }
+
+        @media (max-width: 768px) {
+            nav { padding: 0 1.5rem; }
+            .nav-links { display: none; }
+            .mobile-menu { display: flex; }
+            .penalty-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">凌云城</div>
+        <ul class="nav-links">
+            <li><a href="index.html">首页</a></li>
+            <li><a href="features.html">特色</a></li>
+            <li><a href="rules.html" class="active">规则</a></li>
+            <li><a href="connect.html">加入</a></li>
+            <li><a href="https://kook.vip/71Hw5z" class="cta">Kook</a></li>
+        </ul>
+        <div class="mobile-menu"><span></span><span></span><span></span></div>
+    </nav>
+
+    <div class="page-header">
+        <h1>服务器规则</h1>
+        <p>遵守规则才能获得最好的游戏体验</p>
+    </div>
+
+    <div class="rules-content">
+        <div class="rule-cat">
+            <h2>基本行为准则</h2>
+            <div class="rule-item">
+                <span class="rule-num">01</span>
+                <div class="rule-text">
+                    <h3>保持角色设定</h3>
+                    <p>在游戏中必须保持角色状态，禁止 OOC 行为。不要将现实中的信息带入游戏。</p>
+                </div>
+            </div>
+            <div class="rule-item">
+                <span class="rule-num">02</span>
+                <div class="rule-text">
+                    <h3>尊重其他玩家</h3>
+                    <p>禁止辱骂、骚扰、歧视或任何形式的欺凌行为。我们欢迎所有友善的玩家。</p>
+                </div>
+            </div>
+            <div class="rule-item">
+                <span class="rule-num">03</span>
+                <div class="rule-text">
+                    <h3>禁止作弊</h3>
+                    <p>严禁使用任何外挂、作弊软件或利用游戏漏洞。一经发现将永久封禁。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="rule-cat">
+            <h2>角色扮演规则</h2>
+            <div class="rule-item">
+                <span class="rule-num">04</span>
+                <div class="rule-text">
+                    <h3>禁止 RDM</h3>
+                    <p>禁止无理由杀人。每次 PK 都必须有合理的角色动机和剧情铺垫。</p>
+                </div>
+            </div>
+            <div class="rule-item">
+                <span class="rule-num">05</span>
+                <div class="rule-text">
+                    <h3>禁止 VDM</h3>
+                    <p>禁止用车辆故意撞击其他玩家，除非有合理的角色扮演原因。</p>
+                </div>
+            </div>
+            <div class="rule-item">
+                <span class="rule-num">06</span>
+                <div class="rule-text">
+                    <h3>死亡后必须扮演</h3>
+                    <p>角色死亡后必须按照死亡状态扮演，禁止复活或使用复活外挂。</p>
+                </div>
+            </div>
+            <div class="rule-item">
+                <span class="rule-num">07</span>
+                <div class="rule-text">
+                    <h3>禁止 VG</h3>
+                    <p>禁止恶意破坏其他玩家的游戏资产，包括车辆、房产、生意等。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="rule-cat">
+            <h2>游戏内行为</h2>
+            <div class="rule-item">
+                <span class="rule-num">08</span>
+                <div class="rule-text">
+                    <h3>服从管理员</h3>
+                    <p>游戏中必须服从管理员的合理指令。如有异议，请在 Kook 提出申诉。</p>
+                </div>
+            </div>
+            <div class="rule-item">
+                <span class="rule-num">09</span>
+                <div class="rule-text">
+                    <h3>禁止强制 RP</h3>
+                    <p>不要强迫其他玩家进行他们不愿意的扮演情节。尊重他人的游戏风格。</p>
+                </div>
+            </div>
+            <div class="rule-item">
+                <span class="rule-num">10</span>
+                <div class="rule-text">
+                    <h3>合理使用游戏机制</h3>
+                    <p>禁止滥用游戏机制进行 exploitation，如卡 bug、重复刷钱等。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="penalty-section">
+        <h2>违规处罚</h2>
+        <div class="penalty-grid">
+            <div class="penalty">
+                <h3>⚠️ 警告</h3>
+                <p>轻微违规或首次违规</p>
+            </div>
+            <div class="penalty">
+                <h3>🔇 静音/封号</h3>
+                <p>中等违规或重复违规</p>
+            </div>
+            <div class="penalty">
+                <h3>🚫 永久封禁</h3>
+                <p>严重违规或使用外挂</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-inner">
+            <span class="logo">凌云城</span>
+            <div class="footer-links">
+                <a href="index.html">首页</a>
+                <a href="features.html">特色</a>
+                <a href="rules.html">规则</a>
+                <a href="connect.html">加入</a>
+            </div>
+        </div>
+        <div class="footer-copy">&copy; 2026 凌云城-轻RP 4.0. All rights reserved.</div>
+    </footer>
+</body>
+</html>
