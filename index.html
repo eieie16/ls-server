@@ -221,8 +221,11 @@
             <li><a href="features.html">特色</a></li>
             <li><a href="rules.html">规则</a></li>
             <li><a href="connect.html">加入</a></li>
-            <li><a href="https://kook.vip/71Hw5z" class="cta">Kook</a></li>
         </ul>
+        <div class="nav-right" id="navAuth">
+            <a href="login.html" class="btn-login outline">登录</a>
+            <a href="login.html" class="btn-login filled">注册</a>
+        </div>
         <div class="mobile-menu">
             <span></span><span></span><span></span>
         </div>
@@ -294,12 +297,43 @@
         </div>
     </footer>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script>
-        function copyIp() {
-            navigator.clipboard.writeText('connect oaa5897');
-            const btn = document.querySelector('.copy-btn');
-            btn.textContent = '已复制';
-            setTimeout(() => btn.textContent = '复制', 2000);
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        auth.onAuthStateChanged(user => {
+            const navAuth = document.getElementById('navAuth');
+            if (user) {
+                navAuth.innerHTML = `
+                    <a href="dashboard.html" class="user-badge">
+                        <div class="avatar">${(user.email || '?').substring(0,1).toUpperCase()}</div>
+                        <span>个人中心</span>
+                    </a>
+                    <a href="#" class="btn-login outline" onclick="handleLogout(event)">退出</a>
+                `;
+            } else {
+                navAuth.innerHTML = `
+                    <a href="login.html" class="btn-login outline">登录</a>
+                    <a href="login.html" class="btn-login filled">注册</a>
+                `;
+            }
+        });
+
+        async function handleLogout(e) {
+            e.preventDefault();
+            await auth.signOut();
+            window.location.href = 'index.html';
         }
     </script>
 </body>

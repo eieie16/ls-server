@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员后台 - 凌云城</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0d0d0d; --card: #1a1a1a; --accent: #e8a87c;
+            --text: #f5f5f5; --text2: #a0a0a0; --border: #2a2a2a;
+            --success: #51cf66; --warning: #ffd43b; --danger: #ff6b6b;
+            --info: #339af0;
+        }
+        body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: var(--bg); color: var(--text); }
+        
+        /* Layout */
+        .layout { display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 260px; background: var(--card); border-right: 1px solid var(--border);
+            padding: 2rem 1.5rem; position: fixed; height: 100vh; overflow-y: auto;
+        }
+        .sidebar-logo {
+            font-size: 1.3rem; font-weight: 600; color: var(--accent);
+            margin-bottom: 2.5rem; letter-spacing: 0.1em;
+        }
+        .nav-section { margin-bottom: 2rem; }
+        .nav-section-title {
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em;
+            color: var(--text2); margin-bottom: 0.75rem; padding-left: 0.75rem;
+        }
+        .nav-item {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.75rem; border-radius: 8px; cursor: pointer;
+            color: var(--text2); transition: all 0.2s; font-size: 0.9rem;
+        }
+        .nav-item:hover, .nav-item.active { background: rgba(232,168,124,0.1); color: var(--accent); }
+        .nav-item .icon { font-size: 1.1rem; }
+        
+        /* Main Content */
+        .main { flex: 1; margin-left: 260px; padding: 2rem 3rem; }
+        
+        /* Header */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border);
+        }
+        .header h1 { font-size: 1.5rem; font-weight: 600; }
+        .header-right { display: flex; align-items: center; gap: 1rem; }
+        .btn {
+            padding: 0.6rem 1.25rem; border-radius: 8px; font-size: 0.85rem;
+            font-weight: 500; cursor: pointer; transition: all 0.2s; border: none;
+        }
+        .btn-primary { background: var(--accent); color: var(--bg); }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--text2); }
+        .btn-danger { background: rgba(255,107,107,0.1); color: var(--danger); border: 1px solid rgba(255,107,107,0.3); }
+        .btn-danger:hover { background: rgba(255,107,107,0.2); }
+        .btn-success { background: rgba(81,207,102,0.1); color: var(--success); border: 1px solid rgba(81,207,102,0.3); }
+        .btn-success:hover { background: rgba(81,207,102,0.2); }
+        
+        /* Stats */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2.5rem;
+        }
+        .stat-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.5rem;
+        }
+        .stat-card .stat-value { font-size: 2rem; font-weight: 600; color: var(--accent); }
+        .stat-card .stat-label { font-size: 0.85rem; color: var(--text2); margin-top: 0.25rem; }
+        .stat-card .stat-change { font-size: 0.75rem; margin-top: 0.5rem; }
+        .stat-change.up { color: var(--success); }
+        .stat-change.down { color: var(--danger); }
+        
+        /* Table */
+        .table-container {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; overflow: hidden;
+        }
+        .table-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);
+        }
+        .table-title { font-size: 1rem; font-weight: 600; }
+        .table-search {
+            padding: 0.5rem 1rem; background: var(--bg); border: 1px solid var(--border);
+            border-radius: 6px; color: var(--text); font-size: 0.85rem; width: 250px;
+        }
+        .table-search:focus { outline: none; border-color: var(--accent); }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text2); font-weight: 500; }
+        tr:hover { background: rgba(255,255,255,0.02); }
+        .user-cell { display: flex; align-items: center; gap: 0.75rem; }
+        .user-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--accent); display: flex; align-items: center;
+            justify-content: center; font-weight: 600; color: var(--bg); font-size: 0.85rem;
+        }
+        .user-meta .name { font-weight: 500; }
+        .user-meta .email { font-size: 0.8rem; color: var(--text2); }
+        
+        .badge {
+            padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem; font-weight: 500;
+        }
+        .badge-admin { background: rgba(255,107,107,0.15); color: var(--danger); }
+        .badge-user { background: rgba(232,168,124,0.15); color: var(--accent); }
+        .badge-banned { background: rgba(0,0,0,0.3); color: var(--text2); }
+        
+        .actions { display: flex; gap: 0.5rem; }
+        .btn-icon {
+            width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border);
+            background: transparent; color: var(--text2); cursor: pointer; display: flex;
+            align-items: center; justify-content: center; transition: all 0.2s; font-size: 0.85rem;
+        }
+        .btn-icon:hover { border-color: var(--accent); color: var(--accent); }
+        .btn-icon.danger:hover { border-color: var(--danger); color: var(--danger); background: rgba(255,107,107,0.1); }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.2s;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 2rem; width: 90%; max-width: 480px;
+            transform: scale(0.95); transition: transform 0.2s;
+        }
+        .modal-overlay.active .modal { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-title { font-size: 1.1rem; font-weight: 600; }
+        .modal-close {
+            width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border);
+            background: transparent; color: var(--text2); cursor: pointer; font-size: 1.2rem;
+        }
+        .modal-close:hover { border-color: var(--danger); color: var(--danger); }
+        
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 0.5rem; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 0.75rem 1rem; background: var(--bg);
+            border: 1px solid var(--border); border-radius: 8px; color: var(--text);
+            font-size: 0.9rem;
+        }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); }
+        
+        .modal-footer { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem; }
+        
+        .loading { text-align: center; padding: 4rem; color: var(--text2); }
+        
+        @media (max-width: 1024px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .main { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">凌云城 管理</div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">主菜单</div>
+                <div class="nav-item active" onclick="switchTab('dashboard')">
+                    <span class="icon">📊</span> 仪表盘
+                </div>
+                <div class="nav-item" onclick="switchTab('users')">
+                    <span class="icon">👥</span> 用户管理
+                </div>
+                <div class="nav-item" onclick="switchTab('reports')">
+                    <span class="icon">📝</span> 举报处理
+                </div>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">系统</div>
+                <div class="nav-item" onclick="window.location.href='index.html'">
+                    <span class="icon">🏠</span> 返回首页
+                </div>
+                <div class="nav-item" onclick="handleLogout()">
+                    <span class="icon">🚪</span> 退出登录
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="header">
+                <h1>仪表盘</h1>
+                <div class="header-right">
+                    <span id="adminName" style="color: var(--text2); font-size: 0.9rem;"></span>
+                    <button class="btn btn-primary" onclick="openModal('addUser')">+ 添加用户</button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="statUsers">0</div>
+                    <div class="stat-label">总用户数</div>
+                    <div class="stat-change up">↑ 本月新增</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statOnline">0</div>
+                    <div class="stat-label">在线玩家</div>
+                    <div class="stat-change up">实时数据</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statReports">0</div>
+                    <div class="stat-label">待处理举报</div>
+                    <div class="stat-change down">需要关注</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statBanned">0</div>
+                    <div class="stat-label">已封禁用户</div>
+                    <div class="stat-change">累计数据</div>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="table-container">
+                <div class="table-header">
+                    <span class="table-title">最近注册的用户</span>
+                    <input type="text" class="table-search" placeholder="搜索用户..." oninput="searchUsers(this.value)">
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>用户</th>
+                            <th>角色</th>
+                            <th>注册时间</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTable">
+                        <tr><td colspan="5" class="loading">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal-overlay" id="addUserModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">添加新用户</span>
+                <button class="modal-close" onclick="closeModal('addUser')">&times;</button>
+            </div>
+            <form onsubmit="handleAddUser(event)">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="newUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>邮箱</label>
+                    <input type="email" id="newEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="newPassword" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>角色</label>
+                    <select id="newRole">
+                        <option value="user">普通玩家</option>
+                        <option value="admin">管理员</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addUser')">取消</button>
+                    <button type="submit" class="btn btn-primary">创建用户</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let allUsers = [];
+
+        // 检查管理员权限
+        auth.onAuthStateChanged(async user => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (!userDoc.exists || userDoc.data().role !== 'admin') {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+            
+            document.getElementById('adminName').textContent = userDoc.data().username;
+            loadUsers();
+        });
+
+        async function loadUsers() {
+            const snapshot = await db.collection('users').orderBy('createdAt', 'desc').get();
+            allUsers = [];
+            snapshot.forEach(doc => {
+                allUsers.push({ id: doc.id, ...doc.data() });
+            });
+            
+            document.getElementById('statUsers').textContent = allUsers.length;
+            document.getElementById('statBanned').textContent = allUsers.filter(u => u.role === 'banned').length;
+            
+            renderUsers(allUsers.slice(0, 10));
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('usersTable');
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="loading">暂无用户</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar">${(user.username || '?').substring(0, 2).toUpperCase()}</div>
+                            <div class="user-meta">
+                                <div class="name">${user.username}</div>
+                                <div class="email">${user.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge ${user.role === 'admin' ? 'badge-admin' : 'badge-user'}">${user.role === 'admin' ? '管理员' : '玩家'}</span></td>
+                    <td>${formatDate(user.createdAt)}</td>
+                    <td><span class="badge ${user.role === 'banned' ? 'badge-banned' : 'badge-user'}">${user.role === 'banned' ? '已封禁' : '正常'}</span></td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn-icon" onclick="editUser('${user.id}')" title="编辑">✏️</button>
+                            <button class="btn-icon ${user.role === 'banned' ? '' : 'danger'}" onclick="toggleBan('${user.id}', '${user.role}')" title="${user.role === 'banned' ? '解封' : '封禁'}">${user.role === 'banned' ? '🔓' : '🚫'}</button>
+                            <button class="btn-icon danger" onclick="deleteUser('${user.id}')" title="删除">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function searchUsers(query) {
+            const filtered = allUsers.filter(u => 
+                u.username.includes(query) || u.email.includes(query)
+            );
+            renderUsers(filtered.slice(0, 10));
+        }
+
+        async function toggleBan(userId, currentRole) {
+            const newRole = currentRole === 'banned' ? 'user' : 'banned';
+            await db.collection('users').doc(userId).update({ role: newRole });
+            loadUsers();
+        }
+
+        async function deleteUser(userId) {
+            if (!confirm('确定要删除该用户吗？此操作不可恢复。')) return;
+            await db.collection('users').doc(userId).delete();
+            loadUsers();
+        }
+
+        function openModal(name) {
+            document.getElementById(name + 'Modal').classList.add('active');
+        }
+
+        function closeModal(name) {
+            document.getElementById(name + 'Modal').classList.remove('active');
+        }
+
+        async function handleAddUser(e) {
+            e.preventDefault();
+            const username = document.getElementById('newUsername').value;
+            const email = document.getElementById('newEmail').value;
+            const password = document.getElementById('newPassword').value;
+            const role = document.getElementById('newRole').value;
+            
+            try {
+                const cred = await auth.createUserWithEmailAndPassword(email, password);
+                await db.collection('users').doc(cred.user.uid).set({
+                    username, email, role,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                closeModal('addUser');
+                loadUsers();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+        }
+
+        async function handleLogout() {
+            await auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return '未知';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('zh-CN');
+        }
+    </script>
+</body>
+</html>
