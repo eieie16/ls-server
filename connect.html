@@ -31,6 +31,15 @@
         .nav-links a:hover, .nav-links a.active { color: var(--text); }
         .nav-links .cta { background: var(--accent); color: var(--bg); padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: 500; }
         .nav-links .cta:hover { background: var(--accent); color: var(--bg); }
+        .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+        .nav-btn { padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none; text-decoration: none; }
+        .nav-btn.outline { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+        .nav-btn.outline:hover { border-color: var(--text); color: var(--text); }
+        .nav-btn.filled { background: var(--accent); color: var(--bg); }
+        .nav-btn.filled:hover { background: var(--accent2); }
+        .user-badge { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.7rem 0.35rem 0.35rem; background: var(--card); border: 1px solid var(--border); border-radius: 6px; text-decoration: none; color: var(--text); font-size: 0.82rem; transition: all 0.15s; }
+        .user-badge:hover { border-color: var(--accent); }
+        .user-badge .avatar { width: 28px; height: 28px; border-radius: 6px; background: var(--accent); color: var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.7rem; }
         .mobile-menu { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
         .mobile-menu span { width: 22px; height: 1.5px; background: var(--text); }
 
@@ -145,8 +154,11 @@
             <li><a href="features.html">特色</a></li>
             <li><a href="rules.html">规则</a></li>
             <li><a href="connect.html" class="active">加入</a></li>
-            <li><a href="https://kook.vip/71Hw5z" class="cta">Kook</a></li>
         </ul>
+        <div class="nav-right" id="navAuth">
+            <a href="login.html" class="nav-btn outline">登录</a>
+            <a href="login.html" class="nav-btn filled">注册</a>
+        </div>
         <div class="mobile-menu"><span></span><span></span><span></span></div>
     </nav>
 
@@ -236,6 +248,20 @@
             btn.textContent = '已复制';
             setTimeout(() => btn.textContent = '复制地址', 2000);
         }
+    </script>
+
+    <script src="supabase.min.js"></script>
+    <script>
+        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+            const navAuth = document.getElementById('navAuth');
+            if (session) {
+                navAuth.innerHTML = '<a href="dashboard.html" class="user-badge"><div class="avatar">' + (session.user.email || '?').substring(0,1).toUpperCase() + '</div><span>个人中心</span></a><a href="#" class="nav-btn outline" onclick="handleLogout(event)">退出</a>';
+            }
+        });
+        async function handleLogout(e) { e.preventDefault(); await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
     </script>
 </body>
 </html>
