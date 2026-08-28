@@ -100,14 +100,17 @@
         .avatar-input:focus { outline: none; border-color: #6366f1; }
         .btn-use { padding: 0.65rem 1rem; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
         .btn-use:hover { background: #e5e7eb; }
-        .avatar-preview { width: 100%; aspect-ratio: 1; border-radius: 12px; border: 2px dashed #d1d5db; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f9fafb; }
+        .avatar-preview { width: 120px; height: 120px; margin: 0 auto; border-radius: 12px; border: 2px dashed #d1d5db; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f9fafb; }
         .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .avatar-preview svg { width: 48px; height: 48px; color: #9ca3af; }
+        .avatar-preview svg { width: 36px; height: 36px; color: #9ca3af; }
         .avatar-hint { font-size: 0.78rem; color: #999; margin-top: 0.25rem; }
 
-        .btn-save { width: 100%; padding: 0.7rem; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+        .btn-save { width: 100%; padding: 0.55rem; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.15s; }
         .btn-save:hover { background: #5558e6; }
         .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-remove { padding: 0.55rem 0.8rem; background: #fff; color: #666; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+        .btn-remove:hover { border-color: #ef4444; color: #ef4444; }
+        .modal-footer { display: flex; gap: 0.5rem; }
 
         .loading { text-align: center; padding: 4rem; color: #999; }
 
@@ -161,9 +164,9 @@
                 </div>
                 <div class="avatar-hint">支持 JPG、PNG 等图片链接，建议正方形图片</div>
             </div>
-            <div style="display:flex;gap:0.75rem">
+            <div class="modal-footer">
                 <button class="btn-save" style="flex:1" onclick="saveAvatar()">保存头像</button>
-                <button class="btn-save" style="flex:0;background:#f3f4f6;color:#333;border:1px solid #d1d5db" onclick="removeAvatar()">移除头像</button>
+                <button class="btn-remove" onclick="removeAvatar()">移除</button>
             </div>
         </div>
     </div>
