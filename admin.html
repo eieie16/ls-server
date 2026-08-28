@@ -274,24 +274,24 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabaseClient/supabaseClient-js@2"></script>
     <script>
-        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
+        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabaseClient.co";
         const SUPABASE_KEY = "sb_publishable_Yl2py6Pj5XLimcCBT2sXEg_AOa4gKWV";
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClientClient = window.supabaseClient.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let allUsers = [];
 
         async function init() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await supabaseClient.auth.getSession();
             
             if (!session) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            const { data: profile } = await supabase
+            const { data: profile } = await supabaseClient
                 .from('profiles')
                 .select('*')
                 .eq('id', session.user.id)
@@ -307,7 +307,7 @@
         }
 
         async function loadUsers() {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('profiles')
                 .select('*')
                 .order('created_at', { ascending: false });
@@ -364,13 +364,13 @@
         }
 
         async function toggleBan(userId, currentBanned) {
-            await supabase.from('profiles').update({ banned: !currentBanned }).eq('id', userId);
+            await supabaseClient.from('profiles').update({ banned: !currentBanned }).eq('id', userId);
             loadUsers();
         }
 
         async function deleteUser(userId) {
             if (!confirm('确定要删除该用户吗？此操作不可恢复。')) return;
-            await supabase.from('profiles').delete().eq('id', userId);
+            await supabaseClient.from('profiles').delete().eq('id', userId);
             loadUsers();
         }
 
@@ -390,7 +390,7 @@
             const role = document.getElementById('newRole').value;
             
             // 创建 Auth 用户
-            const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+            const { data: authData, error: authError } = await supabaseClient.auth.admin.createUser({
                 email,
                 password,
                 email_confirm: true
@@ -402,7 +402,7 @@
             }
             
             // 创建 Profile
-            await supabase.from('profiles').insert([{
+            await supabaseClient.from('profiles').insert([{
                 id: authData.user.id,
                 username,
                 email,
@@ -419,7 +419,7 @@
         }
 
         async function handleLogout() {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             window.location.href = 'index.html';
         }
 

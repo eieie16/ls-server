@@ -109,16 +109,16 @@
     </main>
 
     <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabaseClient/supabaseClient-js@2"></script>
     <script>
-        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
+        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabaseClient.co";
         const SUPABASE_KEY = "sb_publishable_Yl2py6Pj5XLimcCBT2sXEg_AOa4gKWV";
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClientClient = window.supabaseClient.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // 检查登录状态
         async function init() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await supabaseClient.auth.getSession();
             
             if (!session) {
                 window.location.href = 'login.html';
@@ -126,7 +126,7 @@
             }
 
             // 获取用户资料
-            const { data: profile, error } = await supabase
+            const { data: profile, error } = await supabaseClient
                 .from('profiles')
                 .select('*')
                 .eq('id', session.user.id)
@@ -207,7 +207,7 @@
         }
 
         async function handleLogout() {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             window.location.href = 'index.html';
         }
 

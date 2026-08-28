@@ -298,13 +298,13 @@
     </footer>
 
     <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabaseClient/supabaseClient-js@2"></script>
     <script>
-        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
+        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabaseClient.co";
         const SUPABASE_KEY = "sb_publishable_Yl2py6Pj5XLimcCBT2sXEg_AOa4gKWV";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClientClient = window.supabaseClient.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
             const navAuth = document.getElementById('navAuth');
             if (session) {
                 navAuth.innerHTML = `
@@ -324,7 +324,7 @@
 
         async function handleLogout(e) {
             e.preventDefault();
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             window.location.href = 'index.html';
         }
     </script>

@@ -129,13 +129,13 @@
     </div>
 
     <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabaseClient/supabaseClient-js@2"></script>
     <script>
-        // 请在下方填入你的 Supabase 配置（从 https://supabase.com/dashboard 获取）
-        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
+        // 请在下方填入你的 Supabase 配置（从 https://supabaseClient.com/dashboard 获取）
+        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabaseClient.co";
         const SUPABASE_KEY = "sb_publishable_Yl2py6Pj5XLimcCBT2sXEg_AOa4gKWV";
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClientClient = window.supabaseClient.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         function switchTab(tab) {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
@@ -176,7 +176,7 @@
             btn.textContent = '登录中...';
             errorEl.style.display = 'none';
             
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             
             if (error) {
                 showError(errorEl, error.message);
@@ -208,13 +208,13 @@
             errorEl.style.display = 'none';
             successEl.style.display = 'none';
             
-            const { data, error } = await supabase.auth.signUp({ email, password });
+            const { data, error } = await supabaseClient.auth.signUp({ email, password });
             
             if (error) {
                 showError(errorEl, error.message);
             } else {
                 // 保存用户资料
-                await supabase.from('profiles').insert([{
+                await supabaseClient.from('profiles').insert([{
                     id: data.user.id,
                     username,
                     email
@@ -228,7 +228,7 @@
         }
 
         async function handleGoogleLogin() {
-            const { data, error } = await supabase.auth.signInWithOAuth({
+            const { data, error } = await supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
                     redirectTo: window.location.origin + '/dashboard.html'
@@ -239,11 +239,11 @@
         }
 
         // 检查是否已登录
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
             if (session) window.location.href = 'dashboard.html';
         });
 
-        supabase.auth.onAuthStateChange((event, session) => {
+        supabaseClient.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 window.location.href = 'dashboard.html';
             }
