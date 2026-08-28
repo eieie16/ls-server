@@ -110,3 +110,40 @@ CREATE POLICY "Anyone can read chat" ON public.chat_messages FOR SELECT USING (t
 
 CREATE POLICY "Logged in users can insert chat" ON public.chat_messages FOR INSERT
     WITH CHECK (auth.uid() = user_id);
+
+-- 论坛帖子表
+CREATE TABLE IF NOT EXISTS public.forum_posts (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id),
+    username TEXT NOT NULL,
+    avatar_url TEXT DEFAULT '',
+    category TEXT NOT NULL DEFAULT '讨论',
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    status TEXT DEFAULT '未解决' CHECK (status IN ('未解决', '已解决')),
+    views INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.forum_posts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can read posts" ON public.forum_posts FOR SELECT USING (true);
+CREATE POLICY "Logged in users can insert posts" ON public.forum_posts FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Authors can update own posts" ON public.forum_posts FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Admins can manage posts" ON public.forum_posts FOR ALL USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+
+-- 论坛回复表
+CREATE TABLE IF NOT EXISTS public.forum_replies (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    post_id UUID REFERENCES public.forum_posts(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id),
+    username TEXT NOT NULL,
+    avatar_url TEXT DEFAULT '',
+    content TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.forum_replies ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can read replies" ON public.forum_replies FOR SELECT USING (true);
+CREATE POLICY "Logged in users can insert replies" ON public.forum_replies FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Admins can manage replies" ON public.forum_replies FOR ALL USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));

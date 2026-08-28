@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>论坛 - 凌云城</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
+
+        nav { position: fixed; top: 0; width: 100%; z-index: 100; padding: 0 3rem; height: 64px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; background: #fff; border-bottom: 1px solid #e5e7eb; }
+        .logo { font-size: 1.05rem; font-weight: 700; color: #6366f1; letter-spacing: 0.05em; }
+        .nav-center { display: flex; gap: 2rem; list-style: none; justify-self: center; }
+        .nav-center a { font-size: 0.88rem; color: #666; text-decoration: none; transition: color 0.15s; font-weight: 500; }
+        .nav-center a:hover { color: #1a1a1a; }
+        .nav-center a.active { color: #6366f1; }
+        .nav-right { display: flex; align-items: center; gap: 0.75rem; justify-self: end; }
+        .nav-btn { padding: 0.5rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none; text-decoration: none; }
+        .nav-btn.outline { background: #fff; color: #333; border: 1px solid #d1d5db; }
+        .nav-btn.outline:hover { background: #f9fafb; }
+        .nav-btn.filled { background: #6366f1; color: #fff; }
+        .nav-btn.filled:hover { background: #5558e6; }
+        .user-badge { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.85rem 0.4rem 0.4rem; background: #f3f4f6; border-radius: 8px; text-decoration: none; color: #333; font-size: 0.85rem; font-weight: 500; }
+        .user-badge:hover { background: #e5e7eb; }
+        .user-badge .avatar { width: 30px; height: 30px; border-radius: 8px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 5.5rem 1.5rem 3rem; }
+
+        .forum-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .forum-header h1 { font-size: 1.4rem; font-weight: 600; }
+        .btn-new { padding: 0.6rem 1.25rem; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 0.88rem; font-weight: 500; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+        .btn-new:hover { background: #5558e6; }
+
+        .filter-bar { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+        .filter-btn { padding: 0.4rem 0.85rem; border-radius: 6px; border: 1px solid #e5e7eb; background: #fff; color: #666; font-size: 0.82rem; cursor: pointer; transition: all 0.15s; }
+        .filter-btn:hover { border-color: #6366f1; color: #6366f1; }
+        .filter-btn.active { background: #6366f1; color: #fff; border-color: #6366f1; }
+        .filter-btn .count { background: rgba(0,0,0,0.08); padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.3rem; }
+        .filter-btn.active .count { background: rgba(255,255,255,0.25); }
+
+        .post-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+        .post-item {
+            background: #fff; border-radius: 10px; padding: 1rem 1.25rem;
+            display: flex; align-items: center; gap: 1rem;
+            text-decoration: none; color: inherit; transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+        .post-item:hover { border-color: #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+
+        .post-avatar {
+            width: 42px; height: 42px; border-radius: 10px; background: #e5e7eb;
+            display: flex; align-items: center; justify-content: center;
+            color: #999; flex-shrink: 0; overflow: hidden;
+        }
+        .post-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .post-body { flex: 1; min-width: 0; }
+        .post-title { font-size: 0.92rem; font-weight: 600; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem; }
+        .post-title span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .tag { padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.7rem; font-weight: 500; flex-shrink: 0; }
+        .tag-cat { background: #ede9fe; color: #6366f1; }
+        .tag-solved { background: #dcfce7; color: #16a34a; }
+        .tag-unsolved { background: #fef2f2; color: #ef4444; }
+        .post-meta { font-size: 0.78rem; color: #999; }
+
+        .post-stats { display: flex; gap: 1.25rem; flex-shrink: 0; text-align: center; }
+        .post-stats .stat { font-size: 0.78rem; color: #999; }
+        .post-stats .stat strong { display: block; font-size: 0.95rem; color: #555; font-weight: 600; }
+
+        .empty-state { text-align: center; padding: 4rem 2rem; color: #999; }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+        .empty-state p { font-size: 0.9rem; }
+
+        @media (max-width: 640px) {
+            nav { padding: 0 1.5rem; }
+            .nav-center { display: none; }
+            .post-stats { display: none; }
+            .post-item { padding: 0.85rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">凌云城</div>
+        <ul class="nav-center">
+            <li><a href="index.html">首页</a></li>
+            <li><a href="features.html">特色</a></li>
+            <li><a href="rules.html">规则</a></li>
+            <li><a href="connect.html">加入</a></li>
+            <li><a href="redeem.html">兑换</a></li>
+            <li><a href="forum.html" class="active">论坛</a></li>
+        </ul>
+        <div class="nav-right" id="navRight">
+            <a href="dashboard.html" class="user-badge" id="userBadge" style="display:none"><div class="avatar" id="navAvatar"></div><span id="navName"></span></a>
+            <a href="login.html" class="nav-btn outline" id="btnLogin">登录</a>
+            <a href="login.html" class="nav-btn filled" id="btnRegister">注册</a>
+            <button class="nav-btn outline" id="btnLogout" style="display:none" onclick="handleLogout()">退出</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="forum-header">
+            <h1>论坛</h1>
+            <a href="forum-new.html" class="btn-new" id="btnNewPost" style="display:none">+ 发帖</a>
+        </div>
+
+        <div class="filter-bar" id="filterBar">
+            <button class="filter-btn active" onclick="filterPosts('all', this)">全部</button>
+            <button class="filter-btn" onclick="filterPosts('讨论', this)">💬 讨论</button>
+            <button class="filter-btn" onclick="filterPosts('问题', this)">❓ 问题</button>
+            <button class="filter-btn" onclick="filterPosts('建议', this)">💡 建议</button>
+            <button class="filter-btn" onclick="filterPosts('展示', this)">🎉 展示</button>
+        </div>
+
+        <div class="post-list" id="postList">
+            <div class="empty-state"><div class="icon">📝</div><p>加载中...</p></div>
+        </div>
+    </div>
+
+    <script src="supabase.min.js"></script>
+    <script src="chat-widget.js"></script>
+    <script>
+        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const DEFAULT_AVATAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+
+        let allPosts = [];
+        let currentFilter = 'all';
+        let isLoggedIn = false;
+
+        async function init() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                isLoggedIn = true;
+                let avatarUrl = '';
+                const { data: profile } = await supabaseClient.from('profiles').select('avatar_url, username').eq('id', session.user.id).single();
+                if (profile) avatarUrl = profile.avatar_url || '';
+                const navAvatar = document.getElementById('navAvatar');
+                navAvatar.innerHTML = avatarUrl ? '<img src="'+avatarUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">' : DEFAULT_AVATAR;
+                document.getElementById('navName').textContent = (profile && profile.username) || session.user.email;
+                document.getElementById('userBadge').style.display = 'flex';
+                document.getElementById('btnLogin').style.display = 'none';
+                document.getElementById('btnRegister').style.display = 'none';
+                document.getElementById('btnLogout').style.display = 'inline-block';
+                document.getElementById('btnNewPost').style.display = 'inline-block';
+            }
+            loadPosts();
+        }
+
+        async function loadPosts() {
+            const { data } = await supabaseClient.from('forum_posts').select('*').order('created_at', { ascending: false });
+            allPosts = data || [];
+            renderPosts();
+        }
+
+        function renderPosts() {
+            const list = document.getElementById('postList');
+            let filtered = currentFilter === 'all' ? allPosts : allPosts.filter(p => p.category === currentFilter);
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>暂无帖子，快来发第一个帖子吧！</p></div>';
+                return;
+            }
+
+            list.innerHTML = filtered.map(p => {
+                const time = new Date(p.created_at).toLocaleDateString('zh-CN');
+                const isSolved = p.status === '已解决';
+                return `<a href="forum-post.html?id=${p.id}" class="post-item">
+                    <div class="post-avatar">${p.avatar_url ? '<img src="'+p.avatar_url+'">' : DEFAULT_AVATAR}</div>
+                    <div class="post-body">
+                        <div class="post-title">
+                            <span>${p.title}</span>
+                            <span class="tag tag-cat">${p.category}</span>
+                            <span class="tag ${isSolved ? 'tag-solved' : 'tag-unsolved'}">${p.status}</span>
+                        </div>
+                        <div class="post-meta">${p.username} · ${time}</div>
+                    </div>
+                    <div class="post-stats">
+                        <div class="stat"><strong>${p.views}</strong>浏览</div>
+                    </div>
+                </a>`;
+            }).join('');
+        }
+
+        function filterPosts(cat, el) {
+            currentFilter = cat;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            renderPosts();
+        }
+
+        async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
+        init();
+    </script>
+</body>
+</html>

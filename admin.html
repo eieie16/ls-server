@@ -183,11 +183,17 @@
                 <div class="nav-item" onclick="switchTab(this, 'codes')">
                     <span class="icon">🎁</span> 兑换码管理
                 </div>
+                <div class="nav-item" onclick="switchTab(this, 'forum')">
+                    <span class="icon">📝</span> 论坛管理
+                </div>
             </div>
 
             <div class="nav-divider"></div>
 
             <div class="nav-section">
+                <div class="nav-item" onclick="window.location.href='forum.html'">
+                    <span class="icon">🌐</span> 查看论坛
+                </div>
                 <div class="nav-item" onclick="window.location.href='dashboard.html'">
                     <span class="icon">🔙</span> 返回面板
                 </div>
@@ -268,6 +274,31 @@
                         </thead>
                         <tbody id="codesTable">
                             <tr><td colspan="6" class="loading">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="forumSection" style="display:none">
+                <div class="table-card">
+                    <div class="table-top">
+                        <span class="title">帖子管理</span>
+                        <span class="stat-hint" id="forumStat"></span>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>标题</th>
+                                <th>作者</th>
+                                <th>分类</th>
+                                <th>状态</th>
+                                <th>浏览</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="forumTable">
+                            <tr><td colspan="7" class="loading">加载中...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -357,7 +388,10 @@
 
             document.getElementById('usersSection').style.display = tab === 'users' ? 'block' : 'none';
             document.getElementById('codesSection').style.display = tab === 'codes' ? 'block' : 'none';
+            document.getElementById('forumSection').style.display = tab === 'forum' ? 'block' : 'none';
             document.querySelector('.stats-row').style.display = tab === 'dashboard' ? 'grid' : 'none';
+
+            if (tab === 'forum') loadForum();
         }
 
         // ===== 用户管理 =====
@@ -453,6 +487,34 @@
 
         function openModal(name) { document.getElementById(name + 'Modal').classList.add('active'); }
         function closeModal(name) { document.getElementById(name + 'Modal').classList.remove('active'); }
+
+        // ===== 论坛管理 =====
+        async function loadForum() {
+            const { data } = await supabaseClient.from('forum_posts').select('*').order('created_at', { ascending: false });
+            const posts = data || [];
+            document.getElementById('forumStat').textContent = '共 ' + posts.length + ' 条';
+            const tbody = document.getElementById('forumTable');
+            if (posts.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="loading">暂无帖子</td></tr>'; return; }
+            tbody.innerHTML = posts.map(p => {
+                const time = formatDate(p.created_at);
+                const statusClass = p.status === '已解决' ? 'badge-admin' : 'badge-user';
+                return `<tr>
+                    <td><div class="name" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.title}</div></td>
+                    <td>${p.username}</td>
+                    <td><span class="badge badge-user">${p.category}</span></td>
+                    <td><span class="badge ${statusClass}">${p.status}</span></td>
+                    <td>${p.views}</td>
+                    <td>${time}</td>
+                    <td><button class="btn btn-sm btn-danger" onclick="deleteForumPost('${p.id}')">删除</button></td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function deleteForumPost(id) {
+            if (!confirm('确定删除这条帖子？')) return;
+            await supabaseClient.from('forum_posts').delete().eq('id', id);
+            loadForum();
+        }
 
         async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
         function formatDate(d) { return d ? new Date(d).toLocaleDateString('zh-CN') : '未知'; }
