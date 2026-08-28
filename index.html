@@ -74,7 +74,7 @@
         .user-badge:hover { border-color: var(--accent); }
         .user-badge .avatar {
             width: 28px; height: 28px; border-radius: 6px;
-            background: var(--accent); color: var(--bg); display: flex;
+            background: var(--accent); color: var(--bg); display: inline-flex;
             align-items: center; justify-content: center;
             font-weight: 600; font-size: 0.7rem;
         }
@@ -230,6 +230,7 @@
         @media (max-width: 768px) {
             nav { padding: 0 1.5rem; }
             .nav-links { display: none; }
+            .nav-right { gap: 0.5rem; }
             .mobile-menu { display: flex; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
             .features-grid { grid-template-columns: 1fr; }
