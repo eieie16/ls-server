@@ -93,3 +93,20 @@ CREATE POLICY "Admins can manage redemption codes"
 CREATE POLICY "Anyone can read redemption codes"
     ON public.redemption_codes FOR SELECT
     USING (true);
+
+-- 全站聊天表
+CREATE TABLE IF NOT EXISTS public.chat_messages (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id),
+    username TEXT NOT NULL,
+    avatar_url TEXT DEFAULT '',
+    message TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can read chat" ON public.chat_messages FOR SELECT USING (true);
+
+CREATE POLICY "Logged in users can insert chat" ON public.chat_messages FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
