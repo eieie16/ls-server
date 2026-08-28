@@ -17,10 +17,8 @@
         }
         body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: var(--bg); color: var(--text); }
         
-        /* Layout */
         .layout { display: flex; min-height: 100vh; }
         
-        /* Sidebar */
         .sidebar {
             width: 260px; background: var(--card); border-right: 1px solid var(--border);
             padding: 2rem 1.5rem; position: fixed; height: 100vh; overflow-y: auto;
@@ -42,10 +40,8 @@
         .nav-item:hover, .nav-item.active { background: rgba(232,168,124,0.1); color: var(--accent); }
         .nav-item .icon { font-size: 1.1rem; }
         
-        /* Main Content */
         .main { flex: 1; margin-left: 260px; padding: 2rem 3rem; }
         
-        /* Header */
         .header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border);
@@ -65,7 +61,6 @@
         .btn-success { background: rgba(81,207,102,0.1); color: var(--success); border: 1px solid rgba(81,207,102,0.3); }
         .btn-success:hover { background: rgba(81,207,102,0.2); }
         
-        /* Stats */
         .stats-grid {
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2.5rem;
         }
@@ -75,11 +70,7 @@
         }
         .stat-card .stat-value { font-size: 2rem; font-weight: 600; color: var(--accent); }
         .stat-card .stat-label { font-size: 0.85rem; color: var(--text2); margin-top: 0.25rem; }
-        .stat-card .stat-change { font-size: 0.75rem; margin-top: 0.5rem; }
-        .stat-change.up { color: var(--success); }
-        .stat-change.down { color: var(--danger); }
         
-        /* Table */
         .table-container {
             background: var(--card); border: 1px solid var(--border);
             border-radius: 12px; overflow: hidden;
@@ -124,7 +115,6 @@
         .btn-icon:hover { border-color: var(--accent); color: var(--accent); }
         .btn-icon.danger:hover { border-color: var(--danger); color: var(--danger); background: rgba(255,107,107,0.1); }
         
-        /* Modal */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
@@ -172,7 +162,6 @@
 </head>
 <body>
     <div class="layout">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-logo">凌云城 管理</div>
             
@@ -200,7 +189,6 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main">
             <div class="header">
                 <h1>仪表盘</h1>
@@ -210,34 +198,28 @@
                 </div>
             </div>
 
-            <!-- Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value" id="statUsers">0</div>
                     <div class="stat-label">总用户数</div>
-                    <div class="stat-change up">↑ 本月新增</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value" id="statOnline">0</div>
                     <div class="stat-label">在线玩家</div>
-                    <div class="stat-change up">实时数据</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value" id="statReports">0</div>
                     <div class="stat-label">待处理举报</div>
-                    <div class="stat-change down">需要关注</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value" id="statBanned">0</div>
                     <div class="stat-label">已封禁用户</div>
-                    <div class="stat-change">累计数据</div>
                 </div>
             </div>
 
-            <!-- Users Table -->
             <div class="table-container">
                 <div class="table-header">
-                    <span class="table-title">最近注册的用户</span>
+                    <span class="table-title">用户列表</span>
                     <input type="text" class="table-search" placeholder="搜索用户..." oninput="searchUsers(this.value)">
                 </div>
                 <table>
@@ -258,7 +240,6 @@
         </main>
     </div>
 
-    <!-- Add User Modal -->
     <div class="modal-overlay" id="addUserModal">
         <div class="modal">
             <div class="modal-header">
@@ -293,52 +274,53 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+        const SUPABASE_URL = 'https://你的项目ID.supabase.co';
+        const SUPABASE_KEY = '你的anon key';
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let allUsers = [];
 
-        // 检查管理员权限
-        auth.onAuthStateChanged(async user => {
-            if (!user) {
+        async function init() {
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (!session) {
                 window.location.href = 'login.html';
                 return;
             }
-            
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            if (!userDoc.exists || userDoc.data().role !== 'admin') {
+
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+
+            if (!profile || profile.role !== 'admin') {
                 window.location.href = 'dashboard.html';
                 return;
             }
-            
-            document.getElementById('adminName').textContent = userDoc.data().username;
+
+            document.getElementById('adminName').textContent = profile.username;
             loadUsers();
-        });
+        }
 
         async function loadUsers() {
-            const snapshot = await db.collection('users').orderBy('createdAt', 'desc').get();
-            allUsers = [];
-            snapshot.forEach(doc => {
-                allUsers.push({ id: doc.id, ...doc.data() });
-            });
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error('Load users error:', error);
+                return;
+            }
+
+            allUsers = data || [];
             
             document.getElementById('statUsers').textContent = allUsers.length;
-            document.getElementById('statBanned').textContent = allUsers.filter(u => u.role === 'banned').length;
+            document.getElementById('statBanned').textContent = allUsers.filter(u => u.banned).length;
             
             renderUsers(allUsers.slice(0, 10));
         }
@@ -362,12 +344,11 @@
                         </div>
                     </td>
                     <td><span class="badge ${user.role === 'admin' ? 'badge-admin' : 'badge-user'}">${user.role === 'admin' ? '管理员' : '玩家'}</span></td>
-                    <td>${formatDate(user.createdAt)}</td>
-                    <td><span class="badge ${user.role === 'banned' ? 'badge-banned' : 'badge-user'}">${user.role === 'banned' ? '已封禁' : '正常'}</span></td>
+                    <td>${formatDate(user.created_at)}</td>
+                    <td><span class="badge ${user.banned ? 'badge-banned' : 'badge-user'}">${user.banned ? '已封禁' : '正常'}</span></td>
                     <td>
                         <div class="actions">
-                            <button class="btn-icon" onclick="editUser('${user.id}')" title="编辑">✏️</button>
-                            <button class="btn-icon ${user.role === 'banned' ? '' : 'danger'}" onclick="toggleBan('${user.id}', '${user.role}')" title="${user.role === 'banned' ? '解封' : '封禁'}">${user.role === 'banned' ? '🔓' : '🚫'}</button>
+                            <button class="btn-icon" onclick="toggleBan('${user.id}', ${user.banned})" title="${user.banned ? '解封' : '封禁'}">${user.banned ? '🔓' : '🚫'}</button>
                             <button class="btn-icon danger" onclick="deleteUser('${user.id}')" title="删除">🗑️</button>
                         </div>
                     </td>
@@ -382,15 +363,14 @@
             renderUsers(filtered.slice(0, 10));
         }
 
-        async function toggleBan(userId, currentRole) {
-            const newRole = currentRole === 'banned' ? 'user' : 'banned';
-            await db.collection('users').doc(userId).update({ role: newRole });
+        async function toggleBan(userId, currentBanned) {
+            await supabase.from('profiles').update({ banned: !currentBanned }).eq('id', userId);
             loadUsers();
         }
 
         async function deleteUser(userId) {
             if (!confirm('确定要删除该用户吗？此操作不可恢复。')) return;
-            await db.collection('users').doc(userId).delete();
+            await supabase.from('profiles').delete().eq('id', userId);
             loadUsers();
         }
 
@@ -409,17 +389,28 @@
             const password = document.getElementById('newPassword').value;
             const role = document.getElementById('newRole').value;
             
-            try {
-                const cred = await auth.createUserWithEmailAndPassword(email, password);
-                await db.collection('users').doc(cred.user.uid).set({
-                    username, email, role,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                closeModal('addUser');
-                loadUsers();
-            } catch (err) {
-                alert(err.message);
+            // 创建 Auth 用户
+            const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+                email,
+                password,
+                email_confirm: true
+            });
+            
+            if (authError) {
+                alert('创建用户失败: ' + authError.message);
+                return;
             }
+            
+            // 创建 Profile
+            await supabase.from('profiles').insert([{
+                id: authData.user.id,
+                username,
+                email,
+                role
+            }]);
+            
+            closeModal('addUser');
+            loadUsers();
         }
 
         function switchTab(tab) {
@@ -428,15 +419,16 @@
         }
 
         async function handleLogout() {
-            await auth.signOut();
+            await supabase.auth.signOut();
             window.location.href = 'index.html';
         }
 
-        function formatDate(timestamp) {
-            if (!timestamp) return '未知';
-            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            return date.toLocaleDateString('zh-CN');
+        function formatDate(dateStr) {
+            if (!dateStr) return '未知';
+            return new Date(dateStr).toLocaleDateString('zh-CN');
         }
+
+        init();
     </script>
 </body>
 </html>

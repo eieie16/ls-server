@@ -297,27 +297,19 @@
         </div>
     </footer>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
+        const SUPABASE_URL = 'https://你的项目ID.supabase.co';
+        const SUPABASE_KEY = '你的anon key';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        auth.onAuthStateChanged(user => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
             const navAuth = document.getElementById('navAuth');
-            if (user) {
+            if (session) {
                 navAuth.innerHTML = `
                     <a href="dashboard.html" class="user-badge">
-                        <div class="avatar">${(user.email || '?').substring(0,1).toUpperCase()}</div>
+                        <div class="avatar">${(session.user.email || '?').substring(0,1).toUpperCase()}</div>
                         <span>个人中心</span>
                     </a>
                     <a href="#" class="btn-login outline" onclick="handleLogout(event)">退出</a>
@@ -332,7 +324,7 @@
 
         async function handleLogout(e) {
             e.preventDefault();
-            await auth.signOut();
+            await supabase.auth.signOut();
             window.location.href = 'index.html';
         }
     </script>

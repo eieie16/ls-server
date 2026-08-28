@@ -108,41 +108,37 @@
         <div class="loading">加载中...</div>
     </main>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+        const SUPABASE_URL = 'https://你的项目ID.supabase.co';
+        const SUPABASE_KEY = '你的anon key';
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // 检查登录状态
-        auth.onAuthStateChanged(async user => {
-            if (!user) {
+        async function init() {
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (!session) {
                 window.location.href = 'login.html';
                 return;
             }
-            
-            // 获取用户信息
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            if (!userDoc.exists) {
+
+            // 获取用户资料
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+
+            if (error || !profile) {
                 await handleLogout();
                 return;
             }
-            
-            const userData = userDoc.data();
-            renderDashboard(user, userData);
-        });
+
+            renderDashboard(session.user, profile);
+        }
 
         function renderDashboard(user, data) {
             const initials = (data.username || user.email || '?').substring(0, 2).toUpperCase();
@@ -170,7 +166,7 @@
                 
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="value">${data.playTime || 0}</div>
+                        <div class="value">${data.play_time || 0}</div>
                         <div class="label">游戏时长 (小时)</div>
                     </div>
                     <div class="stat-card">
@@ -211,9 +207,11 @@
         }
 
         async function handleLogout() {
-            await auth.signOut();
+            await supabase.auth.signOut();
             window.location.href = 'index.html';
         }
+
+        init();
     </script>
 </body>
 </html>

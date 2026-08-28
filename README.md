@@ -1,50 +1,93 @@
 # 凌云城-轻RP 4.0 官网
 
-## 本地预览
-双击打开 `index.html` 即可在浏览器中查看。
-
-## 部署到 GitHub Pages
-
-### 步骤一：安装 Git（如果还没装）
-1. 访问 https://git-scm.com/download/win
-2. 下载并安装，一路下一步即可
-
-### 步骤二：创建 GitHub 仓库
-1. 打开 https://github.com/new
-2. 仓库名填：`ls-server`（或你喜欢的名字）
-3. 设为 Public
-4. 不要勾选 "Initialize this repository with a README"
-5. 点击 Create repository
-
-### 步骤三：上传文件
-方法A（推荐，最简单）：
-1. 在仓库页面点击 "Add file" → "Upload files"
-2. 把 `index.html`、`features.html`、`rules.html`、`connect.html` 拖进去
-3. 点击 "Commit changes"
-
-方法B（用 Git）：
-```bash
-git init
-git add .
-git commit -m "initial commit"
-git branch -M main
-git remote add origin https://github.com/你的用户名/仓库名.git
-git push -u origin main
-```
-
-### 步骤四：开启 GitHub Pages
-1. 进入仓库 Settings → Pages
-2. Source 选 "Deploy from a branch"
-3. Branch 选 main，文件夹选 / (root)
-4. 点击 Save
-5. 等待约1-2分钟，访问 `https://你的用户名.github.io/仓库名`
-
----
-
 ## 文件说明
-| 文件 | 页面 |
+| 文件 | 说明 |
 |------|------|
 | `index.html` | 首页 |
 | `features.html` | 服务器特色 |
 | `rules.html` | 服务器规则 |
 | `connect.html` | 如何加入 |
+| `login.html` | 登录/注册页 |
+| `dashboard.html` | 用户面板 |
+| `admin.html` | 管理员后台 |
+
+---
+
+## Supabase 配置步骤
+
+### 1. 创建 Supabase 项目
+1. 访问 https://supabase.com
+2. 点击 "Start your project"
+3. 填写项目信息：
+   - Name: `lingyun-cheng`
+   - Database Password: 设置一个强密码
+   - Region: 选 Singapore（新加坡）
+4. 点击 "Create new project"
+
+### 2. 获取 API 配置
+1. 进入项目 Dashboard
+2. 点击左上角项目名 → Settings → API
+3. 复制以下两个值：
+   - **Project URL**: `https://xxxxxxxx.supabase.co`
+   - **anon/public key**: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+
+### 3. 配置认证
+1. 左侧菜单 Authentication → Providers
+2. 启用 **Email**
+3. 启用 **Google**（可选，需要配置 Google Cloud Console）
+
+### 4. 运行 SQL 脚本
+1. 左侧菜单 SQL Editor
+2. 复制 `init.sql` 文件内容
+3. 点击 Run
+
+### 5. 替换配置
+打开以下文件，替换 `SUPABASE_URL` 和 `SUPABASE_KEY`：
+- `login.html`
+- `dashboard.html`
+- `admin.html`
+- `index.html`
+
+```javascript
+const SUPABASE_URL = 'https://你的项目ID.supabase.co';
+const SUPABASE_KEY = '你的anon key';
+```
+
+### 6. 创建第一个管理员
+1. 在浏览器打开 `login.html`
+2. 注册一个账号
+3. 在 Supabase Dashboard → Authentication → Users
+4. 找到你的用户，复制 User ID
+5. SQL Editor 运行：
+```sql
+UPDATE public.profiles SET role = 'admin' WHERE id = '你的用户ID';
+```
+
+---
+
+## 功能说明
+
+### 用户功能
+- 邮箱密码注册/登录
+- Google 一键登录（需配置 OAuth）
+- 个人面板查看游戏数据
+- 密码重置
+
+### 管理员功能
+- 查看所有注册用户
+- 封禁/解封用户
+- 创建新用户
+- 删除用户
+- 修改用户角色
+
+---
+
+## 部署
+
+网站已推送到 GitHub，开启 Pages：
+1. 仓库 Settings → Pages
+2. Source: Deploy from a branch
+3. Branch: main, Folder: /(root)
+4. Save
+
+访问：https://eieie16.github.io/ls-server/login.html
