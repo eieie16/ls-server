@@ -132,12 +132,15 @@
                 .eq('id', session.user.id)
                 .single();
 
-            if (error || !profile) {
-                await handleLogout();
-                return;
-            }
+            const fallbackProfile = {
+                username: session.user.email,
+                role: 'user',
+                play_time: 0,
+                jobs: 0,
+                cars: 0
+            };
 
-            renderDashboard(session.user, profile);
+            renderDashboard(session.user, profile || fallbackProfile);
         }
 
         function renderDashboard(user, data) {

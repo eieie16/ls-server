@@ -213,12 +213,6 @@
             if (error) {
                 showError(errorEl, error.message);
             } else {
-                // 保存用户资料
-                await supabaseClient.from('profiles').insert([{
-                    id: data.user.id,
-                    username,
-                    email
-                }]);
                 showSuccess(successEl, '注册成功！请检查邮箱验证后登录。');
                 setTimeout(() => switchTab('login'), 2000);
             }
