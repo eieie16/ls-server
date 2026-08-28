@@ -91,15 +91,19 @@
         .modal-close { width: 30px; height: 30px; border-radius: 6px; border: 1px solid #e5e7eb; background: #fff; color: #888; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
         .modal-close:hover { border-color: #ef4444; color: #ef4444; }
 
-        .avatar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
-        .avatar-option {
-            width: 100%; aspect-ratio: 1; border-radius: 12px; border: 2px solid #e5e7eb;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.15s; font-size: 1.5rem; background: #f9fafb;
+        .avatar-grid { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
+        .avatar-input-group { display: flex; gap: 0.5rem; }
+        .avatar-input {
+            flex: 1; padding: 0.65rem 0.85rem; background: #f9fafb;
+            border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.88rem; color: #333;
         }
-        .avatar-option:hover { border-color: #6366f1; background: #ede9fe; }
-        .avatar-option.selected { border-color: #6366f1; background: #ede9fe; }
-        .avatar-option img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+        .avatar-input:focus { outline: none; border-color: #6366f1; }
+        .btn-use { padding: 0.65rem 1rem; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+        .btn-use:hover { background: #e5e7eb; }
+        .avatar-preview { width: 100%; aspect-ratio: 1; border-radius: 12px; border: 2px dashed #d1d5db; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f9fafb; }
+        .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-preview svg { width: 48px; height: 48px; color: #9ca3af; }
+        .avatar-hint { font-size: 0.78rem; color: #999; margin-top: 0.25rem; }
 
         .btn-save { width: 100%; padding: 0.7rem; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
         .btn-save:hover { background: #5558e6; }
@@ -144,11 +148,23 @@
     <div class="modal-overlay" id="avatarModal">
         <div class="modal">
             <div class="modal-header">
-                <span class="modal-title">选择头像</span>
+                <span class="modal-title">自定义头像</span>
                 <button class="modal-close" onclick="closeAvatarModal()">&times;</button>
             </div>
-            <div class="avatar-grid" id="avatarGrid"></div>
-            <button class="btn-save" id="saveAvatarBtn" onclick="saveAvatar()">保存头像</button>
+            <div class="avatar-grid">
+                <div class="avatar-preview" id="avatarPreview">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div class="avatar-input-group">
+                    <input type="url" class="avatar-input" id="avatarUrlInput" placeholder="粘贴图片链接 (URL)" oninput="previewAvatar(this.value)">
+                    <button class="btn-use" onclick="previewAvatar(document.getElementById('avatarUrlInput').value)">预览</button>
+                </div>
+                <div class="avatar-hint">支持 JPG、PNG 等图片链接，建议正方形图片</div>
+            </div>
+            <div style="display:flex;gap:0.75rem">
+                <button class="btn-save" style="flex:1" onclick="saveAvatar()">保存头像</button>
+                <button class="btn-save" style="flex:0;background:#f3f4f6;color:#333;border:1px solid #d1d5db" onclick="removeAvatar()">移除头像</button>
+            </div>
         </div>
     </div>
 
@@ -160,14 +176,7 @@
 
         const DEFAULT_AVATAR_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
 
-        const AVATAR_PRESETS = [
-            '😎','🤠','🦊','🐱','🐶','🐻','🐼','🦁','🐯','🐸',
-            '🐵','🐷','🐨','🐙','🦄','🐲','🤖','👽','🎃','💀',
-            '🔥','⭐','🎮','🎵','⚽','🏀','🎯','💎','🗡️','🛡️'
-        ];
-
         let currentProfile = null;
-        let selectedAvatar = '';
 
         async function init() {
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -177,7 +186,6 @@
                 .from('profiles').select('*').eq('id', session.user.id).single();
 
             currentProfile = profile || { username: session.user.email, role: 'user', avatar_url: '', created_at: new Date().toISOString() };
-            selectedAvatar = currentProfile.avatar_url || '';
 
             updateNav(session.user, currentProfile);
             renderDashboard(session.user, currentProfile);
@@ -185,9 +193,6 @@
 
         function getAvatarHTML(avatarUrl, size) {
             if (avatarUrl) {
-                if (AVATAR_PRESETS.includes(avatarUrl)) {
-                    return `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;font-size:${size*0.55}px;background:#ede9fe;border-radius:50%">${avatarUrl}</div>`;
-                }
                 return `<img src="${avatarUrl}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`;
             }
             return `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;background:#e5e7eb;border-radius:50%">${DEFAULT_AVATAR_SVG}</div>`;
@@ -196,15 +201,10 @@
         function updateNav(user, data) {
             const navAvatar = document.getElementById('navAvatar');
             navAvatar.innerHTML = '';
-            if (data.avatar_url && AVATAR_PRESETS.includes(data.avatar_url)) {
-                navAvatar.style.background = '#ede9fe';
-                navAvatar.style.fontSize = '0.9rem';
-                navAvatar.textContent = data.avatar_url;
-            } else if (data.avatar_url) {
-                navAvatar.style.background = 'none';
+            navAvatar.style.background = '#e5e7eb';
+            if (data.avatar_url) {
                 navAvatar.innerHTML = `<img src="${data.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
             } else {
-                navAvatar.style.background = '#e5e7eb';
                 navAvatar.innerHTML = DEFAULT_AVATAR_SVG;
             }
             document.getElementById('navName').textContent = data.username || user.email;
@@ -243,11 +243,7 @@
             `;
 
             const avatarEl = document.getElementById('profileAvatar');
-            if (data.avatar_url && AVATAR_PRESETS.includes(data.avatar_url)) {
-                avatarEl.style.background = '#ede9fe';
-                avatarEl.style.fontSize = '2rem';
-                avatarEl.textContent = data.avatar_url;
-            } else if (data.avatar_url) {
+            if (data.avatar_url) {
                 avatarEl.innerHTML = `<img src="${data.avatar_url}" style="width:100%;height:100%;object-fit:cover">`;
             } else {
                 avatarEl.innerHTML = DEFAULT_AVATAR_SVG;
@@ -255,10 +251,8 @@
         }
 
         function openAvatarModal() {
-            const grid = document.getElementById('avatarGrid');
-            grid.innerHTML = AVATAR_PRESETS.map(a =>
-                `<div class="avatar-option ${selectedAvatar === a ? 'selected' : ''}" onclick="selectAvatar('${a}', this)">${a}</div>`
-            ).join('');
+            document.getElementById('avatarUrlInput').value = currentProfile.avatar_url || '';
+            previewAvatar(currentProfile.avatar_url || '');
             document.getElementById('avatarModal').classList.add('active');
         }
 
@@ -266,26 +260,34 @@
             document.getElementById('avatarModal').classList.remove('active');
         }
 
-        function selectAvatar(emoji, el) {
-            document.querySelectorAll('.avatar-option').forEach(o => o.classList.remove('selected'));
-            el.classList.add('selected');
-            selectedAvatar = emoji;
+        function previewAvatar(url) {
+            const preview = document.getElementById('avatarPreview');
+            if (url) {
+                preview.innerHTML = `<img src="${url}" onerror="this.parentElement.innerHTML='<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1.5\\'><path d=\\'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\\'/><circle cx=\\'12\\' cy=\\'7\\' r=\\'4\\'/></svg>'">`;
+            } else {
+                preview.innerHTML = DEFAULT_AVATAR_SVG;
+            }
         }
 
         async function saveAvatar() {
-            if (!selectedAvatar || !currentProfile) return;
-            const btn = document.getElementById('saveAvatarBtn');
-            btn.disabled = true;
-            btn.textContent = '保存中...';
+            const url = document.getElementById('avatarUrlInput').value.trim();
+            if (!currentProfile) return;
 
-            await supabaseClient.from('profiles').update({ avatar_url: selectedAvatar }).eq('id', currentProfile.id);
-            currentProfile.avatar_url = selectedAvatar;
+            await supabaseClient.from('profiles').update({ avatar_url: url }).eq('id', currentProfile.id);
+            currentProfile.avatar_url = url;
 
             updateNav({ email: currentProfile.email }, currentProfile);
             renderDashboard({ email: currentProfile.email }, currentProfile);
+            closeAvatarModal();
+        }
 
-            btn.disabled = false;
-            btn.textContent = '保存头像';
+        async function removeAvatar() {
+            if (!currentProfile) return;
+            await supabaseClient.from('profiles').update({ avatar_url: '' }).eq('id', currentProfile.id);
+            currentProfile.avatar_url = '';
+
+            updateNav({ email: currentProfile.email }, currentProfile);
+            renderDashboard({ email: currentProfile.email }, currentProfile);
             closeAvatarModal();
         }
 
