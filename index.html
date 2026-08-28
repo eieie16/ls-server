@@ -302,7 +302,7 @@
     <script>
         const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
         const SUPABASE_KEY = "sb_publishable_Yl2py6Pj5XLimcCBT2sXEg_AOa4gKWV";
-        const supabaseClientClient = window.supabaseClient.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         supabaseClient.auth.getSession().then(({ data: { session } }) => {
             const navAuth = document.getElementById('navAuth');
