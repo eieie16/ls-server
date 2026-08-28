@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>兑换码 - 凌云城</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
+
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            padding: 0 3rem; height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+            background: #fff; border-bottom: 1px solid #e5e7eb;
+        }
+        .logo { font-size: 1.05rem; font-weight: 700; color: #6366f1; letter-spacing: 0.05em; }
+        .nav-center { display: flex; gap: 2rem; list-style: none; }
+        .nav-center a { font-size: 0.88rem; color: #666; text-decoration: none; transition: color 0.15s; font-weight: 500; }
+        .nav-center a:hover { color: #1a1a1a; }
+        .nav-center a.active { color: #6366f1; }
+        .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+        .nav-btn { padding: 0.5rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none; text-decoration: none; }
+        .nav-btn.outline { background: #fff; color: #333; border: 1px solid #d1d5db; }
+        .nav-btn.outline:hover { background: #f9fafb; border-color: #999; }
+        .nav-btn.filled { background: #6366f1; color: #fff; }
+        .nav-btn.filled:hover { background: #5558e6; }
+        .user-badge { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.85rem 0.4rem 0.4rem; background: #f3f4f6; border-radius: 8px; text-decoration: none; color: #333; font-size: 0.85rem; font-weight: 500; }
+        .user-badge:hover { background: #e5e7eb; }
+        .user-badge .avatar { width: 30px; height: 30px; border-radius: 8px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+
+        .container { max-width: 500px; margin: 0 auto; padding: 6rem 1.5rem 3rem; }
+
+        .redeem-card {
+            background: #fff; border-radius: 16px; padding: 2.5rem 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06); text-align: center;
+        }
+        .redeem-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .redeem-card h1 { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .redeem-card p { font-size: 0.88rem; color: #888; margin-bottom: 2rem; }
+
+        .input-group { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .input-group input {
+            flex: 1; padding: 0.75rem 1rem; background: #f9fafb;
+            border: 1px solid #e5e7eb; border-radius: 10px; font-size: 1rem;
+            color: #333; letter-spacing: 0.05em;
+        }
+        .input-group input:focus { outline: none; border-color: #6366f1; }
+        .input-group input::placeholder { color: #bbb; letter-spacing: 0; }
+
+        .btn-redeem {
+            width: 100%; padding: 0.8rem; background: #6366f1; color: #fff;
+            border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-redeem:hover { background: #5558e6; }
+        .btn-redeem:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-redeem .spinner {
+            display: none; width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+            border-radius: 50%; animation: spin 0.6s linear infinite;
+            margin: 0 auto;
+        }
+        .btn-redeem.loading .btn-text { display: none; }
+        .btn-redeem.loading .spinner { display: block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .result {
+            margin-top: 1.5rem; padding: 1.25rem; border-radius: 12px;
+            display: none; text-align: left;
+        }
+        .result.show { display: block; }
+        .result.success { background: #f0fdf4; border: 1px solid #bbf7d0; }
+        .result.error { background: #fef2f2; border: 1px solid #fecaca; }
+        .result h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .result .prize {
+            font-size: 1.1rem; font-weight: 700; color: #6366f1;
+            background: #ede9fe; padding: 0.5rem 0.75rem; border-radius: 8px;
+            display: inline-block; margin-top: 0.25rem; word-break: break-all;
+            user-select: all; cursor: pointer;
+        }
+        .result .prize-hint { font-size: 0.78rem; color: #888; margin-top: 0.5rem; }
+        .result img { max-width: 160px; border-radius: 10px; margin-top: 0.75rem; }
+
+        .result.error h3 { color: #ef4444; }
+
+        .back-link { text-align: center; margin-top: 1.5rem; }
+        .back-link a { color: #888; font-size: 0.85rem; text-decoration: none; }
+        .back-link a:hover { color: #6366f1; }
+
+        @media (max-width: 480px) {
+            nav { padding: 0 1.5rem; }
+            .nav-center { display: none; }
+            .container { padding: 5rem 1rem 2rem; }
+            .redeem-card { padding: 2rem 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">凌云城</div>
+        <ul class="nav-center">
+            <li><a href="index.html">首页</a></li>
+            <li><a href="features.html">特色</a></li>
+            <li><a href="rules.html">规则</a></li>
+            <li><a href="connect.html">加入</a></li>
+        </ul>
+        <div class="nav-right" id="navRight">
+            <a href="dashboard.html" class="user-badge" id="userBadge" style="display:none">
+                <div class="avatar" id="navAvatar"></div>
+                <span id="navName">加载中</span>
+            </a>
+            <a href="login.html" class="nav-btn outline" id="btnLogin">登录</a>
+            <a href="login.html" class="nav-btn filled" id="btnRegister">注册</a>
+            <button class="nav-btn outline" id="btnLogout" style="display:none" onclick="handleLogout()">退出</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="redeem-card">
+            <div class="redeem-icon">🎁</div>
+            <h1>兑换码兑换</h1>
+            <p>输入你获得的兑换码，领取专属奖励</p>
+
+            <div class="input-group">
+                <input type="text" id="redeemInput" placeholder="请输入兑换码" autocomplete="off">
+            </div>
+            <button class="btn-redeem" id="redeemBtn" onclick="handleRedeem()">
+                <span class="btn-text">兑换</span>
+                <div class="spinner"></div>
+            </button>
+
+            <div class="result" id="result"></div>
+        </div>
+        <div class="back-link"><a href="dashboard.html">← 返回个人中心</a></div>
+    </div>
+
+    <script src="supabase.min.js"></script>
+    <script>
+        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const DEFAULT_AVATAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+
+        async function init() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                let avatarUrl = '';
+                const { data: profile } = await supabaseClient.from('profiles').select('avatar_url, username').eq('id', session.user.id).single();
+                if (profile) { avatarUrl = profile.avatar_url || ''; }
+                const navAvatar = document.getElementById('navAvatar');
+                navAvatar.innerHTML = avatarUrl ? '<img src="'+avatarUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">' : DEFAULT_AVATAR;
+                document.getElementById('navName').textContent = (profile && profile.username) || session.user.email;
+                document.getElementById('userBadge').style.display = 'flex';
+                document.getElementById('btnLogin').style.display = 'none';
+                document.getElementById('btnRegister').style.display = 'none';
+                document.getElementById('btnLogout').style.display = 'inline-block';
+            }
+        }
+
+        async function handleRedeem() {
+            const code = document.getElementById('redeemInput').value.trim();
+            const btn = document.getElementById('redeemBtn');
+            const resultEl = document.getElementById('result');
+
+            if (!code) return;
+
+            btn.className = 'btn-redeem loading';
+            resultEl.className = 'result';
+
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                resultEl.className = 'result show error';
+                resultEl.innerHTML = '<h3>❌ 请先登录</h3><p style="font-size:0.85rem;color:#888">登录后才能使用兑换码</p>';
+                btn.className = 'btn-redeem';
+                return;
+            }
+
+            const { data } = await supabaseClient.from('redemption_codes').select('*').eq('code', code).single();
+
+            if (!data) {
+                resultEl.className = 'result show error';
+                resultEl.innerHTML = '<h3>❌ 兑换码不存在</h3>';
+                btn.className = 'btn-redeem';
+                return;
+            }
+
+            if (data.used_count >= data.max_uses) {
+                resultEl.className = 'result show error';
+                resultEl.innerHTML = '<h3>❌ 兑换码已被使用完毕</h3>';
+                btn.className = 'btn-redeem';
+                return;
+            }
+
+            await supabaseClient.from('redemption_codes').update({ used_count: data.used_count + 1 }).eq('id', data.id);
+
+            resultEl.className = 'result show success';
+            resultEl.innerHTML = `
+                <h3>✅ 兑换成功</h3>
+                <div class="prize" onclick="navigator.clipboard.writeText('${data.prize.replace(/'/g,"\\'")}');this.textContent='已复制 ✓'">${data.prize}</div>
+                <div class="prize-hint">点击上方奖品可复制</div>
+                ${data.image_url ? '<img src="'+data.image_url+'">' : ''}
+            `;
+            btn.className = 'btn-redeem';
+        }
+
+        document.getElementById('redeemInput').addEventListener('keydown', e => { if (e.key === 'Enter') handleRedeem(); });
+
+        async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
+
+        init();
+    </script>
+</body>
+</html>
