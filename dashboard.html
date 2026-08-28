@@ -81,6 +81,19 @@
         .admin-link { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #ef4444; font-size: 0.85rem; font-weight: 500; text-decoration: none; margin-top: 1rem; transition: all 0.15s; }
         .admin-link:hover { background: #fee2e2; }
 
+        .edit-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+        .edit-row input {
+            padding: 0.35rem 0.6rem; border: 1px solid #d1d5db; border-radius: 6px;
+            font-size: 0.85rem; width: 160px;
+        }
+        .edit-row input:focus { outline: none; border-color: #6366f1; }
+        .edit-row button {
+            padding: 0.35rem 0.7rem; background: #6366f1; color: #fff; border: none;
+            border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: background 0.15s;
+        }
+        .edit-row button:hover { background: #5558e6; }
+        .edit-row .ok { background: #22c55e; }
+
         /* Avatar Picker Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.2s; }
         .modal-overlay.active { opacity: 1; visibility: visible; }
@@ -228,9 +241,13 @@
                         <div class="avatar-edit-hint">✏</div>
                     </div>
                     <div class="profile-info">
-                        <h2>${data.username || '玩家'}</h2>
+                        <h2 id="displayName">${data.username || '玩家'}</h2>
                         <div class="email">${user.email}</div>
                         <span class="role-badge ${isAdmin ? 'admin' : 'user'}">${isAdmin ? '管理员' : '普通用户'}</span>
+                        <div class="edit-row">
+                            <input type="text" id="newUsername" value="${data.username || ''}" placeholder="输入新用户名">
+                            <button onclick="updateUsername()">修改</button>
+                        </div>
                     </div>
                 </div>
 
@@ -290,10 +307,18 @@
             if (!currentProfile) return;
             await supabaseClient.from('profiles').update({ avatar_url: '' }).eq('id', currentProfile.id);
             currentProfile.avatar_url = '';
-
             updateNav({ email: currentProfile.email }, currentProfile);
             renderDashboard({ email: currentProfile.email }, currentProfile);
             closeAvatarModal();
+        }
+
+        async function updateUsername() {
+            const newName = document.getElementById('newUsername').value.trim();
+            if (!newName || !currentProfile) return;
+            await supabaseClient.from('profiles').update({ username: newName }).eq('id', currentProfile.id);
+            currentProfile.username = newName;
+            document.getElementById('displayName').textContent = newName;
+            updateNav({ email: currentProfile.email }, currentProfile);
         }
 
         async function handleLogout() {
