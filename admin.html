@@ -180,6 +180,9 @@
                 <div class="nav-item" onclick="switchTab(this, 'users')">
                     <span class="icon">👥</span> 用户管理
                 </div>
+                <div class="nav-item" onclick="switchTab(this, 'codes')">
+                    <span class="icon">🎁</span> 兑换码管理
+                </div>
             </div>
 
             <div class="nav-divider"></div>
@@ -222,7 +225,7 @@
                 </div>
             </div>
 
-            <div class="table-card">
+            <div class="table-card" id="usersSection">
                 <div class="table-top">
                     <span class="title">用户列表</span>
                     <input type="text" class="search-input" placeholder="搜索用户名或邮箱..." oninput="searchUsers(this.value)">
@@ -242,125 +245,217 @@
                     </tbody>
                 </table>
             </div>
+
+            <div id="codesSection" style="display:none">
+                <div class="table-card">
+                    <div class="table-top">
+                        <span class="title">兑换码列表</span>
+                        <div style="display:flex;gap:0.5rem">
+                            <button class="btn btn-primary" onclick="openModal('verifyCode')">验证兑换码</button>
+                            <button class="btn btn-primary" onclick="openModal('addCode')">+ 添加兑换码</button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>兑换码</th>
+                                <th>奖品</th>
+                                <th>图片</th>
+                                <th>使用情况</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="codesTable">
+                            <tr><td colspan="6" class="loading">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </main>
+    </div>
+
+    <!-- Add Code Modal -->
+    <div class="modal-overlay" id="addCodeModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">添加兑换码</span>
+                <button class="modal-close" onclick="closeModal('addCode')">&times;</button>
+            </div>
+            <form onsubmit="handleAddCode(event)">
+                <div class="form-group">
+                    <label>兑换码</label>
+                    <input type="text" id="newCode" placeholder="例如: ABCD-1234-EFGH" required>
+                </div>
+                <div class="form-group">
+                    <label>奖品 (密钥/奖励内容)</label>
+                    <input type="text" id="newPrize" placeholder="奖品内容，如卡密、礼包码等" required>
+                </div>
+                <div class="form-group">
+                    <label>奖品图片链接 (可选)</label>
+                    <input type="url" id="newImageUrl" placeholder="https://example.com/image.png">
+                </div>
+                <div class="form-group">
+                    <label>可使用次数</label>
+                    <input type="number" id="newMaxUses" value="1" min="1">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addCode')">取消</button>
+                    <button type="submit" class="btn btn-primary">创建兑换码</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Verify Code Modal -->
+    <div class="modal-overlay" id="verifyCodeModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">验证兑换码</span>
+                <button class="modal-close" onclick="closeModal('verifyCode')">&times;</button>
+            </div>
+            <form onsubmit="handleVerifyCode(event)">
+                <div class="form-group">
+                    <label>输入兑换码</label>
+                    <input type="text" id="verifyCodeInput" placeholder="输入要验证的兑换码" required>
+                </div>
+                <div id="verifyResult" style="margin-bottom:1rem"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('verifyCode')">关闭</button>
+                    <button type="submit" class="btn btn-primary">验证</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script src="supabase.min.js"></script>
     <script>
         const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
-
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let allUsers = [];
+        let allCodes = [];
+        let currentTab = 'dashboard';
 
         async function init() {
             const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) { window.location.href = 'login.html'; return; }
 
-            if (!session) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            const { data: profile } = await supabaseClient
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single();
-
-            if (!profile || profile.role !== 'admin') {
-                window.location.href = 'dashboard.html';
-                return;
-            }
+            const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
+            if (!profile || profile.role !== 'admin') { window.location.href = 'dashboard.html'; return; }
 
             document.getElementById('adminName').textContent = profile.username;
             loadUsers();
-        }
-
-        async function loadUsers() {
-            const { data, error } = await supabaseClient
-                .from('profiles')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                console.error('Load users error:', error);
-                return;
-            }
-
-            allUsers = data || [];
-            const today = new Date().toDateString();
-
-            document.getElementById('statUsers').textContent = allUsers.length;
-            document.getElementById('statBanned').textContent = allUsers.filter(u => u.banned).length;
-            document.getElementById('statToday').textContent = allUsers.filter(u => new Date(u.created_at).toDateString() === today).length;
-
-            renderUsers(allUsers);
-        }
-
-        function renderUsers(users) {
-            const tbody = document.getElementById('usersTable');
-            if (users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="loading">暂无用户</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = users.map(user => `
-                <tr>
-                    <td>
-                        <div class="user-cell">
-                            <div class="user-avatar">${(user.username || '?').substring(0, 1).toUpperCase()}</div>
-                            <div class="user-meta">
-                                <div class="name">${user.username}</div>
-                                <div class="email">${user.email}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td><span class="badge ${user.role === 'admin' ? 'badge-admin' : 'badge-user'}">${user.role === 'admin' ? '管理员' : '玩家'}</span></td>
-                    <td>${formatDate(user.created_at)}</td>
-                    <td><span class="badge ${user.banned ? 'badge-banned' : 'badge-ok'}">${user.banned ? '已封禁' : '正常'}</span></td>
-                    <td>
-                        <div class="actions">
-                            <button class="btn-icon" onclick="toggleBan('${user.id}', ${user.banned})" title="${user.banned ? '解封' : '封禁'}">${user.banned ? '🔓' : '🚫'}</button>
-                            <button class="btn-icon danger" onclick="deleteUser('${user.id}')" title="删除">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function searchUsers(query) {
-            const filtered = allUsers.filter(u =>
-                (u.username && u.username.includes(query)) || (u.email && u.email.includes(query))
-            );
-            renderUsers(filtered);
-        }
-
-        async function toggleBan(userId, currentBanned) {
-            await supabaseClient.from('profiles').update({ banned: !currentBanned }).eq('id', userId);
-            loadUsers();
-        }
-
-        async function deleteUser(userId) {
-            if (!confirm('确定要删除该用户吗？此操作不可恢复。')) return;
-            await supabaseClient.from('profiles').delete().eq('id', userId);
-            loadUsers();
+            loadCodes();
         }
 
         function switchTab(el, tab) {
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             el.classList.add('active');
+            currentTab = tab;
+
+            document.getElementById('usersSection').style.display = tab === 'users' ? 'block' : 'none';
+            document.getElementById('codesSection').style.display = tab === 'codes' ? 'block' : 'none';
+            document.querySelector('.stats-row').style.display = tab === 'dashboard' ? 'grid' : 'none';
         }
 
-        async function handleLogout() {
-            await supabaseClient.auth.signOut();
-            window.location.href = 'index.html';
+        // ===== 用户管理 =====
+        async function loadUsers() {
+            const { data } = await supabaseClient.from('profiles').select('*').order('created_at', { ascending: false });
+            allUsers = data || [];
+            const today = new Date().toDateString();
+            document.getElementById('statUsers').textContent = allUsers.length;
+            document.getElementById('statBanned').textContent = allUsers.filter(u => u.banned).length;
+            document.getElementById('statToday').textContent = allUsers.filter(u => new Date(u.created_at).toDateString() === today).length;
+            renderUsers(allUsers);
         }
 
-        function formatDate(dateStr) {
-            if (!dateStr) return '未知';
-            return new Date(dateStr).toLocaleDateString('zh-CN');
+        function renderUsers(users) {
+            const tbody = document.getElementById('usersTable');
+            if (users.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="loading">暂无用户</td></tr>'; return; }
+            tbody.innerHTML = users.map(user => `<tr>
+                <td><div class="user-cell"><div class="user-avatar">${(user.username||'?').substring(0,1).toUpperCase()}</div><div class="user-meta"><div class="name">${user.username}</div><div class="email">${user.email}</div></div></div></td>
+                <td><span class="badge ${user.role==='admin'?'badge-admin':'badge-user'}">${user.role==='admin'?'管理员':'玩家'}</span></td>
+                <td>${formatDate(user.created_at)}</td>
+                <td><span class="badge ${user.banned?'badge-banned':'badge-ok'}">${user.banned?'已封禁':'正常'}</span></td>
+                <td><div class="actions"><button class="btn-icon" onclick="toggleBan('${user.id}',${user.banned})" title="${user.banned?'解封':'封禁'}">${user.banned?'🔓':'🚫'}</button><button class="btn-icon danger" onclick="deleteUser('${user.id}')" title="删除">🗑️</button></div></td>
+            </tr>`).join('');
         }
+
+        function searchUsers(q) { renderUsers(allUsers.filter(u => (u.username&&u.username.includes(q))||(u.email&&u.email.includes(q)))); }
+        async function toggleBan(id, b) { await supabaseClient.from('profiles').update({banned:!b}).eq('id',id); loadUsers(); }
+        async function deleteUser(id) { if(!confirm('确定删除？')) return; await supabaseClient.from('profiles').delete().eq('id',id); loadUsers(); }
+
+        // ===== 兑换码管理 =====
+        async function loadCodes() {
+            const { data } = await supabaseClient.from('redemption_codes').select('*').order('created_at', { ascending: false });
+            allCodes = data || [];
+            renderCodes(allCodes);
+        }
+
+        function renderCodes(codes) {
+            const tbody = document.getElementById('codesTable');
+            if (codes.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="loading">暂无兑换码</td></tr>'; return; }
+            tbody.innerHTML = codes.map(c => `<tr>
+                <td><code style="background:#f3f4f6;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.82rem">${c.code}</code></td>
+                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.prize}">${c.prize}</td>
+                <td>${c.image_url ? '<img src="'+c.image_url+'" style="width:32px;height:32px;border-radius:6px;object-fit:cover">' : '<span style="color:#ccc">无</span>'}</td>
+                <td><span class="badge ${c.used_count >= c.max_uses ? 'badge-banned' : 'badge-ok'}">${c.used_count}/${c.max_uses}</span></td>
+                <td>${formatDate(c.created_at)}</td>
+                <td><div class="actions"><button class="btn-icon danger" onclick="deleteCode('${c.id}')" title="删除">🗑️</button></div></td>
+            </tr>`).join('');
+        }
+
+        async function handleAddCode(e) {
+            e.preventDefault();
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const code = document.getElementById('newCode').value.trim();
+            const prize = document.getElementById('newPrize').value.trim();
+            const image_url = document.getElementById('newImageUrl').value.trim();
+            const max_uses = parseInt(document.getElementById('newMaxUses').value) || 1;
+
+            const { error } = await supabaseClient.from('redemption_codes').insert([{ code, prize, image_url, max_uses, created_by: session.user.id }]);
+            if (error) { alert('创建失败: ' + error.message); return; }
+            closeModal('addCode');
+            document.getElementById('newCode').value = '';
+            document.getElementById('newPrize').value = '';
+            document.getElementById('newImageUrl').value = '';
+            document.getElementById('newMaxUses').value = '1';
+            loadCodes();
+        }
+
+        async function handleVerifyCode(e) {
+            e.preventDefault();
+            const code = document.getElementById('verifyCodeInput').value.trim();
+            const resultEl = document.getElementById('verifyResult');
+
+            const { data } = await supabaseClient.from('redemption_codes').select('*').eq('code', code).single();
+            if (!data) { resultEl.innerHTML = '<div style="padding:0.75rem;background:#fef2f2;border-radius:8px;color:#ef4444;font-size:0.88rem">❌ 兑换码不存在</div>'; return; }
+
+            if (data.used_count >= data.max_uses) {
+                resultEl.innerHTML = '<div style="padding:0.75rem;background:#fef2f2;border-radius:8px;color:#ef4444;font-size:0.88rem">❌ 该兑换码已被使用完毕</div>';
+            } else {
+                resultEl.innerHTML = `<div style="padding:0.75rem;background:#f0fdf4;border-radius:8px;color:#22c55e;font-size:0.88rem">
+                    ✅ 兑换码有效<br>
+                    <strong>奖品：</strong>${data.prize}<br>
+                    <strong>剩余次数：</strong>${data.max_uses - data.used_count}
+                    ${data.image_url ? '<br><img src="'+data.image_url+'" style="max-width:120px;border-radius:8px;margin-top:0.5rem">' : ''}
+                </div>`;
+            }
+        }
+
+        async function deleteCode(id) {
+            if (!confirm('确定删除该兑换码？')) return;
+            await supabaseClient.from('redemption_codes').delete().eq('id', id);
+            loadCodes();
+        }
+
+        function openModal(name) { document.getElementById(name + 'Modal').classList.add('active'); }
+        function closeModal(name) { document.getElementById(name + 'Modal').classList.remove('active'); }
+
+        async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
+        function formatDate(d) { return d ? new Date(d).toLocaleDateString('zh-CN') : '未知'; }
 
         init();
     </script>

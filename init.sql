@@ -66,3 +66,30 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 兑换码表
+CREATE TABLE IF NOT EXISTS public.redemption_codes (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    code TEXT NOT NULL UNIQUE,
+    prize TEXT NOT NULL,
+    image_url TEXT DEFAULT '',
+    max_uses INTEGER DEFAULT 1,
+    used_count INTEGER DEFAULT 0,
+    created_by UUID REFERENCES auth.users(id),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.redemption_codes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can manage redemption codes"
+    ON public.redemption_codes FOR ALL
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles p
+            WHERE p.id = auth.uid() AND p.role = 'admin'
+        )
+    );
+
+CREATE POLICY "Anyone can read redemption codes"
+    ON public.redemption_codes FOR SELECT
+    USING (true);
