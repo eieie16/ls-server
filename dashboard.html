@@ -82,17 +82,6 @@
         .role-badge.admin { background: #fef2f2; color: #ef4444; }
         .role-badge.user { background: #f0f0f0; color: #666; }
 
-        .stats-row {
-            display: grid; grid-template-columns: repeat(3, 1fr);
-            gap: 1rem; margin-bottom: 1.5rem;
-        }
-        .stat-card {
-            background: #fff; border-radius: 12px; padding: 1.5rem 1rem;
-            text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-        }
-        .stat-card .value { font-size: 1.75rem; font-weight: 700; color: #1a1a1a; }
-        .stat-card .label { font-size: 0.78rem; color: #999; margin-top: 0.3rem; }
-
         .section-card {
             background: #fff; border-radius: 16px; padding: 1.75rem 2rem;
             box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 1.5rem;
@@ -210,7 +199,6 @@
 
         function renderDashboard(user, data) {
             const initial = (data.username || user.email || '?').substring(0, 1).toUpperCase();
-            const daysSince = Math.floor((Date.now() - new Date(data.created_at).getTime()) / 86400000);
             const isAdmin = data.role === 'admin';
 
             document.getElementById('mainContent').innerHTML = `
@@ -220,21 +208,6 @@
                         <h2>${data.username || '玩家'}</h2>
                         <div class="email">${user.email}</div>
                         <span class="role-badge ${isAdmin ? 'admin' : 'user'}">${isAdmin ? '管理员' : '普通用户'}</span>
-                    </div>
-                </div>
-
-                <div class="stats-row">
-                    <div class="stat-card">
-                        <div class="value">${data.play_time || 0}</div>
-                        <div class="label">游戏时长 (小时)</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="value">${daysSince}</div>
-                        <div class="label">已注册 (天)</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="value">${isAdmin ? '是' : '否'}</div>
-                        <div class="label">管理员</div>
                     </div>
                 </div>
 
