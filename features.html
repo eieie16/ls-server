@@ -39,7 +39,7 @@
         .nav-btn.filled:hover { background: var(--accent2); }
         .user-badge { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.7rem 0.35rem 0.35rem; background: var(--card); border: 1px solid var(--border); border-radius: 6px; text-decoration: none; color: var(--text); font-size: 0.82rem; transition: all 0.15s; }
         .user-badge:hover { border-color: var(--accent); }
-        .user-badge .avatar { width: 28px; height: 28px; border-radius: 6px; background: var(--accent); color: var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.7rem; }
+        .user-badge .avatar { width: 28px; height: 28px; border-radius: 6px; background: #e5e7eb; color: #999; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
         .mobile-menu { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
         .mobile-menu span { width: 22px; height: 1.5px; background: var(--text); }
 
@@ -235,10 +235,15 @@
         const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+        const DEFAULT_AVATAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+        supabaseClient.auth.getSession().then(async ({ data: { session } }) => {
             const navAuth = document.getElementById('navAuth');
             if (session) {
-                navAuth.innerHTML = '<a href="dashboard.html" class="user-badge"><div class="avatar">' + (session.user.email || '?').substring(0,1).toUpperCase() + '</div><span>个人中心</span></a><a href="#" class="nav-btn outline" onclick="handleLogout(event)">退出</a>';
+                let avatarUrl = '';
+                const { data: profile } = await supabaseClient.from('profiles').select('avatar_url').eq('id', session.user.id).single();
+                if (profile) avatarUrl = profile.avatar_url || '';
+                let avatarHTML = avatarUrl ? (avatarUrl.length > 2 ? '<div class="avatar"><img src="' + avatarUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:6px"></div>' : '<div class="avatar" style="background:#ede9fe">' + avatarUrl + '</div>') : '<div class="avatar">' + DEFAULT_AVATAR + '</div>';
+                navAuth.innerHTML = '<a href="dashboard.html" class="user-badge">' + avatarHTML + '<span>个人中心</span></a><a href="#" class="nav-btn outline" onclick="handleLogout(event)">退出</a>';
             }
         });
         async function handleLogout(e) { e.preventDefault(); await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }

@@ -1,7 +1,7 @@
 -- Supabase 数据库初始化 SQL
 
 -- 创建 profiles 表
-CREATE TABLE public.profiles (
+CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
     username TEXT NOT NULL,
     email TEXT NOT NULL,
@@ -10,9 +10,16 @@ CREATE TABLE public.profiles (
     play_time INTEGER DEFAULT 0,
     jobs INTEGER DEFAULT 0,
     cars INTEGER DEFAULT 0,
+    avatar_url TEXT DEFAULT '',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- 已有表添加 avatar_url 字段（如果不存在）
+DO $$ BEGIN
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT DEFAULT '';
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
 
 -- 启用 RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
