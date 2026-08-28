@@ -14,11 +14,11 @@
         nav {
             position: fixed; top: 0; width: 100%; z-index: 100;
             padding: 0 3rem; height: 64px;
-            display: flex; align-items: center; justify-content: space-between;
+            display: grid; grid-template-columns: auto 1fr auto; align-items: center;
             background: #fff; border-bottom: 1px solid #e5e7eb;
         }
         .logo { font-size: 1.05rem; font-weight: 700; color: #6366f1; letter-spacing: 0.05em; }
-        .nav-center { display: flex; gap: 2rem; list-style: none; }
+        .nav-center { display: flex; gap: 2rem; list-style: none; justify-self: center; }
         .nav-center a { font-size: 0.88rem; color: #666; text-decoration: none; transition: color 0.15s; font-weight: 500; }
         .nav-center a:hover { color: #1a1a1a; }
         .nav-center a.active { color: #6366f1; }
