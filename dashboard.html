@@ -9,106 +9,215 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --bg: #0d0d0d; --card: #1a1a1a; --accent: #e8a87c;
-            --text: #f5f5f5; --text2: #a0a0a0; --border: #2a2a2a;
-            --success: #51cf66; --warning: #ffd43b; --danger: #ff6b6b;
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+            background: #f0f2f5;
+            color: #1a1a1a;
+            min-height: 100vh;
         }
-        body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: var(--bg); color: var(--text); }
-        
-        nav {
-            position: fixed; top: 0; width: 100%; z-index: 100;
-            padding: 0 4rem; height: 72px;
-            display: flex; align-items: center; justify-content: space-between;
-            background: rgba(13,13,13,0.9); backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
         }
-        .logo { font-size: 1.1rem; font-weight: 600; color: var(--accent); letter-spacing: 0.1em; }
-        .nav-right { display: flex; align-items: center; gap: 1.5rem; }
-        .user-info { display: flex; align-items: center; gap: 0.75rem; }
-        .user-avatar {
-            width: 36px; height: 36px; border-radius: 50%;
-            background: var(--accent); display: flex; align-items: center;
-            justify-content: center; font-weight: 600; color: var(--bg); font-size: 0.9rem;
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
         }
-        .user-name { font-size: 0.9rem; }
-        .user-role {
-            font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px;
-            background: rgba(232,168,124,0.2); color: var(--accent);
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #6366f1;
+            letter-spacing: 0.05em;
         }
         .btn-logout {
-            padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--border);
-            border-radius: 6px; color: var(--text2); font-size: 0.85rem; cursor: pointer;
+            padding: 0.5rem 1.2rem;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            color: #666;
+            font-size: 0.85rem;
+            cursor: pointer;
             transition: all 0.2s;
         }
-        .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
-        
-        main { padding: 100px 2rem 4rem; max-width: 1000px; margin: 0 auto; }
-        
-        .welcome-card {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 16px; padding: 2.5rem; margin-bottom: 2rem;
+        .btn-logout:hover { border-color: #ef4444; color: #ef4444; }
+
+        .profile-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
         }
-        .welcome-card h1 { font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem; }
-        .welcome-card p { color: var(--text2); }
-        
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;
+        .avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            background: #6366f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .profile-info h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .profile-info .email {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+        }
+        .role-badge {
+            display: inline-block;
+            padding: 0.2rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: #f0f0f0;
+            color: #666;
+        }
+        .role-badge.admin {
+            background: #fef2f2;
+            color: #ef4444;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
         .stat-card {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 1.5rem; text-align: center;
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
         }
-        .stat-card .value { font-size: 2rem; font-weight: 600; color: var(--accent); }
-        .stat-card .label { font-size: 0.85rem; color: var(--text2); margin-top: 0.5rem; }
-        
-        .action-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;
+        .stat-card .value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1a1a1a;
         }
-        .action-card {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 2rem; text-align: center;
-            cursor: pointer; transition: all 0.2s; text-decoration: none; color: inherit;
+        .stat-card .label {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 0.35rem;
         }
-        .action-card:hover { border-color: var(--accent); transform: translateY(-3px); }
-        .action-card .icon { font-size: 2.5rem; margin-bottom: 1rem; }
-        .action-card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
-        .action-card p { font-size: 0.85rem; color: var(--text2); }
-        
-        .admin-badge {
-            display: inline-flex; align-items: center; gap: 0.5rem;
-            background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3);
-            color: var(--danger); padding: 0.75rem 1.25rem; border-radius: 8px;
-            margin-top: 2rem; font-size: 0.9rem;
+
+        .section-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.75rem 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            margin-bottom: 1.5rem;
         }
-        .admin-badge a { color: var(--danger); text-decoration: underline; }
-        
-        .loading { text-align: center; padding: 4rem; color: var(--text2); }
-        
-        @media (max-width: 768px) {
-            nav { padding: 0 1.5rem; }
-            .stats-grid, .action-grid { grid-template-columns: 1fr; }
+        .section-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section-card h3 .icon {
+            font-size: 1.1rem;
+        }
+
+        .action-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        .action-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s;
+        }
+        .action-item:hover {
+            background: #f0f0f0;
+            transform: translateY(-1px);
+        }
+        .action-item .icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .action-item .icon.purple { background: #ede9fe; }
+        .action-item .icon.green { background: #dcfce7; }
+        .action-item .icon.blue { background: #dbeafe; }
+        .action-item .icon.orange { background: #ffedd5; }
+        .action-item h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.15rem;
+        }
+        .action-item p {
+            font-size: 0.78rem;
+            color: #999;
+        }
+
+        .admin-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            color: #ef4444;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            margin-top: 1rem;
+            transition: all 0.2s;
+        }
+        .admin-link:hover { background: #fee2e2; }
+
+        .loading { text-align: center; padding: 4rem; color: #999; }
+
+        @media (max-width: 640px) {
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .action-list { grid-template-columns: 1fr; }
+            .profile-card { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
 <body>
-    <nav>
-        <div class="logo">凌云城</div>
-        <div class="nav-right">
-            <div class="user-info" id="userInfo">
-                <div class="user-avatar" id="userAvatar">?</div>
-                <span class="user-name" id="userName">加载中...</span>
-                <span class="user-role" id="userRole">用户</span>
-            </div>
+    <div class="container">
+        <div class="top-bar">
+            <div class="logo">凌云城</div>
             <button class="btn-logout" onclick="handleLogout()">退出登录</button>
         </div>
-    </nav>
 
-    <main id="mainContent">
-        <div class="loading">加载中...</div>
-    </main>
+        <div id="mainContent">
+            <div class="loading">加载中...</div>
+        </div>
+    </div>
 
-    <!-- Supabase SDK -->
     <script src="supabase.min.js"></script>
     <script>
         const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
@@ -116,17 +225,15 @@
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 检查登录状态
         async function init() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-            
+
             if (!session) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            // 获取用户资料
-            const { data: profile, error } = await supabaseClient
+            const { data: profile } = await supabaseClient
                 .from('profiles')
                 .select('*')
                 .eq('id', session.user.id)
@@ -137,37 +244,29 @@
                 role: 'user',
                 play_time: 0,
                 jobs: 0,
-                cars: 0
+                cars: 0,
+                created_at: new Date().toISOString()
             };
 
             renderDashboard(session.user, profile || fallbackProfile);
         }
 
         function renderDashboard(user, data) {
-            const initials = (data.username || user.email || '?').substring(0, 2).toUpperCase();
-            document.getElementById('userAvatar').textContent = initials;
-            document.getElementById('userName').textContent = data.username || user.email;
-            document.getElementById('userRole').textContent = data.role === 'admin' ? '管理员' : '玩家';
-            document.getElementById('userRole').style.background = data.role === 'admin' ? 'rgba(255,107,107,0.2)' : 'rgba(232,168,124,0.2)';
-            document.getElementById('userRole').style.color = data.role === 'admin' ? '#ff6b6b' : '#e8a87c';
-
-            let adminSection = '';
-            if (data.role === 'admin') {
-                adminSection = `
-                    <div class="admin-badge">
-                        <span>🔐</span>
-                        <span>您是管理员 | <a href="admin.html">进入管理后台</a></span>
-                    </div>
-                `;
-            }
+            const initial = (data.username || user.email || '?').substring(0, 1).toUpperCase();
+            const daysSince = Math.floor((Date.now() - new Date(data.created_at).getTime()) / 86400000);
+            const isAdmin = data.role === 'admin';
 
             document.getElementById('mainContent').innerHTML = `
-                <div class="welcome-card">
-                    <h1>欢迎回来，${data.username || '玩家'}！</h1>
-                    <p>感谢您加入凌云城-轻RP 4.0，祝您游戏愉快。</p>
+                <div class="profile-card">
+                    <div class="avatar">${initial}</div>
+                    <div class="profile-info">
+                        <h2>${data.username || '玩家'}</h2>
+                        <div class="email">${user.email}</div>
+                        <span class="role-badge ${isAdmin ? 'admin' : ''}">${isAdmin ? '管理员' : '普通用户'}</span>
+                    </div>
                 </div>
-                
-                <div class="stats-grid">
+
+                <div class="stats-row">
                     <div class="stat-card">
                         <div class="value">${data.play_time || 0}</div>
                         <div class="label">游戏时长 (小时)</div>
@@ -180,32 +279,46 @@
                         <div class="value">${data.cars || 0}</div>
                         <div class="label">拥有车辆</div>
                     </div>
+                    <div class="stat-card">
+                        <div class="value">${daysSince}</div>
+                        <div class="label">已注册 (天)</div>
+                    </div>
                 </div>
-                
-                <div class="action-grid">
-                    <a href="index.html" class="action-card">
-                        <div class="icon">🏠</div>
-                        <h3>返回首页</h3>
-                        <p>查看服务器信息和特色</p>
-                    </a>
-                    <a href="connect.html" class="action-card">
-                        <div class="icon">🎮</div>
-                        <h3>开始游戏</h3>
-                        <p>连接服务器地址</p>
-                    </a>
-                    <a href="https://kook.vip/71Hw5z" target="_blank" class="action-card">
-                        <div class="icon">💬</div>
-                        <h3>Kook 社区</h3>
-                        <p>加入我们的讨论群</p>
-                    </a>
-                    <a href="https://qm.qq.com/q/zzUzFa6ytw" target="_blank" class="action-card">
-                        <div class="icon">📱</div>
-                        <h3>QQ 群</h3>
-                        <p>加入 QQ 交流群</p>
-                    </a>
+
+                <div class="section-card">
+                    <h3><span class="icon">⚡</span> 快捷入口</h3>
+                    <div class="action-list">
+                        <a href="index.html" class="action-item">
+                            <div class="icon purple">🏠</div>
+                            <div>
+                                <h4>返回首页</h4>
+                                <p>查看服务器信息</p>
+                            </div>
+                        </a>
+                        <a href="connect.html" class="action-item">
+                            <div class="icon green">🎮</div>
+                            <div>
+                                <h4>开始游戏</h4>
+                                <p>连接服务器</p>
+                            </div>
+                        </a>
+                        <a href="https://kook.vip/71Hw5z" target="_blank" class="action-item">
+                            <div class="icon blue">💬</div>
+                            <div>
+                                <h4>Kook 社区</h4>
+                                <p>加入讨论</p>
+                            </div>
+                        </a>
+                        <a href="https://qm.qq.com/q/zzUzFa6ytw" target="_blank" class="action-item">
+                            <div class="icon orange">📱</div>
+                            <div>
+                                <h4>QQ 群</h4>
+                                <p>交流互动</p>
+                            </div>
+                        </a>
+                    </div>
+                    ${isAdmin ? '<a href="admin.html" class="admin-link">🔐 进入管理后台</a>' : ''}
                 </div>
-                
-                ${adminSection}
             `;
         }
 
