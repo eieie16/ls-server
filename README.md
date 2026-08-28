@@ -49,8 +49,8 @@
 - `index.html`
 
 ```javascript
-const SUPABASE_URL = 'https://你的项目ID.supabase.co';
-const SUPABASE_KEY = '你的anon key';
+const SUPABASE_URL = 'https://mxajreukeniayoqvyybe.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_Yl2py6Pj5XLimcCBT2sXEg_AOa4gKWV';
 ```
 
 ### 6. 创建第一个管理员
