@@ -203,6 +203,7 @@
                                     <span class="tag tag-cat">${data.category}</span>
                                     <span class="tag ${isSolved ? 'tag-solved' : 'tag-unsolved'}">${data.status}</span>
                                 </div>
+                                ${data.tags ? '<div style="margin-top:0.5rem;display:flex;gap:0.3rem;flex-wrap:wrap">' + data.tags.split(' ').filter(t=>t).map(t => '<span class="tag" style="background:#dbeafe;color:#2563eb">#' + t.replace(/^#/,'') + '</span>').join('') + '</div>' : ''}
                             </div>
                         </div>
                         <div class="post-author">
@@ -304,6 +305,14 @@
                 }
             }
             if (replyEditor) replyEditor.clear();
+
+            const { data: rStats } = await supabaseClient.from('user_stats').select('*').eq('user_id', currentUser.user.id).single();
+            if (rStats) {
+                await supabaseClient.from('user_stats').update({ points: rStats.points + 3, reply_count: rStats.reply_count + 1 }).eq('user_id', currentUser.user.id);
+            } else {
+                await supabaseClient.from('user_stats').insert([{ user_id: currentUser.user.id, points: 3, reply_count: 1 }]);
+            }
+
             loadReplies(postData.id);
         }
 

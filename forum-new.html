@@ -153,6 +153,11 @@
                         <label>内容</label>
                         <div id="editorContainer"></div>
                     </div>
+                    <div class="form-group">
+                        <label>话题标签（可选，多个用空格分隔）</label>
+                        <input type="text" id="tags" placeholder="例如: 车辆改装 警局招募" maxlength="100">
+                        <div class="hint">用空格分隔多个标签，如 #车辆改装 #警局招募</div>
+                    </div>
                     <div class="form-actions">
                         <button class="btn btn-cancel" onclick="window.location.href='forum.html'">取消</button>
                         <button class="btn btn-secondary" onclick="previewPost()">👁️ 预览</button>
@@ -184,8 +189,9 @@
             const content = editor.getHTML();
             const plainText = content.replace(/<[^>]*>/g, '').trim();
             if (!title.value && !plainText) return;
+            const tagsEl = document.getElementById('tags');
             localStorage.setItem(DRAFT_KEY, JSON.stringify({
-                title: title.value, category: category.value, content: content, time: Date.now()
+                title: title.value, category: category.value, content: content, tags: tagsEl ? tagsEl.value : '', time: Date.now()
             }));
         }
 
@@ -197,6 +203,7 @@
                 if (Date.now() - draft.time > 24 * 60 * 60 * 1000) { localStorage.removeItem(DRAFT_KEY); return; }
                 document.getElementById('title').value = draft.title || '';
                 document.getElementById('category').value = draft.category || '讨论';
+                if (document.getElementById('tags') && draft.tags) document.getElementById('tags').value = draft.tags;
                 if (editor && draft.content) editor.setHTML(draft.content);
                 showToast('已恢复上次编辑的草稿', 'success');
             } catch(e) {}
@@ -252,13 +259,22 @@
 
             try {
                 const safeContent = sanitizeHTML(content);
+                const tags = document.getElementById('tags') ? document.getElementById('tags').value.trim() : '';
                 const { error } = await supabaseClient.from('forum_posts').insert([{
                     user_id: currentUser.user.id, username: currentProfile.username,
-                    avatar_url: currentProfile.avatar_url || '', category, title, content: safeContent
+                    avatar_url: currentProfile.avatar_url || '', category, title, content: safeContent, tags
                 }]);
 
                 setLoading(btn, false);
                 if (error) { showToast('发布失败: ' + error.message, 'error'); return; }
+
+                const { data: stats } = await supabaseClient.from('user_stats').select('*').eq('user_id', currentUser.user.id).single();
+                if (stats) {
+                    await supabaseClient.from('user_stats').update({ points: stats.points + 5, post_count: stats.post_count + 1 }).eq('user_id', currentUser.user.id);
+                } else {
+                    await supabaseClient.from('user_stats').insert([{ user_id: currentUser.user.id, points: 5, post_count: 1 }]);
+                }
+
                 lastPostTime = Date.now();
                 clearDraft();
                 showToast('发布成功！', 'success');

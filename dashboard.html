@@ -210,6 +210,7 @@
 
                 updateNav(session.user, currentProfile);
                 renderDashboard(session.user, currentProfile);
+                loadUserStats();
             } catch (err) {
                 showToast('加载失败', 'error');
             }
@@ -267,8 +268,26 @@
                         <a href="redeem.html" class="action-item"><div class="action-icon orange">🎁</div><div><h4>兑换码</h4><p>兑换奖励</p></div></a>
                         <a href="forum.html" class="action-item"><div class="action-icon purple">📝</div><div><h4>论坛</h4><p>参与讨论</p></div></a>
                         <a href="https://qm.qq.com/q/zzUzFa6ytw" target="_blank" class="action-item"><div class="action-icon orange">📱</div><div><h4>QQ 群</h4><p>交流互动</p></div></a>
+                        <a href="javascript:void(0)" onclick="handleCheckin()" class="action-item" id="checkinBtn">
+                            <div class="action-icon orange">📅</div>
+                            <div><h4>每日签到</h4><p id="checkinText">签到领积分</p></div>
+                        </a>
                     </div>
                     ${isAdmin ? '<a href="admin.html" class="admin-link">🔐 进入管理后台</a>' : ''}
+                </div>
+
+                <div class="section-card" id="statsCard">
+                    <h3>我的等级</h3>
+                    <div style="display:flex;align-items:center;gap:1rem;margin-top:0.75rem">
+                        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;font-weight:700" id="levelBadge">1</div>
+                        <div>
+                            <div style="font-size:0.9rem;font-weight:600" id="levelText">等级 1</div>
+                            <div style="font-size:0.78rem;color:#999" id="pointsText">0 积分</div>
+                            <div style="width:150px;height:6px;background:#e5e7eb;border-radius:3px;margin-top:0.3rem;overflow:hidden">
+                                <div style="height:100%;background:#6366f1;border-radius:3px;transition:width 0.3s" id="levelProgress"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
 
@@ -338,6 +357,74 @@
                 updateNav({ email: currentProfile.email }, currentProfile);
             } catch (err) {
                 showToast('加载失败', 'error');
+            }
+        }
+
+        async function handleCheckin() {
+            if (!currentUser) return;
+            const today = new Date().toISOString().split('T')[0];
+            const { data: existing } = await supabaseClient.from('checkin_logs')
+                .select('id').eq('user_id', currentUser.user.id)
+                .gte('created_at', today + 'T00:00:00').single();
+            if (existing) { showToast('今天已经签到过了', 'error'); return; }
+
+            await supabaseClient.from('checkin_logs').insert([{
+                user_id: currentUser.user.id, points_earned: 10
+            }]);
+
+            const { data: stats } = await supabaseClient.from('user_stats').select('*').eq('user_id', currentUser.user.id).single();
+            if (stats) {
+                const newStreak = stats.last_checkin === new Date(Date.now() - 86400000).toISOString().split('T')[0] ? stats.checkin_streak + 1 : 1;
+                await supabaseClient.from('user_stats').update({
+                    points: stats.points + 10,
+                    checkin_streak: newStreak,
+                    last_checkin: today
+                }).eq('user_id', currentUser.user.id);
+            } else {
+                await supabaseClient.from('user_stats').insert([{
+                    user_id: currentUser.user.id, points: 10, checkin_streak: 1, last_checkin: today
+                }]);
+            }
+            showToast('签到成功！+10 积分', 'success');
+            loadUserStats();
+        }
+
+        function getLevel(points) {
+            const levels = [0, 50, 150, 300, 500, 800, 1200, 1800, 2500, 3500, 5000];
+            let level = 1;
+            for (let i = 1; i < levels.length; i++) {
+                if (points >= levels[i]) level = i + 1;
+            }
+            return level;
+        }
+
+        function getLevelName(level) {
+            const names = ['新手玩家','初级玩家','进阶玩家','资深玩家','精英玩家','社区达人','论坛元老','凌云精英','凌云大师','凌云传奇','凌云之巅'];
+            return names[Math.min(level - 1, names.length - 1)];
+        }
+
+        function getNextLevelPoints(level) {
+            const levels = [0, 50, 150, 300, 500, 800, 1200, 1800, 2500, 3500, 5000];
+            return levels[Math.min(level, levels.length - 1)] || 99999;
+        }
+
+        async function loadUserStats() {
+            if (!currentUser) return;
+            const { data: stats } = await supabaseClient.from('user_stats').select('*').eq('user_id', currentUser.user.id).single();
+            if (!stats) return;
+            const level = getLevel(stats.points);
+            const nextPoints = getNextLevelPoints(level);
+            const prevPoints = getNextLevelPoints(level - 1);
+            const progress = nextPoints > prevPoints ? ((stats.points - prevPoints) / (nextPoints - prevPoints)) * 100 : 100;
+
+            document.getElementById('levelBadge').textContent = level;
+            document.getElementById('levelText').textContent = 'Lv.' + level + ' ' + getLevelName(level);
+            document.getElementById('pointsText').textContent = stats.points + ' 积分 · 连续签到 ' + stats.checkin_streak + ' 天';
+            document.getElementById('levelProgress').style.width = Math.min(progress, 100) + '%';
+
+            const today = new Date().toISOString().split('T')[0];
+            if (stats.last_checkin === today) {
+                document.getElementById('checkinText').textContent = '今日已签到 ✓';
             }
         }
 
