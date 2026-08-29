@@ -1,58 +1,26 @@
 /* ===== 凌云城 共享工具 ===== */
 
-// XSS 过滤 - 只保留安全的 HTML 标签和属性
-function sanitizeHTML(html) {
-    if (!html) return '';
-    var tmp = document.createElement('div');
-    tmp.innerHTML = html;
+function sanitizeHTML(str) {
+    if (!str) return '';
+    str = String(str);
+    str = str.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    str = str.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
+    str = str.replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '');
+    str = str.replace(/<embed\b[^>]*>/gi, '');
+    str = str.replace(/<form\b[^<]*(?:(?!<\/form>)<[^<]*)*<\/form>/gi, '');
+    str = str.replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '');
+    str = str.replace(/\son\w+\s*=\s*[^\s>]*/gi, '');
+    str = str.replace(/javascript\s*:/gi, '');
+    str = str.replace(/data\s*:/gi, '');
+    return str;
+}
 
-    var ALLOWED_TAGS = ['P','BR','B','I','U','S','STRONG','EM','H1','H2','H3','H4','H5','H6',
-        'UL','OL','LI','BLOCKQUOTE','PRE','CODE','A','IMG','HR','SPAN','DIV','TABLE',
-        'THEAD','TBODY','TR','TH','TD','SUP','SUB'];
-    var ALLOWED_ATTRS = ['href','src','alt','title','class','style','width','height','target','rel'];
-    var ALLOWED_STYLES = ['color','background-color','font-size','font-weight','font-style',
-        'text-decoration','text-align','margin','padding','border','border-radius',
-        'line-height','text-indent','list-style-type'];
-
-    function clean(node) {
-        var children = Array.from(node.childNodes);
-        children.forEach(function(child) {
-            if (child.nodeType === 1) {
-                var tag = child.tagName.toUpperCase();
-                if (ALLOWED_TAGS.indexOf(tag) === -1) {
-                    child.parentNode.replaceChild(document.createTextNode(child.textContent), child);
-                    return;
-                }
-                var attrs = Array.from(child.attributes);
-                attrs.forEach(function(attr) {
-                    if (ALLOWED_ATTRS.indexOf(attr.name) === -1) {
-                        child.removeAttribute(attr.name);
-                    } else if (attr.name === 'style') {
-                        var safeStyles = [];
-                        attr.value.split(';').forEach(function(s) {
-                            var parts = s.split(':');
-                            if (parts.length >= 2) {
-                                var prop = parts[0].trim().toLowerCase();
-                                if (ALLOWED_STYLES.indexOf(prop) !== -1) {
-                                    safeStyles.push(s.trim());
-                                }
-                            }
-                        });
-                        child.setAttribute('style', safeStyles.join('; '));
-                    } else if (attr.name === 'href' || attr.name === 'src') {
-                        var val = attr.value.trim().toLowerCase();
-                        if (val.startsWith('javascript:') || val.startsWith('data:')) {
-                            child.removeAttribute(attr.name);
-                        }
-                    }
-                });
-                clean(child);
-            }
-        });
-    }
-
-    clean(tmp);
-    return tmp.innerHTML;
+// Prevent duplicate submissions
+const _submittingMap = new Map();
+function preventDoubleSubmit(key, fn) {
+    if (_submittingMap.get(key)) return Promise.resolve();
+    _submittingMap.set(key, true);
+    return fn().finally(function() { setTimeout(function() { _submittingMap.set(key, false); }, 2000); });
 }
 
 // 敏感词过滤

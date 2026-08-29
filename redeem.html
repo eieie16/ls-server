@@ -134,6 +134,7 @@
             <li><a href="connect.html">加入</a></li>
             <li><a href="redeem.html" class="active">兑换</a></li>
             <li><a href="forum.html">论坛</a></li>
+            <li><a href="vip.html">💎 VIP</a></li>
         </ul>
         <div class="nav-right" id="navRight">
             <a href="dashboard.html" class="user-badge" id="userBadge" style="display:none">
@@ -184,20 +185,25 @@
         const DEFAULT_AVATAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
 
         async function init() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session) {
-                let avatarUrl = '';
-                const { data: profile } = await supabaseClient.from('profiles').select('avatar_url, username').eq('id', session.user.id).single();
-                if (profile) { avatarUrl = profile.avatar_url || ''; }
-                const navAvatar = document.getElementById('navAvatar');
-                navAvatar.innerHTML = avatarUrl ? '<img src="'+avatarUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">' : DEFAULT_AVATAR;
-                document.getElementById('navName').textContent = (profile && profile.username) || session.user.email;
-                document.getElementById('userBadge').style.display = 'flex';
-                document.getElementById('btnLogin').style.display = 'none';
-                document.getElementById('btnRegister').style.display = 'none';
-                document.getElementById('btnLogout').style.display = 'inline-block';
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session) {
+                    let avatarUrl = '';
+                    const { data: profile } = await supabaseClient.from('profiles').select('avatar_url, username').eq('id', session.user.id).single();
+                    if (profile) { avatarUrl = profile.avatar_url || ''; }
+                    const navAvatar = document.getElementById('navAvatar');
+                    navAvatar.innerHTML = avatarUrl ? '<img src="'+avatarUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">' : DEFAULT_AVATAR;
+                    document.getElementById('navName').textContent = (profile && profile.username) || session.user.email;
+                    document.getElementById('userBadge').style.display = 'flex';
+                    document.getElementById('btnLogin').style.display = 'none';
+                    document.getElementById('btnRegister').style.display = 'none';
+                    document.getElementById('btnLogout').style.display = 'inline-block';
+                }
+                loadHistory();
+            } catch (err) {
+                console.error('init error:', err);
+                showToast('页面加载异常，请刷新重试', 'error');
             }
-            loadHistory();
         }
 
         async function handleRedeem() {
@@ -298,6 +304,7 @@
 
         init();
     </script>
+    <script src="modal.js"></script>
     <script src="chat-widget.js"></script>
     <script src="notifications-bell.js"></script>
     <script src="footer.js"></script>

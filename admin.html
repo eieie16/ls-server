@@ -190,6 +190,9 @@
                 <div class="nav-item" onclick="switchTab(this, 'announcements')">
                     <span class="icon">📢</span> 公告管理
                 </div>
+                <div class="nav-item" onclick="switchTab(this, 'levels')">
+                    <span class="icon">⭐</span> 等级管理
+                </div>
                 <div class="nav-item" onclick="switchTab(this, 'reports')">
                     <span class="icon">🚩</span> 举报处理
                 </div>
@@ -323,6 +326,49 @@
                     </table>
                 </div>
             </div>
+            <div id="levelsSection" style="display:none">
+                <div class="table-card">
+                    <div class="table-top">
+                        <span class="title">调整用户等级/积分</span>
+                    </div>
+                    <div style="padding:1.25rem">
+                        <div class="form-group">
+                            <label>搜索用户</label>
+                            <input type="text" id="levelSearch" placeholder="输入用户名或邮箱" oninput="searchUserForLevel()" style="width:100%;padding:0.65rem 0.85rem;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;color:#333;font-size:0.88rem">
+                        </div>
+                        <div id="levelSearchResults" style="margin:0.5rem 0"></div>
+                        <div id="levelEditForm" style="display:none">
+                            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:end;margin-top:0.75rem">
+                                <div class="form-group" style="flex:1;min-width:120px">
+                                    <label>当前积分</label>
+                                    <input type="number" id="editPoints" min="0">
+                                </div>
+                                <div class="form-group" style="flex:1;min-width:120px">
+                                    <label>当前等级</label>
+                                    <input type="number" id="editLevel" min="1" max="10">
+                                </div>
+                                <div class="form-group" style="flex:1;min-width:120px">
+                                    <label>角色</label>
+                                    <select id="editRole">
+                                        <option value="user">普通用户</option>
+                                        <option value="admin">管理员</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="saveUserLevel()" style="margin-top:0.5rem">保存修改</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-card" style="margin-top:1rem">
+                    <div class="table-top">
+                        <span class="title">用户等级列表</span>
+                    </div>
+                    <table>
+                        <thead><tr><th>用户</th><th>邮箱</th><th>角色</th><th>等级</th><th>积分</th></tr></thead>
+                        <tbody id="userLevelTable"><tr><td colspan="5" class="loading">加载中...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
             <div id="reportsSection" style="display:none">
                 <div class="table-card">
                     <div class="table-top"><span class="title">举报列表</span></div>
@@ -432,15 +478,20 @@
         let currentTab = 'dashboard';
 
         async function init() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) { window.location.href = 'login.html'; return; }
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) { window.location.href = 'login.html'; return; }
 
-            const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
-            if (!profile || profile.role !== 'admin') { window.location.href = 'dashboard.html'; return; }
+                const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
+                if (!profile || profile.role !== 'admin') { window.location.href = 'dashboard.html'; return; }
 
-            document.getElementById('adminName').textContent = profile.username;
-            loadUsers();
-            loadCodes();
+                document.getElementById('adminName').textContent = profile.username;
+                loadUsers();
+                loadCodes();
+            } catch (err) {
+                console.error('init error:', err);
+                showToast('加载失败，请刷新重试', 'error');
+            }
         }
 
         function switchTab(el, tab) {
@@ -452,23 +503,30 @@
             document.getElementById('codesSection').style.display = tab === 'codes' ? 'block' : 'none';
             document.getElementById('forumSection').style.display = tab === 'forum' ? 'block' : 'none';
             document.getElementById('announcementsSection').style.display = tab === 'announcements' ? 'block' : 'none';
+            document.getElementById('levelsSection').style.display = tab === 'levels' ? 'block' : 'none';
             document.getElementById('reportsSection').style.display = tab === 'reports' ? 'block' : 'none';
             document.querySelector('.stats-row').style.display = tab === 'dashboard' ? 'grid' : 'none';
 
             if (tab === 'forum') loadForum();
             if (tab === 'announcements') loadAnnouncements();
+            if (tab === 'levels') loadUserLevels();
             if (tab === 'reports') loadReports();
         }
 
         // ===== 用户管理 =====
         async function loadUsers() {
-            const { data } = await supabaseClient.from('profiles').select('*').order('created_at', { ascending: false });
-            allUsers = data || [];
-            const today = new Date().toDateString();
-            document.getElementById('statUsers').textContent = allUsers.length;
-            document.getElementById('statBanned').textContent = allUsers.filter(u => u.banned).length;
-            document.getElementById('statToday').textContent = allUsers.filter(u => new Date(u.created_at).toDateString() === today).length;
-            renderUsers(allUsers);
+            try {
+                const { data } = await supabaseClient.from('profiles').select('*').order('created_at', { ascending: false });
+                allUsers = data || [];
+                const today = new Date().toDateString();
+                document.getElementById('statUsers').textContent = allUsers.length;
+                document.getElementById('statBanned').textContent = allUsers.filter(u => u.banned).length;
+                document.getElementById('statToday').textContent = allUsers.filter(u => new Date(u.created_at).toDateString() === today).length;
+                renderUsers(allUsers);
+            } catch (err) {
+                console.error('loadUsers error:', err);
+                showToast('加载用户失败', 'error');
+            }
         }
 
         function renderUsers(users) {
@@ -485,13 +543,18 @@
 
         function searchUsers(q) { renderUsers(allUsers.filter(u => (u.username&&u.username.includes(q))||(u.email&&u.email.includes(q)))); }
         async function toggleBan(id, b) { await supabaseClient.from('profiles').update({banned:!b}).eq('id',id); loadUsers(); }
-        async function deleteUser(id) { if(!confirm('确定删除？')) return; await supabaseClient.from('profiles').delete().eq('id',id); loadUsers(); }
+        async function deleteUser(id) { if(!await modalConfirm('确定删除？', '删除用户')) return; await supabaseClient.from('profiles').delete().eq('id',id); loadUsers(); }
 
         // ===== 兑换码管理 =====
         async function loadCodes() {
-            const { data } = await supabaseClient.from('redemption_codes').select('*').order('created_at', { ascending: false });
-            allCodes = data || [];
-            renderCodes(allCodes);
+            try {
+                const { data } = await supabaseClient.from('redemption_codes').select('*').order('created_at', { ascending: false });
+                allCodes = data || [];
+                renderCodes(allCodes);
+            } catch (err) {
+                console.error('loadCodes error:', err);
+                showToast('加载兑换码失败', 'error');
+            }
         }
 
         function renderCodes(codes) {
@@ -516,7 +579,7 @@
             const max_uses = parseInt(document.getElementById('newMaxUses').value) || 1;
 
             const { error } = await supabaseClient.from('redemption_codes').insert([{ code, prize, image_url, max_uses, created_by: session.user.id }]);
-            if (error) { alert('创建失败: ' + error.message); return; }
+            if (error) { modalAlert('创建失败: ' + error.message, 'error'); return; }
             closeModal('addCode');
             document.getElementById('newCode').value = '';
             document.getElementById('newPrize').value = '';
@@ -546,7 +609,7 @@
         }
 
         async function deleteCode(id) {
-            if (!confirm('确定删除该兑换码？')) return;
+            if (!await modalConfirm('确定删除该兑换码？', '删除兑换码')) return;
             await supabaseClient.from('redemption_codes').delete().eq('id', id);
             loadCodes();
         }
@@ -593,7 +656,7 @@
         }
 
         async function deleteForumPost(id) {
-            if (!confirm('确定删除这条帖子？')) return;
+            if (!await modalConfirm('确定删除这条帖子？', '删除帖子')) return;
             await supabaseClient.from('forum_posts').delete().eq('id', id);
             loadForum();
         }
@@ -624,7 +687,7 @@
         }
 
         async function deleteAnnouncement(id) {
-            if (!confirm('确定删除？')) return;
+            if (!await modalConfirm('确定删除？', '删除公告')) return;
             await supabaseClient.from('announcements').delete().eq('id', id);
             loadAnnouncements();
         }
@@ -635,12 +698,81 @@
             const title = document.getElementById('annTitle').value.trim();
             const content = document.getElementById('annContent').value.trim();
             const type = document.getElementById('annType').value;
-            if (!title || !content) { alert('请填写标题和内容'); return; }
+            if (!title || !content) { modalAlert('请填写标题和内容', 'warning'); return; }
             await supabaseClient.from('announcements').insert([{ user_id: session.user.id, title, content, type }]);
             closeModal('addAnnouncement');
             document.getElementById('annTitle').value = '';
             document.getElementById('annContent').value = '';
             loadAnnouncements();
+        }
+
+        // ===== 等级管理 =====
+        let _selectedUserId = null;
+
+        async function searchUserForLevel() {
+            const q = document.getElementById('levelSearch').value.trim();
+            if (q.length < 1) { document.getElementById('levelSearchResults').innerHTML = ''; document.getElementById('levelEditForm').style.display = 'none'; return; }
+            try {
+                const { data } = await supabaseClient.from('profiles').select('*').or('username.ilike.%' + q + '%,email.ilike.%' + q + '%').limit(10);
+                if (!data || data.length === 0) { document.getElementById('levelSearchResults').innerHTML = '<p style="color:#999;font-size:0.85rem">未找到用户</p>'; return; }
+                document.getElementById('levelSearchResults').innerHTML = data.map(u => '<div style="padding:0.5rem;border-bottom:1px solid #f3f4f6;cursor:pointer" onclick="selectUserForLevel(\'' + u.id + '\',\'' + (u.username || '').replace(/'/g,"\\'") + '\')">' +
+                    '<span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#6366f1;color:#fff;font-size:0.7rem;font-weight:600">' + (u.username || '?')[0] + '</span> ' + (u.username || '未设置') + ' <span style="color:#999;font-size:0.75rem">' + u.email + '</span></div>').join('');
+            } catch (err) { console.error('search error:', err); }
+        }
+
+        async function selectUserForLevel(userId, username) {
+            _selectedUserId = userId;
+            document.getElementById('levelSearchResults').innerHTML = '<p style="font-size:0.85rem;color:#6366f1">已选择: ' + username + '</p>';
+            document.getElementById('levelEditForm').style.display = 'block';
+            try {
+                const { data: stats } = await supabaseClient.from('user_stats').select('*').eq('user_id', userId).single();
+                const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', userId).single();
+                document.getElementById('editPoints').value = stats ? stats.points : 0;
+                document.getElementById('editLevel').value = stats ? Math.min(Math.floor(stats.points / 50) + 1, 10) : 1;
+                document.getElementById('editRole').value = (profile && profile.role === 'admin') ? 'admin' : 'user';
+            } catch (err) { console.error('selectUser error:', err); }
+        }
+
+        async function saveUserLevel() {
+            if (!_selectedUserId) return;
+            const points = parseInt(document.getElementById('editPoints').value) || 0;
+            const role = document.getElementById('editRole').value;
+            try {
+                const { data: existing } = await supabaseClient.from('user_stats').select('id').eq('user_id', _selectedUserId).single();
+                if (existing) {
+                    await supabaseClient.from('user_stats').update({ points }).eq('user_id', _selectedUserId);
+                } else {
+                    await supabaseClient.from('user_stats').insert([{ user_id: _selectedUserId, points }]);
+                }
+                await supabaseClient.from('profiles').update({ role }).eq('id', _selectedUserId);
+                modalAlert('用户信息已更新', 'success');
+                document.getElementById('levelEditForm').style.display = 'none';
+                loadUserLevels();
+            } catch (err) { modalAlert('保存失败: ' + err.message, 'error'); }
+        }
+
+        async function loadUserLevels() {
+            try {
+                const { data: profiles } = await supabaseClient.from('profiles').select('id, username, email, role').order('created_at', { ascending: false });
+                if (!profiles) return;
+                const { data: statsList } = await supabaseClient.from('user_stats').select('*');
+                const statsMap = {};
+                (statsList || []).forEach(s => { statsMap[s.user_id] = s; });
+                const tbody = document.getElementById('userLevelTable');
+                if (!tbody) return;
+                if (profiles.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="loading">暂无用户</td></tr>'; return; }
+                tbody.innerHTML = profiles.map(p => {
+                    const s = statsMap[p.id] || { points: 0 };
+                    const level = Math.min(Math.floor(s.points / 50) + 1, 10);
+                    return '<tr>' +
+                        '<td><div class="user-cell"><div class="user-avatar">' + (p.username||'?')[0].toUpperCase() + '</div><div class="user-meta"><div class="name">' + (p.username || '未设置') + '</div></div></div></td>' +
+                        '<td style="color:#999;font-size:0.82rem">' + p.email + '</td>' +
+                        '<td><span class="badge ' + (p.role === 'admin' ? 'badge-admin' : 'badge-user') + '">' + (p.role === 'admin' ? '管理员' : '玩家') + '</span></td>' +
+                        '<td>Level ' + level + '</td>' +
+                        '<td>' + s.points + ' 积分</td>' +
+                        '</tr>';
+                }).join('');
+            } catch (err) { console.error('loadUserLevels error:', err); }
         }
 
         // ===== 举报管理 =====
@@ -671,6 +803,7 @@
 
         init();
     </script>
+    <script src="modal.js"></script>
     <script src="footer.js"></script>
     <script src="mobile-menu.js"></script>
 </body>

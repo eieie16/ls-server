@@ -85,6 +85,7 @@
             <li><a href="connect.html">加入</a></li>
             <li><a href="redeem.html">兑换</a></li>
             <li><a href="forum.html" class="active">论坛</a></li>
+            <li><a href="vip.html">💎 VIP</a></li>
         </ul>
         <div class="nav-right" id="navRight">
             <a href="dashboard.html" class="user-badge" id="userBadge" style="display:none"><div class="avatar" id="navAvatar"></div><span id="navName"></span></a>
@@ -115,6 +116,7 @@
         let currentProfile = null;
         let editor = null;
         let lastPostTime = 0;
+        let _submitting = false;
 
         async function init() {
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -237,27 +239,29 @@
         function closePreview() { document.getElementById('previewOverlay').classList.remove('show'); }
 
         async function submitPost() {
-            const title = document.getElementById('title').value.trim();
-            const content = editor ? editor.getHTML() : '';
-            const category = document.getElementById('category').value;
-            const plainText = content.replace(/<[^>]*>/g, '').trim();
-
-            if (!title) { showToast('请输入标题', 'error'); return; }
-            if (!plainText) { showToast('请输入内容', 'error'); return; }
-
-            // 频率限制：30秒内不能重复发帖
-            if (Date.now() - lastPostTime < 30000) {
-                showToast('发帖太频繁，请30秒后再试', 'error'); return;
-            }
-
-            // 敏感词检查
-            const banned = checkBannedWords(title + plainText);
-            if (banned) { showToast('内容包含敏感词: ' + banned, 'error'); return; }
-
-            const btn = document.querySelector('.btn-primary');
-            setLoading(btn, true);
-
+            if (_submitting) { showToast('请勿重复提交', 'error'); return; }
+            _submitting = true;
             try {
+                const title = document.getElementById('title').value.trim();
+                const content = editor ? editor.getHTML() : '';
+                const category = document.getElementById('category').value;
+                const plainText = content.replace(/<[^>]*>/g, '').trim();
+
+                if (!title) { showToast('请输入标题', 'error'); return; }
+                if (!plainText) { showToast('请输入内容', 'error'); return; }
+
+                // 频率限制：30秒内不能重复发帖
+                if (Date.now() - lastPostTime < 30000) {
+                    showToast('发帖太频繁，请30秒后再试', 'error'); return;
+                }
+
+                // 敏感词检查
+                const banned = checkBannedWords(title + plainText);
+                if (banned) { showToast('内容包含敏感词: ' + banned, 'error'); return; }
+
+                const btn = document.querySelector('.btn-primary');
+                setLoading(btn, true);
+
                 const safeContent = sanitizeHTML(content);
                 const tags = document.getElementById('tags') ? document.getElementById('tags').value.trim() : '';
                 const { error } = await supabaseClient.from('forum_posts').insert([{
@@ -279,15 +283,18 @@
                 clearDraft();
                 showToast('发布成功！', 'success');
                 setTimeout(() => window.location.href = 'forum.html', 1000);
-            } catch (err) {
-                setLoading(btn, false);
-                showToast('发布失败', 'error');
+            } catch(err) {
+                console.error('submit error:', err);
+                showToast('发布失败: ' + (err.message || '未知错误'), 'error');
+            } finally {
+                _submitting = false;
             }
         }
 
         async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
         init();
     </script>
+    <script src="modal.js"></script>
     <script src="footer.js"></script>
     <script src="mobile-menu.js"></script>
 </body>

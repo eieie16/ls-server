@@ -116,6 +116,7 @@
             <li><a href="connect.html">加入</a></li>
             <li><a href="redeem.html">兑换</a></li>
             <li><a href="forum.html" class="active">论坛</a></li>
+            <li><a href="vip.html">💎 VIP</a></li>
         </ul>
         <div class="nav-right" id="navRight">
             <a href="dashboard.html" class="user-badge" id="userBadge" style="display:none"><div class="avatar" id="navAvatar"></div><span id="navName"></span></a>
@@ -152,30 +153,39 @@
         let replyEditor = null;
 
         async function init() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session) {
-                currentUser = session;
-                const { data: profile } = await supabaseClient.from('profiles').select('avatar_url, username').eq('id', session.user.id).single();
-                currentProfile = profile || { username: session.user.email, avatar_url: '' };
-                const navAvatar = document.getElementById('navAvatar');
-                navAvatar.innerHTML = currentProfile.avatar_url ? '<img src="'+currentProfile.avatar_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">' : DEFAULT_AVATAR;
-                document.getElementById('navName').textContent = currentProfile.username;
-                document.getElementById('userBadge').style.display = 'flex';
-                document.getElementById('btnLogin').style.display = 'none';
-                document.getElementById('btnRegister').style.display = 'none';
-                document.getElementById('btnLogout').style.display = 'inline-block';
-            }
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session) {
+                    currentUser = session;
+                    const { data: profile } = await supabaseClient.from('profiles').select('avatar_url, username').eq('id', session.user.id).single();
+                    currentProfile = profile || { username: session.user.email, avatar_url: '' };
+                    const navAvatar = document.getElementById('navAvatar');
+                    navAvatar.innerHTML = currentProfile.avatar_url ? '<img src="'+currentProfile.avatar_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">' : DEFAULT_AVATAR;
+                    document.getElementById('navName').textContent = currentProfile.username;
+                    document.getElementById('userBadge').style.display = 'flex';
+                    document.getElementById('btnLogin').style.display = 'none';
+                    document.getElementById('btnRegister').style.display = 'none';
+                    document.getElementById('btnLogout').style.display = 'inline-block';
+                }
 
-            const postId = new URLSearchParams(window.location.search).get('id');
-            if (!postId) { window.location.href = 'forum.html'; return; }
-            await loadPost(postId);
-            await loadReplies(postId);
+                const postId = new URLSearchParams(window.location.search).get('id');
+                if (!postId) { window.location.href = 'forum.html'; return; }
+                await loadPost(postId);
+                await loadReplies(postId);
+            } catch (err) {
+                console.error('init error:', err);
+                showToast('页面加载异常，请刷新重试', 'error');
+            }
         }
 
         async function loadPost(id) {
             try {
-                const { data } = await supabaseClient.from('forum_posts').select('*').eq('id', id).single();
-                if (!data) { document.getElementById('postContent').innerHTML = '<div class="empty-state">帖子不存在</div>'; return; }
+                const { data, error } = await supabaseClient.from('forum_posts').select('*').eq('id', id).single();
+                if (error || !data) {
+                    document.getElementById('postTitle').textContent = '帖子不存在或已被删除';
+                    document.getElementById('postContent').innerHTML = '<div class="empty-state">帖子不存在或已被删除</div>';
+                    return;
+                }
 
                 postData = data;
                 await supabaseClient.from('forum_posts').update({ views: data.views + 1 }).eq('id', id);
@@ -194,6 +204,14 @@
                     isLiked = !!myLike;
                 }
 
+                const { data: authorProfile } = await supabaseClient.from('profiles').select('username, avatar_url, vip_tier').eq('id', data.user_id).single();
+                const vipBadge = authorProfile && authorProfile.vip_tier ?
+                    '<span style="display:inline-flex;align-items:center;gap:2px;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:600;background:' +
+                    (authorProfile.vip_tier === 'diamond' ? 'linear-gradient(135deg,#b9f2ff,#00d4ff)' : authorProfile.vip_tier === 'gold' ? 'linear-gradient(135deg,#ffd700,#ffaa00)' : 'linear-gradient(135deg,#c0c0c0,#a8a8a8)') +
+                    ';color:' + (authorProfile.vip_tier === 'gold' ? '#1a1a1a' : '#fff') + '">' +
+                    (authorProfile.vip_tier === 'diamond' ? '💎' : authorProfile.vip_tier === 'gold' ? '🥇' : '🥈') + ' ' +
+                    (authorProfile.vip_tier === 'diamond' ? '钻石' : authorProfile.vip_tier === 'gold' ? '金牌' : '银牌') + '</span>' : '';
+
                 document.getElementById('postContent').innerHTML = `
                     <div class="post-card">
                         <div class="post-header">
@@ -209,7 +227,7 @@
                         <div class="post-author">
                             <div class="author-avatar">${data.avatar_url ? '<img src="'+data.avatar_url+'">' : DEFAULT_AVATAR}</div>
                             <div class="author-info">
-                                <div class="name"><a href="profile.html?id=${data.user_id}" style="color:inherit;text-decoration:none">${data.username}</a></div>
+                                <div class="name"><a href="profile.html?id=${data.user_id}" style="color:inherit;text-decoration:none">${data.username}</a> ${vipBadge}</div>
                                 <div class="time">${time} · 浏览 ${data.views + 1}</div>
                             </div>
                         </div>
@@ -267,7 +285,8 @@
                     document.getElementById('replyFormArea').innerHTML = '<div class="login-hint"><a href="login.html">登录</a>后参与回复</div>';
                 }
             } catch (err) {
-                showToast('加载失败', 'error');
+                console.error('loadReplies error:', err);
+                showToast('加载回复失败', 'error');
             }
         }
 
@@ -357,8 +376,8 @@
             const category = document.getElementById('editCategory').value;
             const content = editEditor ? editEditor.getHTML() : '';
             const plainText = content.replace(/<[^>]*>/g, '').trim();
-            if (!title) { alert('请输入标题'); return; }
-            if (!plainText) { alert('请输入内容'); return; }
+            if (!title) { modalAlert('请输入标题', 'warning'); return; }
+            if (!plainText) { modalAlert('请输入内容', 'warning'); return; }
 
             const safeContent = sanitizeHTML(content);
             await supabaseClient.from('forum_posts').update({ title, category, content: safeContent, updated_at: new Date().toISOString() }).eq('id', postData.id);
@@ -375,7 +394,7 @@
         }
 
         async function deletePost() {
-            if (!confirm('确定删除？')) return;
+            if (!await modalConfirm('确定删除？', '删除帖子')) return;
             await supabaseClient.from('forum_posts').delete().eq('id', postData.id);
             window.location.href = 'forum.html';
         }
@@ -404,6 +423,7 @@
         async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
         init();
     </script>
+    <script src="modal.js"></script>
     <script src="footer.js"></script>
     <script src="mobile-menu.js"></script>
 </body>
