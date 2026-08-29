@@ -19,14 +19,14 @@ function createEditor(containerId, opts) {
                 <option value="6">超大</option>
                 <option value="7">极大</option>
             </select>
-            <select class="ed-select" data-cmd="fontName">
+            <select class="ed-select ed-select-font" data-cmd="fontName">
                 <option value="">字体</option>
                 <option value="微软雅黑">微软雅黑</option>
                 <option value="宋体">宋体</option>
                 <option value="黑体">黑体</option>
                 <option value="楷体">楷体</option>
                 <option value="Arial">Arial</option>
-                <option value="Times New Roman">Times New Roman</option>
+                <option value="Times New Roman">Times</option>
             </select>
             <span class="ed-sep"></span>
             <button type="button" class="ed-btn" data-cmd="bold" title="加粗"><b>B</b></button>
@@ -171,8 +171,9 @@ function createEditor(containerId, opts) {
 .ed-select {
     height: 28px; border: 1px solid #d1d5db; border-radius: 4px;
     font-size: 12px; padding: 0 4px; background: #fff; color: #555; cursor: pointer;
-    max-width: 72px; flex-shrink: 0; width: auto !important;
+    width: auto !important; min-width: 56px; flex-shrink: 0;
 }
+.ed-select-font { min-width: 80px; }
 .ed-sep { width: 1px; height: 20px; background: #d1d5db; margin: 0 4px; flex-shrink: 0; }
 .ed-color { position: relative; }
 .ed-color .color-bar { font-weight: 700; font-size: 13px; }
