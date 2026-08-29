@@ -116,7 +116,6 @@
             <li><a href="connect.html">加入</a></li>
             <li><a href="redeem.html">兑换</a></li>
             <li><a href="forum.html" class="active">论坛</a></li>
-            <li><a href="vip.html">💎 VIP</a></li>
         </ul>
         <div class="nav-right" id="navRight">
             <a href="dashboard.html" class="user-badge" id="userBadge" style="display:none"><div class="avatar" id="navAvatar"></div><span id="navName"></span></a>
@@ -204,14 +203,6 @@
                     isLiked = !!myLike;
                 }
 
-                const { data: authorProfile } = await supabaseClient.from('profiles').select('username, avatar_url, vip_tier').eq('id', data.user_id).single();
-                const vipBadge = authorProfile && authorProfile.vip_tier ?
-                    '<span style="display:inline-flex;align-items:center;gap:2px;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:600;background:' +
-                    (authorProfile.vip_tier === 'diamond' ? 'linear-gradient(135deg,#b9f2ff,#00d4ff)' : authorProfile.vip_tier === 'gold' ? 'linear-gradient(135deg,#ffd700,#ffaa00)' : 'linear-gradient(135deg,#c0c0c0,#a8a8a8)') +
-                    ';color:' + (authorProfile.vip_tier === 'gold' ? '#1a1a1a' : '#fff') + '">' +
-                    (authorProfile.vip_tier === 'diamond' ? '💎' : authorProfile.vip_tier === 'gold' ? '🥇' : '🥈') + ' ' +
-                    (authorProfile.vip_tier === 'diamond' ? '钻石' : authorProfile.vip_tier === 'gold' ? '金牌' : '银牌') + '</span>' : '';
-
                 document.getElementById('postContent').innerHTML = `
                     <div class="post-card">
                         <div class="post-header">
@@ -227,7 +218,7 @@
                         <div class="post-author">
                             <div class="author-avatar">${data.avatar_url ? '<img src="'+data.avatar_url+'">' : DEFAULT_AVATAR}</div>
                             <div class="author-info">
-                                <div class="name"><a href="profile.html?id=${data.user_id}" style="color:inherit;text-decoration:none">${data.username}</a> ${vipBadge}</div>
+                                <div class="name"><a href="profile.html?id=${data.user_id}" style="color:inherit;text-decoration:none">${data.username}</a></div>
                                 <div class="time">${time} · 浏览 ${data.views + 1}</div>
                             </div>
                         </div>
