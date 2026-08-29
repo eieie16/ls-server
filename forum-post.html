@@ -50,6 +50,13 @@
         .post-content img { max-width: 100%; border-radius: 6px; margin: 6px 0; }
         .post-content a { color: #6366f1; }
 
+        .edit-form { margin-bottom: 0; }
+        .edit-form select, .edit-form input {
+            width: 100%; padding: 0.55rem 0.75rem; border: 1px solid #e5e7eb;
+            border-radius: 6px; font-size: 0.88rem; font-family: inherit; margin-bottom: 0.75rem;
+        }
+        .edit-form select:focus, .edit-form input:focus { outline: none; border-color: #6366f1; }
+
         .post-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid #f0f0f0; }
         .action-btn { padding: 0.45rem 0.9rem; border-radius: 6px; border: 1px solid #e5e7eb; background: #fff; color: #666; font-size: 0.82rem; cursor: pointer; transition: all 0.15s; }
         .action-btn:hover { border-color: #6366f1; color: #6366f1; }
@@ -186,6 +193,7 @@
                     </div>
                     <div class="post-content">${data.content}</div>
                     <div class="post-actions">
+                        ${isAuthor ? '<button class="action-btn" onclick="startEdit()">✏️ 编辑</button>' : ''}
                         ${isAuthor && !isSolved ? '<button class="action-btn" onclick="markSolved()">✅ 标记已解决</button>' : ''}
                         ${isAuthor || (currentUser && currentProfile && currentProfile.role === 'admin') ? '<button class="action-btn danger" onclick="deletePost()">🗑️ 删除</button>' : ''}
                     </div>
@@ -241,6 +249,51 @@
             }]);
             if (replyEditor) replyEditor.clear();
             loadReplies(postData.id);
+        }
+
+        let editEditor = null;
+
+        function startEdit() {
+            if (!postData) return;
+            const card = document.querySelector('.post-card');
+            const contentEl = card.querySelector('.post-content');
+            const actionsEl = card.querySelector('.post-actions');
+
+            contentEl.innerHTML = `
+                <div class="edit-form">
+                    <select id="editCategory">
+                        <option value="讨论" ${postData.category==='讨论'?'selected':''}>💬 讨论</option>
+                        <option value="问题" ${postData.category==='问题'?'selected':''}>❓ 问题</option>
+                        <option value="建议" ${postData.category==='建议'?'selected':''}>💡 建议</option>
+                        <option value="展示" ${postData.category==='展示'?'selected':''}>🎉 展示</option>
+                    </select>
+                    <input type="text" id="editTitle" value="${postData.title}" maxlength="100">
+                    <div id="editEditorContainer"></div>
+                </div>
+            `;
+            actionsEl.innerHTML = `
+                <button class="action-btn" onclick="cancelEdit()">取消</button>
+                <button class="action-btn" onclick="saveEdit()" style="background:#6366f1;color:#fff;border-color:#6366f1">保存</button>
+            `;
+            editEditor = createEditor('editEditorContainer', { height: 200, placeholder: '请输入帖子内容...' });
+            editEditor.setHTML(postData.content);
+        }
+
+        function cancelEdit() { loadPost(postData.id); }
+
+        async function saveEdit() {
+            const title = document.getElementById('editTitle').value.trim();
+            const category = document.getElementById('editCategory').value;
+            const content = editEditor ? editEditor.getHTML() : '';
+            const plainText = content.replace(/<[^>]*>/g, '').trim();
+            if (!title) { alert('请输入标题'); return; }
+            if (!plainText) { alert('请输入内容'); return; }
+
+            await supabaseClient.from('forum_posts').update({ title, category, content, updated_at: new Date().toISOString() }).eq('id', postData.id);
+            postData.title = title;
+            postData.category = category;
+            postData.content = content;
+            loadPost(postData.id);
         }
 
         async function markSolved() {
