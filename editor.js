@@ -161,16 +161,17 @@ function createEditor(containerId, opts) {
     padding: 6px 8px; background: #fafafa; border-bottom: 1px solid #e5e7eb;
 }
 .ed-btn {
-    width: 30px; height: 28px; border: none; background: transparent;
+    width: 30px; height: 28px; min-width: 30px; border: none; background: transparent;
     border-radius: 4px; cursor: pointer; font-size: 13px; color: #555;
     display: flex; align-items: center; justify-content: center;
-    transition: background 0.1s;
+    transition: background 0.1s; flex-shrink: 0;
 }
 .ed-btn:hover { background: #e5e7eb; }
 .ed-btn:active { background: #d1d5db; }
 .ed-select {
     height: 28px; border: 1px solid #d1d5db; border-radius: 4px;
     font-size: 12px; padding: 0 4px; background: #fff; color: #555; cursor: pointer;
+    max-width: 72px; flex-shrink: 0; width: auto !important;
 }
 .ed-sep { width: 1px; height: 20px; background: #d1d5db; margin: 0 4px; flex-shrink: 0; }
 .ed-color { position: relative; }
