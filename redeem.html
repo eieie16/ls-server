@@ -91,6 +91,30 @@
         .back-link a { color: #888; font-size: 0.85rem; text-decoration: none; }
         .back-link a:hover { color: #6366f1; }
 
+        .anon-check { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem; justify-content: center; }
+        .anon-check input[type="checkbox"] { width: 16px; height: 16px; accent-color: #6366f1; cursor: pointer; }
+        .anon-check label { font-size: 0.85rem; color: #666; cursor: pointer; }
+
+        .history-section { margin-top: 1.5rem; background: #fff; border-radius: 16px; padding: 1.5rem 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+        .history-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .history-list { list-style: none; }
+        .history-item {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.6rem 0; border-bottom: 1px solid #f3f4f6;
+        }
+        .history-item:last-child { border-bottom: none; }
+        .history-avatar {
+            width: 32px; height: 32px; border-radius: 8px; background: #e5e7eb;
+            display: flex; align-items: center; justify-content: center;
+            color: #999; flex-shrink: 0; font-size: 0.75rem; overflow: hidden;
+        }
+        .history-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .history-info { flex: 1; min-width: 0; }
+        .history-info .name { font-size: 0.82rem; font-weight: 500; color: #333; }
+        .history-info .prize { font-size: 0.78rem; color: #6366f1; background: #ede9fe; padding: 0.1rem 0.4rem; border-radius: 4px; display: inline-block; margin-top: 0.15rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .history-info .time { font-size: 0.72rem; color: #bbb; margin-top: 0.15rem; }
+        .history-empty { text-align: center; padding: 1.5rem; color: #ccc; font-size: 0.85rem; }
+
         @media (max-width: 480px) {
             nav { padding: 0 1.5rem; }
             .nav-center { display: none; }
@@ -130,12 +154,22 @@
             <div class="input-group">
                 <input type="text" id="redeemInput" placeholder="请输入兑换码" autocomplete="off">
             </div>
+            <div class="anon-check">
+                <input type="checkbox" id="anonCheck">
+                <label for="anonCheck">匿名兑换（不显示我的名字）</label>
+            </div>
             <button class="btn-redeem" id="redeemBtn" onclick="handleRedeem()">
                 <span class="btn-text">兑换</span>
                 <div class="spinner"></div>
             </button>
 
             <div class="result" id="result"></div>
+        </div>
+        <div class="history-section">
+            <h2>📋 最近24小时兑换记录</h2>
+            <ul class="history-list" id="historyList">
+                <li class="history-empty">加载中...</li>
+            </ul>
         </div>
         <div class="back-link"><a href="dashboard.html">← 返回个人中心</a></div>
     </div>
@@ -161,6 +195,7 @@
                 document.getElementById('btnRegister').style.display = 'none';
                 document.getElementById('btnLogout').style.display = 'inline-block';
             }
+            loadHistory();
         }
 
         async function handleRedeem() {
@@ -181,6 +216,8 @@
                 return;
             }
 
+            const { data: profile } = await supabaseClient.from('profiles').select('username').eq('id', session.user.id).single();
+
             const { data } = await supabaseClient.from('redemption_codes').select('*').eq('code', code).single();
 
             if (!data) {
@@ -199,6 +236,15 @@
 
             await supabaseClient.from('redemption_codes').update({ used_count: data.used_count + 1 }).eq('id', data.id);
 
+            const isAnonymous = document.getElementById('anonCheck').checked;
+            await supabaseClient.from('redeem_logs').insert([{
+                user_id: session.user.id,
+                username: isAnonymous ? '匿名玩家' : ((profile && profile.username) || session.user.email),
+                code: code,
+                prize: data.prize,
+                is_anonymous: isAnonymous
+            }]);
+
             resultEl.className = 'result show success';
             resultEl.innerHTML = `
                 <h3>✅ 兑换成功</h3>
@@ -207,9 +253,35 @@
                 ${data.image_url ? '<img src="'+data.image_url+'">' : ''}
             `;
             btn.className = 'btn-redeem';
+            loadHistory();
         }
 
         document.getElementById('redeemInput').addEventListener('keydown', e => { if (e.key === 'Enter') handleRedeem(); });
+
+        async function loadHistory() {
+            const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+            const { data } = await supabaseClient.from('redeem_logs')
+                .select('*').gte('created_at', since).order('created_at', { ascending: false }).limit(20);
+
+            const list = document.getElementById('historyList');
+            if (!data || data.length === 0) {
+                list.innerHTML = '<li class="history-empty">暂无兑换记录</li>';
+                return;
+            }
+            list.innerHTML = data.map(log => {
+                const time = new Date(log.created_at).toLocaleString('zh-CN', { hour:'2-digit', minute:'2-digit', month:'numeric', day:'numeric' });
+                const isAnon = log.is_anonymous;
+                const initial = isAnon ? '?' : (log.username || '?').substring(0, 1);
+                return `<li class="history-item">
+                    <div class="history-avatar">${isAnon ? '?' : initial}</div>
+                    <div class="history-info">
+                        <div class="name">${log.username}</div>
+                        <div class="prize">🎁 ${log.prize}</div>
+                        <div class="time">${time}</div>
+                    </div>
+                </li>`;
+            }).join('');
+        }
 
         async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
 

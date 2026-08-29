@@ -94,6 +94,22 @@ CREATE POLICY "Anyone can read redemption codes"
     ON public.redemption_codes FOR SELECT
     USING (true);
 
+-- 兑换记录表
+CREATE TABLE IF NOT EXISTS public.redeem_logs (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id),
+    username TEXT NOT NULL,
+    code TEXT NOT NULL,
+    prize TEXT NOT NULL,
+    is_anonymous BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.redeem_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can read redeem logs" ON public.redeem_logs FOR SELECT USING (true);
+CREATE POLICY "Logged in users can insert redeem logs" ON public.redeem_logs FOR INSERT WITH CHECK (auth.uid() = user_id);
+
 -- 全站聊天表
 CREATE TABLE IF NOT EXISTS public.chat_messages (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
