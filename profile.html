@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户主页 - 凌云城</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
+
+        nav { position: fixed; top: 0; width: 100%; z-index: 100; padding: 0 3rem; height: 64px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; background: #fff; border-bottom: 1px solid #e5e7eb; }
+        .logo { font-size: 1.05rem; font-weight: 700; color: #6366f1; letter-spacing: 0.05em; }
+        .nav-center { display: flex; gap: 2rem; list-style: none; justify-self: center; }
+        .nav-center a { font-size: 0.88rem; color: #666; text-decoration: none; transition: color 0.15s; font-weight: 500; }
+        .nav-center a:hover { color: #1a1a1a; }
+        .nav-center a.active { color: #6366f1; }
+        .nav-right { display: flex; align-items: center; gap: 0.75rem; justify-self: end; }
+        .nav-btn { padding: 0.5rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none; text-decoration: none; }
+        .nav-btn.outline { background: #fff; color: #333; border: 1px solid #d1d5db; }
+        .nav-btn.outline:hover { background: #f9fafb; }
+        .nav-btn.filled { background: #6366f1; color: #fff; }
+        .nav-btn.filled:hover { background: #5558e6; }
+        .user-badge { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.85rem 0.4rem 0.4rem; background: #f3f4f6; border-radius: 8px; text-decoration: none; color: #333; font-size: 0.85rem; font-weight: 500; }
+        .user-badge:hover { background: #e5e7eb; }
+        .user-badge .avatar { width: 30px; height: 30px; border-radius: 8px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 5.5rem 1.5rem 3rem; }
+
+        .profile-card { background: #fff; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 1.5rem; }
+        .profile-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #f0f0f0; }
+        .profile-avatar { width: 80px; height: 80px; border-radius: 16px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-info h1 { font-size: 1.3rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .profile-info .join-date { font-size: 0.82rem; color: #999; }
+        .profile-stats { display: flex; gap: 2rem; margin-bottom: 1.5rem; }
+        .profile-stat { text-align: center; }
+        .profile-stat .value { font-size: 1.2rem; font-weight: 700; color: #1a1a1a; }
+        .profile-stat .label { font-size: 0.75rem; color: #999; margin-top: 0.15rem; }
+
+        .btn-follow { padding: 0.55rem 1.25rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none; }
+        .btn-follow.follow { background: #6366f1; color: #fff; }
+        .btn-follow.follow:hover { background: #5558e6; }
+        .btn-follow.unfollow { background: #fff; color: #333; border: 1px solid #d1d5db; }
+        .btn-follow.unfollow:hover { background: #f9fafb; }
+
+        .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+
+        .post-item { background: #fff; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 0.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.03); text-decoration: none; color: inherit; display: block; transition: all 0.15s; border: 1px solid transparent; }
+        .post-item:hover { border-color: #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .post-item .post-title { font-size: 0.92rem; font-weight: 600; margin-bottom: 0.3rem; }
+        .post-item .post-meta { font-size: 0.78rem; color: #999; }
+        .tag { padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.7rem; font-weight: 500; }
+        .tag-cat { background: #ede9fe; color: #6366f1; }
+        .tag-solved { background: #dcfce7; color: #16a34a; }
+        .tag-unsolved { background: #fef2f2; color: #ef4444; }
+
+        .empty-state { text-align: center; padding: 2rem; color: #999; font-size: 0.88rem; }
+
+        @media (max-width: 640px) {
+            nav { padding: 0 1.5rem; }
+            .nav-center { display: none; }
+            .profile-header { flex-direction: column; text-align: center; }
+            .profile-stats { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">凌云城</div>
+        <ul class="nav-center">
+            <li><a href="index.html">首页</a></li>
+            <li><a href="features.html">特色</a></li>
+            <li><a href="rules.html">规则</a></li>
+            <li><a href="connect.html">加入</a></li>
+            <li><a href="redeem.html">兑换</a></li>
+            <li><a href="forum.html">论坛</a></li>
+        </ul>
+        <div class="nav-right" id="navRight">
+            <a href="dashboard.html" class="user-badge" id="userBadge" style="display:none"><div class="avatar" id="navAvatar"></div><span id="navName"></span></a>
+            <a href="login.html" class="nav-btn outline" id="btnLogin">登录</a>
+            <a href="login.html" class="nav-btn filled" id="btnRegister">注册</a>
+            <button class="nav-btn outline" id="btnLogout" style="display:none" onclick="handleLogout()">退出</button>
+        </div>
+    </nav>
+
+    <div class="container" id="profileArea"><div class="empty-state">加载中...</div></div>
+
+    <script src="supabase.min.js"></script>
+    <script src="utils.js"></script>
+    <script src="chat-widget.js"></script>
+    <script>
+        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const DEFAULT_AVATAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+
+        let currentUser = null;
+        let currentProfile = null;
+
+        async function init() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                currentUser = session;
+                const { data: profile } = await supabaseClient.from('profiles').select('avatar_url, username').eq('id', session.user.id).single();
+                currentProfile = profile || { username: session.user.email, avatar_url: '' };
+                const navAvatar = document.getElementById('navAvatar');
+                navAvatar.innerHTML = currentProfile.avatar_url ? '<img src="'+currentProfile.avatar_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">' : DEFAULT_AVATAR;
+                document.getElementById('navName').textContent = currentProfile.username;
+                document.getElementById('userBadge').style.display = 'flex';
+                document.getElementById('btnLogin').style.display = 'none';
+                document.getElementById('btnRegister').style.display = 'none';
+                document.getElementById('btnLogout').style.display = 'inline-block';
+            }
+
+            const userId = new URLSearchParams(window.location.search).get('id');
+            if (!userId) { document.getElementById('profileArea').innerHTML = '<div class="empty-state">未指定用户</div>'; return; }
+            await loadProfile(userId);
+        }
+
+        async function loadProfile(userId) {
+            const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', userId).single();
+            if (!profile) { document.getElementById('profileArea').innerHTML = '<div class="empty-state">用户不存在</div>'; return; }
+
+            const { count: postCount } = await supabaseClient.from('forum_posts').select('*', { count: 'exact', head: true }).eq('user_id', userId);
+            const { count: replyCount } = await supabaseClient.from('forum_replies').select('*', { count: 'exact', head: true }).eq('user_id', userId);
+
+            let isFollowing = false;
+            if (currentUser && currentUser.user.id !== userId) {
+                const { data: follow } = await supabaseClient.from('follows').select('id').eq('follower_id', currentUser.user.id).eq('following_id', userId).single();
+                isFollowing = !!follow;
+            }
+
+            const isOwnProfile = currentUser && currentUser.user.id === userId;
+            const avatarHtml = profile.avatar_url ? '<img src="'+profile.avatar_url+'">' : DEFAULT_AVATAR;
+            const joinDate = new Date(profile.created_at).toLocaleDateString('zh-CN');
+
+            document.title = profile.username + ' - 凌云城';
+
+            document.getElementById('profileArea').innerHTML = `
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar">${avatarHtml}</div>
+                        <div class="profile-info">
+                            <h1>${profile.username}</h1>
+                            <div class="join-date">注册于 ${joinDate}</div>
+                            ${!isOwnProfile && currentUser ? `<button class="btn-follow ${isFollowing ? 'unfollow' : 'follow'}" onclick="toggleFollow('${userId}')" id="followBtn">${isFollowing ? '取消关注' : '+ 关注'}</button>` : ''}
+                        </div>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="profile-stat"><div class="value">${postCount || 0}</div><div class="label">帖子</div></div>
+                        <div class="profile-stat"><div class="value">${replyCount || 0}</div><div class="label">回复</div></div>
+                    </div>
+                </div>
+                <div class="section-title">TA 的帖子</div>
+                <div id="userPosts"><div class="empty-state">加载中...</div></div>
+            `;
+
+            await loadUserPosts(userId);
+        }
+
+        async function loadUserPosts(userId) {
+            const { data } = await supabaseClient.from('forum_posts').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+            const posts = data || [];
+            const container = document.getElementById('userPosts');
+            if (posts.length === 0) { container.innerHTML = '<div class="empty-state">暂无帖子</div>'; return; }
+            container.innerHTML = posts.map(p => {
+                const time = new Date(p.created_at).toLocaleDateString('zh-CN');
+                const statusClass = p.status === '已解决' ? 'tag-solved' : 'tag-unsolved';
+                return `<a class="post-item" href="forum-post.html?id=${p.id}">
+                    <div class="post-title">${p.title} <span class="tag tag-cat">${p.category}</span> <span class="tag ${statusClass}">${p.status}</span></div>
+                    <div class="post-meta">${time} · 浏览 ${p.views}</div>
+                </a>`;
+            }).join('');
+        }
+
+        async function toggleFollow(userId) {
+            if (!currentUser) return;
+            const { data: existing } = await supabaseClient.from('follows').select('id').eq('follower_id', currentUser.user.id).eq('following_id', userId).single();
+            if (existing) {
+                await supabaseClient.from('follows').delete().eq('id', existing.id);
+            } else {
+                await supabaseClient.from('follows').insert([{ follower_id: currentUser.user.id, following_id: userId }]);
+            }
+            loadProfile(userId);
+        }
+
+        async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
+        init();
+    </script>
+    <script src="footer.js"></script>
+    <script src="mobile-menu.js"></script>
+    <script src="notifications-bell.js"></script>
+</body>
+</html>

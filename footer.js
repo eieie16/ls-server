@@ -1,4 +1,8 @@
 (function() {
+    // 只在首页显示页脚
+    var path = window.location.pathname;
+    if (!path.endsWith('index.html') && !path.endsWith('/') && !path.endsWith('/index.html')) return;
+
     var footer = document.createElement('footer');
     footer.className = 'site-footer';
     footer.innerHTML = `

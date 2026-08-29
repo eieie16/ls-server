@@ -163,3 +163,108 @@ ALTER TABLE public.forum_replies ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Anyone can read replies" ON public.forum_replies FOR SELECT USING (true);
 CREATE POLICY "Logged in users can insert replies" ON public.forum_replies FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Admins can manage replies" ON public.forum_replies FOR ALL USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+
+-- 论坛帖子扩展字段
+ALTER TABLE public.forum_posts ADD COLUMN IF NOT EXISTS is_pinned BOOLEAN DEFAULT false;
+ALTER TABLE public.forum_posts ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT false;
+ALTER TABLE public.forum_posts ADD COLUMN IF NOT EXISTS like_count INTEGER DEFAULT 0;
+ALTER TABLE public.forum_posts ADD COLUMN IF NOT EXISTS tags TEXT DEFAULT '';
+
+-- 公告/更新日志表
+CREATE TABLE IF NOT EXISTS public.announcements (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id),
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    type TEXT DEFAULT '公告' CHECK (type IN ('公告', '更新日志', '维护通知')),
+    pinned BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can read announcements" ON public.announcements FOR SELECT USING (true);
+CREATE POLICY "Admins can manage announcements" ON public.announcements FOR ALL USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+
+-- 点赞表
+CREATE TABLE IF NOT EXISTS public.post_likes (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    post_id UUID REFERENCES public.forum_posts(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(post_id, user_id)
+);
+ALTER TABLE public.post_likes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can read likes" ON public.post_likes FOR SELECT USING (true);
+CREATE POLICY "Logged in users can like" ON public.post_likes FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can unlike" ON public.post_likes FOR DELETE USING (auth.uid() = user_id);
+
+-- 举报表
+CREATE TABLE IF NOT EXISTS public.reports (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    reporter_id UUID REFERENCES auth.users(id),
+    target_type TEXT NOT NULL CHECK (target_type IN ('post', 'reply')),
+    target_id UUID NOT NULL,
+    reason TEXT NOT NULL,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'resolved', 'dismissed')),
+    admin_note TEXT DEFAULT '',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Logged in users can insert reports" ON public.reports FOR INSERT WITH CHECK (auth.uid() = reporter_id);
+CREATE POLICY "Admins can manage reports" ON public.reports FOR ALL USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+
+-- 通知表
+CREATE TABLE IF NOT EXISTS public.notifications (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id),
+    from_user TEXT DEFAULT '系统',
+    type TEXT NOT NULL CHECK (type IN ('reply', 'mention', 'like', 'system')),
+    content TEXT NOT NULL,
+    link TEXT DEFAULT '',
+    is_read BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can read own notifications" ON public.notifications FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "System can insert notifications" ON public.notifications FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update own notifications" ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
+
+-- 用户积分/等级表
+CREATE TABLE IF NOT EXISTS public.user_stats (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) UNIQUE,
+    points INTEGER DEFAULT 0,
+    level INTEGER DEFAULT 1,
+    post_count INTEGER DEFAULT 0,
+    reply_count INTEGER DEFAULT 0,
+    like_count INTEGER DEFAULT 0,
+    checkin_streak INTEGER DEFAULT 0,
+    last_checkin DATE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE public.user_stats ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can read user stats" ON public.user_stats FOR SELECT USING (true);
+CREATE POLICY "System can manage user stats" ON public.user_stats FOR ALL USING (true);
+
+-- 签到记录表
+CREATE TABLE IF NOT EXISTS public.checkin_logs (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id),
+    points_earned INTEGER DEFAULT 10,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE public.checkin_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can read own checkins" ON public.checkin_logs FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Logged in users can insert checkins" ON public.checkin_logs FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- 关注表
+CREATE TABLE IF NOT EXISTS public.follows (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    follower_id UUID REFERENCES auth.users(id),
+    following_id UUID REFERENCES auth.users(id),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(follower_id, following_id)
+);
+ALTER TABLE public.follows ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can read follows" ON public.follows FOR SELECT USING (true);
+CREATE POLICY "Logged in users can follow" ON public.follows FOR INSERT WITH CHECK (auth.uid() = follower_id);
+CREATE POLICY "Users can unfollow" ON public.follows FOR DELETE USING (auth.uid() = follower_id);

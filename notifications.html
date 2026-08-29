@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通知 - 凌云城</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
+        nav { position: fixed; top: 0; width: 100%; z-index: 100; padding: 0 3rem; height: 64px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; background: #fff; border-bottom: 1px solid #e5e7eb; }
+        .logo { font-size: 1.05rem; font-weight: 700; color: #6366f1; letter-spacing: 0.05em; }
+        .nav-center { display: flex; gap: 2rem; list-style: none; justify-self: center; }
+        .nav-center a { font-size: 0.88rem; color: #666; text-decoration: none; transition: color 0.15s; font-weight: 500; }
+        .nav-center a:hover { color: #1a1a1a; }
+        .nav-center a.active { color: #6366f1; }
+        .nav-right { display: flex; align-items: center; gap: 0.75rem; justify-self: end; }
+        .nav-btn { padding: 0.5rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none; text-decoration: none; }
+        .nav-btn.outline { background: #fff; color: #333; border: 1px solid #d1d5db; }
+        .nav-btn.filled { background: #6366f1; color: #fff; }
+        .user-badge { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.85rem 0.4rem 0.4rem; background: #f3f4f6; border-radius: 8px; text-decoration: none; color: #333; font-size: 0.85rem; }
+        .user-badge .avatar { width: 30px; height: 30px; border-radius: 8px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+
+        .container { max-width: 700px; margin: 0 auto; padding: 5.5rem 1.5rem 3rem; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .page-header h1 { font-size: 1.4rem; font-weight: 600; }
+        .btn-mark-read { padding: 0.5rem 1rem; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+        .btn-mark-read:hover { background: #5558e6; }
+
+        .notif-group { margin-bottom: 1.5rem; }
+        .notif-group-title { font-size: 0.82rem; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; padding-left: 0.25rem; }
+        .notif-item {
+            display: flex; align-items: center; gap: 0.85rem;
+            padding: 0.9rem 1rem; background: #fff; border-radius: 10px;
+            margin-bottom: 0.4rem; cursor: pointer; transition: all 0.15s;
+            text-decoration: none; color: inherit; border: 1px solid transparent;
+        }
+        .notif-item:hover { border-color: #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .notif-item.unread { background: #f0f0ff; border-color: #c7d2fe; }
+        .notif-icon { font-size: 1.3rem; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .notif-icon.reply { background: #dbeafe; }
+        .notif-icon.mention { background: #fef3c7; }
+        .notif-icon.like { background: #fce7f3; }
+        .notif-icon.system { background: #e5e7eb; }
+        .notif-body { flex: 1; min-width: 0; }
+        .notif-text { font-size: 0.88rem; line-height: 1.5; }
+        .notif-text strong { font-weight: 600; }
+        .notif-time { font-size: 0.75rem; color: #999; margin-top: 0.15rem; }
+
+        .empty-state { text-align: center; padding: 4rem 2rem; color: #999; }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+        .empty-state p { font-size: 0.9rem; }
+
+        .login-hint { text-align: center; padding: 3rem; color: #999; font-size: 0.88rem; }
+        .login-hint a { color: #6366f1; text-decoration: none; }
+
+        @media (max-width: 640px) {
+            nav { padding: 0 1.5rem; }
+            .nav-center { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">凌云城</div>
+        <ul class="nav-center">
+            <li><a href="index.html">首页</a></li>
+            <li><a href="features.html">特色</a></li>
+            <li><a href="rules.html">规则</a></li>
+            <li><a href="connect.html">加入</a></li>
+            <li><a href="redeem.html">兑换</a></li>
+            <li><a href="forum.html">论坛</a></li>
+        </ul>
+        <div class="nav-right" id="navRight">
+            <a href="dashboard.html" class="user-badge" id="userBadge" style="display:none"><div class="avatar" id="navAvatar"></div><span id="navName"></span></a>
+            <a href="login.html" class="nav-btn outline" id="btnLogin">登录</a>
+            <a href="login.html" class="nav-btn filled" id="btnRegister">注册</a>
+            <button class="nav-btn outline" id="btnLogout" style="display:none" onclick="handleLogout()">退出</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>通知</h1>
+            <button class="btn-mark-read" onclick="markAllRead()">全部标为已读</button>
+        </div>
+        <div id="notifList">
+            <div class="empty-state"><div class="icon">🔔</div><p>加载中...</p></div>
+        </div>
+    </div>
+
+    <script src="supabase.min.js"></script>
+    <script src="utils.js"></script>
+    <script src="chat-widget.js"></script>
+    <script>
+        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const DEFAULT_AVATAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+
+        let currentUser = null;
+
+        const TYPE_LABELS = {
+            reply: '💬 回复',
+            mention: '📣 提及',
+            like: '❤️ 点赞',
+            system: '🔔 系统'
+        };
+
+        async function init() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                document.getElementById('notifList').innerHTML = '<div class="login-hint"><a href="login.html">登录</a>后查看通知</div>';
+                return;
+            }
+            currentUser = session;
+            const { data: profile } = await supabaseClient.from('profiles').select('avatar_url, username').eq('id', session.user.id).single();
+            const navAvatar = document.getElementById('navAvatar');
+            navAvatar.innerHTML = (profile && profile.avatar_url) ? '<img src="'+profile.avatar_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">' : DEFAULT_AVATAR;
+            document.getElementById('navName').textContent = (profile && profile.username) || session.user.email;
+            document.getElementById('userBadge').style.display = 'flex';
+            document.getElementById('btnLogin').style.display = 'none';
+            document.getElementById('btnRegister').style.display = 'none';
+            document.getElementById('btnLogout').style.display = 'inline-block';
+            await loadNotifications();
+        }
+
+        async function loadNotifications() {
+            try {
+                const { data } = await supabaseClient.from('notifications')
+                    .select('*').eq('user_id', currentUser.user.id).order('created_at', { ascending: false });
+                const notifs = data || [];
+                if (notifs.length === 0) {
+                    document.getElementById('notifList').innerHTML = '<div class="empty-state"><div class="icon">🔔</div><p>暂无通知</p></div>';
+                    return;
+                }
+                const unread = notifs.filter(n => !n.read);
+                const read = notifs.filter(n => n.read);
+                let html = '';
+                if (unread.length) {
+                    html += '<div class="notif-group"><div class="notif-group-title">未读</div>';
+                    html += unread.map(renderNotif).join('');
+                    html += '</div>';
+                }
+                if (read.length) {
+                    html += '<div class="notif-group"><div class="notif-group-title">已读</div>';
+                    html += read.map(renderNotif).join('');
+                    html += '</div>';
+                }
+                document.getElementById('notifList').innerHTML = html;
+            } catch (err) {
+                showToast('加载失败', 'error');
+            }
+        }
+
+        function renderNotif(n) {
+            const icon = TYPE_LABELS[n.type] || '🔔';
+            const iconClass = n.type || 'system';
+            const time = new Date(n.created_at).toLocaleString('zh-CN');
+            const href = n.link || '#';
+            return `<a href="${href}" class="notif-item ${n.read ? '' : 'unread'}" onclick="markRead('${n.id}', event)">
+                <div class="notif-icon ${iconClass}">${icon.split(' ')[0]}</div>
+                <div class="notif-body">
+                    <div class="notif-text">${n.content}</div>
+                    <div class="notif-time">${time}</div>
+                </div>
+            </a>`;
+        }
+
+        async function markRead(id, e) {
+            if (e) e.preventDefault();
+            await supabaseClient.from('notifications').update({ read: true }).eq('id', id);
+            const el = document.querySelector(`.notif-item[onclick*="${id}"]`);
+            if (el) el.classList.remove('unread');
+            if (typeof updateBellCount === 'function') updateBellCount();
+            const href = el ? el.getAttribute('href') : '#';
+            if (href && href !== '#') window.location.href = href;
+        }
+
+        async function markAllRead() {
+            await supabaseClient.from('notifications').update({ read: true }).eq('user_id', currentUser.user.id).eq('read', false);
+            document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
+            if (typeof updateBellCount === 'function') updateBellCount();
+        }
+
+        async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
+        init();
+    </script>
+    <script src="footer.js"></script>
+    <script src="mobile-menu.js"></script>
+</body>
+</html>

@@ -42,6 +42,16 @@
         .filter-btn .count { background: rgba(0,0,0,0.08); padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.3rem; }
         .filter-btn.active .count { background: rgba(255,255,255,0.25); }
 
+        .announcement-item {
+            background: linear-gradient(135deg, #fef3c7, #fffbeb);
+            border: 1px solid #fbbf24;
+            border-radius: 10px; padding: 1rem 1.25rem;
+            display: flex; align-items: center; gap: 1rem;
+            text-decoration: none; color: inherit; transition: all 0.15s;
+        }
+        .announcement-item:hover { border-color: #f59e0b; box-shadow: 0 2px 12px rgba(245,158,11,0.1); }
+        .announcement-label { font-size: 0.75rem; font-weight: 600; color: #d97706; margin-bottom: 0.2rem; }
+
         .post-list { display: flex; flex-direction: column; gap: 0.5rem; }
 
         .post-item {
@@ -139,6 +149,7 @@
             <button class="filter-btn" onclick="filterPosts('问题', this)">❓ 问题</button>
             <button class="filter-btn" onclick="filterPosts('建议', this)">💡 建议</button>
             <button class="filter-btn" onclick="filterPosts('展示', this)">🎉 展示</button>
+            <button class="filter-btn" onclick="filterPosts('公告', this)">📢 公告</button>
         </div>
 
         <div class="search-bar">
@@ -146,6 +157,7 @@
             <button onclick="doSearch()">🔍 搜索</button>
         </div>
 
+        <div id="announcementsList"></div>
         <div class="post-list" id="postList">
             <div class="empty-state"><div class="icon">📝</div><p>加载中...</p></div>
         </div>
@@ -155,6 +167,7 @@
     <script src="supabase.min.js"></script>
     <script src="utils.js"></script>
     <script src="chat-widget.js"></script>
+    <script src="notifications-bell.js"></script>
     <script>
         const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
@@ -167,6 +180,7 @@
         let currentPage = 1;
         let searchQuery = '';
         const PAGE_SIZE = 15;
+        let announcementsData = [];
 
         async function init() {
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -183,6 +197,10 @@
                 document.getElementById('btnLogout').style.display = 'inline-block';
                 document.getElementById('btnNewPost').style.display = 'inline-block';
             }
+            const { data: pinned } = await supabaseClient.from('forum_posts').select('*').eq('is_pinned', true).order('created_at', { ascending: false });
+            const { data: anns } = await supabaseClient.from('announcements').select('*').order('pinned', { ascending: false }).order('created_at', { ascending: false });
+            announcementsData = [...(pinned || []), ...(anns || [])];
+            renderAnnouncements();
             loadPosts();
         }
 
@@ -197,6 +215,13 @@
         }
 
         function applyFilters() {
+            if (currentFilter === '公告') {
+                document.getElementById('announcementsList').style.display = '';
+                document.getElementById('postList').innerHTML = '<div class="empty-state"><div class="icon">📢</div><p>以下是公告和置顶内容</p></div>';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+            document.getElementById('announcementsList').style.display = 'none';
             filteredPosts = allPosts;
             if (currentFilter !== 'all') {
                 filteredPosts = filteredPosts.filter(p => p.category === currentFilter);
@@ -260,6 +285,22 @@
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
             applyFilters();
+        }
+
+        function renderAnnouncements() {
+            const el = document.getElementById('announcementsList');
+            if (!announcementsData.length) { el.innerHTML = ''; return; }
+            el.innerHTML = announcementsData.map(a => {
+                const time = new Date(a.created_at).toLocaleDateString('zh-CN');
+                return `<a href="${a.link || '#'}" class="announcement-item">
+                    <div class="post-avatar" style="background:#fef3c7;color:#d97706">📌</div>
+                    <div class="post-body">
+                        <div class="announcement-label">${a.pinned ? '📌 置顶公告' : '📢 公告'}</div>
+                        <div class="post-title"><span>${a.title}</span></div>
+                        <div class="post-meta">${a.author || '管理员'} · ${time}</div>
+                    </div>
+                </a>`;
+            }).join('');
         }
 
         function doSearch() {

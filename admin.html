@@ -187,6 +187,12 @@
                 <div class="nav-item" onclick="switchTab(this, 'forum')">
                     <span class="icon">📝</span> 论坛管理
                 </div>
+                <div class="nav-item" onclick="switchTab(this, 'announcements')">
+                    <span class="icon">📢</span> 公告管理
+                </div>
+                <div class="nav-item" onclick="switchTab(this, 'reports')">
+                    <span class="icon">🚩</span> 举报处理
+                </div>
             </div>
 
             <div class="nav-divider"></div>
@@ -304,6 +310,28 @@
                     </table>
                 </div>
             </div>
+
+            <div id="announcementsSection" style="display:none">
+                <div class="table-card">
+                    <div class="table-top">
+                        <span class="title">公告列表</span>
+                        <button class="btn btn-primary" onclick="openModal('addAnnouncement')">+ 发布公告</button>
+                    </div>
+                    <table>
+                        <thead><tr><th>标题</th><th>类型</th><th>置顶</th><th>发布时间</th><th>操作</th></tr></thead>
+                        <tbody id="announcementsTable"><tr><td colspan="5" class="loading">加载中...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="reportsSection" style="display:none">
+                <div class="table-card">
+                    <div class="table-top"><span class="title">举报列表</span></div>
+                    <table>
+                        <thead><tr><th>举报人</th><th>类型</th><th>原因</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+                        <tbody id="reportsTable"><tr><td colspan="6" class="loading">加载中...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -360,6 +388,38 @@
         </div>
     </div>
 
+    <!-- Add Announcement Modal -->
+    <div class="modal-overlay" id="addAnnouncementModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">发布公告</span>
+                <button class="modal-close" onclick="closeModal('addAnnouncement')">&times;</button>
+            </div>
+            <form onsubmit="handleAddAnnouncement(event)">
+                <div class="form-group">
+                    <label>标题</label>
+                    <input type="text" id="annTitle" placeholder="公告标题" required>
+                </div>
+                <div class="form-group">
+                    <label>类型</label>
+                    <select id="annType">
+                        <option value="公告">公告</option>
+                        <option value="更新日志">更新日志</option>
+                        <option value="维护通知">维护通知</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>内容</label>
+                    <textarea id="annContent" style="width:100%;padding:0.65rem 0.85rem;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;color:#333;font-size:0.88rem;font-family:inherit;min-height:120px;resize:vertical" placeholder="公告内容" required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addAnnouncement')">取消</button>
+                    <button type="submit" class="btn btn-primary">发布公告</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="supabase.min.js"></script>
     <script src="utils.js"></script>
     <script>
@@ -391,9 +451,13 @@
             document.getElementById('usersSection').style.display = tab === 'users' ? 'block' : 'none';
             document.getElementById('codesSection').style.display = tab === 'codes' ? 'block' : 'none';
             document.getElementById('forumSection').style.display = tab === 'forum' ? 'block' : 'none';
+            document.getElementById('announcementsSection').style.display = tab === 'announcements' ? 'block' : 'none';
+            document.getElementById('reportsSection').style.display = tab === 'reports' ? 'block' : 'none';
             document.querySelector('.stats-row').style.display = tab === 'dashboard' ? 'grid' : 'none';
 
             if (tab === 'forum') loadForum();
+            if (tab === 'announcements') loadAnnouncements();
+            if (tab === 'reports') loadReports();
         }
 
         // ===== 用户管理 =====
@@ -507,15 +571,99 @@
                     <td><span class="badge ${statusClass}">${p.status}</span></td>
                     <td>${p.views}</td>
                     <td>${time}</td>
-                    <td><button class="btn btn-sm btn-danger" onclick="deleteForumPost('${p.id}')">删除</button></td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn-icon" onclick="togglePostPin('${p.id}', ${!p.is_pinned})" title="${p.is_pinned?'取消置顶':'置顶'}">${p.is_pinned?'📌':'📍'}</button>
+                            <button class="btn-icon" onclick="togglePostFeatured('${p.id}', ${!p.is_featured})" title="${p.is_featured?'取消精华':'设为精华'}">${p.is_featured?'⭐':'☆'}</button>
+                            <button class="btn-icon danger" onclick="deleteForumPost('${p.id}')" title="删除">🗑️</button>
+                        </div>
+                    </td>
                 </tr>`;
             }).join('');
+        }
+
+        async function togglePostPin(id, pinned) {
+            await supabaseClient.from('forum_posts').update({ is_pinned: pinned }).eq('id', id);
+            loadForum();
+        }
+
+        async function togglePostFeatured(id, featured) {
+            await supabaseClient.from('forum_posts').update({ is_featured: featured }).eq('id', id);
+            loadForum();
         }
 
         async function deleteForumPost(id) {
             if (!confirm('确定删除这条帖子？')) return;
             await supabaseClient.from('forum_posts').delete().eq('id', id);
             loadForum();
+        }
+
+        // ===== 公告管理 =====
+        async function loadAnnouncements() {
+            const { data } = await supabaseClient.from('announcements').select('*').order('created_at', { ascending: false });
+            const list = data || [];
+            const tbody = document.getElementById('announcementsTable');
+            if (list.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="loading">暂无公告</td></tr>'; return; }
+            tbody.innerHTML = list.map(a => `<tr>
+                <td><div class="name">${a.title}</div></td>
+                <td><span class="badge badge-user">${a.type}</span></td>
+                <td>${a.pinned ? '📌 是' : '否'}</td>
+                <td>${formatDate(a.created_at)}</td>
+                <td>
+                    <div class="actions">
+                        <button class="btn-icon" onclick="toggleAnnouncementPin('${a.id}', ${!a.pinned})" title="${a.pinned?'取消置顶':'置顶'}">${a.pinned?'📌':'📍'}</button>
+                        <button class="btn-icon danger" onclick="deleteAnnouncement('${a.id}')" title="删除">🗑️</button>
+                    </div>
+                </td>
+            </tr>`).join('');
+        }
+
+        async function toggleAnnouncementPin(id, pinned) {
+            await supabaseClient.from('announcements').update({ pinned }).eq('id', id);
+            loadAnnouncements();
+        }
+
+        async function deleteAnnouncement(id) {
+            if (!confirm('确定删除？')) return;
+            await supabaseClient.from('announcements').delete().eq('id', id);
+            loadAnnouncements();
+        }
+
+        async function handleAddAnnouncement(e) {
+            e.preventDefault();
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const title = document.getElementById('annTitle').value.trim();
+            const content = document.getElementById('annContent').value.trim();
+            const type = document.getElementById('annType').value;
+            if (!title || !content) { alert('请填写标题和内容'); return; }
+            await supabaseClient.from('announcements').insert([{ user_id: session.user.id, title, content, type }]);
+            closeModal('addAnnouncement');
+            document.getElementById('annTitle').value = '';
+            document.getElementById('annContent').value = '';
+            loadAnnouncements();
+        }
+
+        // ===== 举报管理 =====
+        async function loadReports() {
+            const { data } = await supabaseClient.from('reports').select('*').order('created_at', { ascending: false });
+            const list = data || [];
+            const tbody = document.getElementById('reportsTable');
+            if (list.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="loading">暂无举报</td></tr>'; return; }
+            tbody.innerHTML = list.map(r => `<tr>
+                <td>${r.reporter_id ? r.reporter_id.substring(0,8)+'...' : '未知'}</td>
+                <td><span class="badge badge-user">${r.target_type === 'post' ? '帖子' : '回复'}</span></td>
+                <td>${r.reason}</td>
+                <td><span class="badge ${r.status==='pending'?'badge-user':'badge-admin'}">${r.status === 'pending' ? '待处理' : r.status === 'resolved' ? '已处理' : '已驳回'}</span></td>
+                <td>${formatDate(r.created_at)}</td>
+                <td>
+                    ${r.status === 'pending' ? `<div class="actions"><button class="btn-icon danger" onclick="handleReport('${r.id}', 'dismissed')" title="驳回">❌</button></div>` : ''}
+                </td>
+            </tr>`).join('');
+        }
+
+        async function handleReport(id, status) {
+            await supabaseClient.from('reports').update({ status }).eq('id', id);
+            loadReports();
         }
 
         async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }

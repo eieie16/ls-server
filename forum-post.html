@@ -139,6 +139,7 @@
     <script src="utils.js"></script>
     <script src="editor.js"></script>
     <script src="chat-widget.js"></script>
+    <script src="notifications-bell.js"></script>
     <script>
         const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
@@ -186,6 +187,13 @@
                 const isSolved = data.status === '已解决';
                 const isAuthor = currentUser && currentUser.user.id === data.user_id;
 
+                const { count: likeCount } = await supabaseClient.from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', data.id);
+                let isLiked = false;
+                if (currentUser) {
+                    const { data: myLike } = await supabaseClient.from('post_likes').select('id').eq('post_id', data.id).eq('user_id', currentUser.user.id).single();
+                    isLiked = !!myLike;
+                }
+
                 document.getElementById('postContent').innerHTML = `
                     <div class="post-card">
                         <div class="post-header">
@@ -200,12 +208,13 @@
                         <div class="post-author">
                             <div class="author-avatar">${data.avatar_url ? '<img src="'+data.avatar_url+'">' : DEFAULT_AVATAR}</div>
                             <div class="author-info">
-                                <div class="name">${data.username}</div>
+                                <div class="name"><a href="profile.html?id=${data.user_id}" style="color:inherit;text-decoration:none">${data.username}</a></div>
                                 <div class="time">${time} · 浏览 ${data.views + 1}</div>
                             </div>
                         </div>
                         <div class="post-content">${data.content}</div>
                         <div class="post-actions">
+                            <button class="action-btn" id="likeBtn" onclick="toggleLike()">${isLiked ? '❤️' : '🤍'} ${likeCount || 0}</button>
                             ${isAuthor ? '<button class="action-btn" onclick="startEdit()">✏️ 编辑</button>' : ''}
                             ${isAuthor && !isSolved ? '<button class="action-btn" onclick="markSolved()">✅ 标记已解决</button>' : ''}
                             ${isAuthor || (currentUser && currentProfile && currentProfile.role === 'admin') ? '<button class="action-btn danger" onclick="deletePost()">🗑️ 删除</button>' : ''}
@@ -235,7 +244,7 @@
                             <div class="reply-header">
                                 <div class="reply-avatar">${r.avatar_url ? '<img src="'+r.avatar_url+'">' : DEFAULT_AVATAR}</div>
                                 <div class="reply-info">
-                                    <div class="name">${r.username}</div>
+                                    <div class="name"><a href="profile.html?id=${r.user_id}" style="color:inherit;text-decoration:none">${r.username}</a></div>
                                     <div class="time">${time}</div>
                                 </div>
                                 <button class="quote-btn" onclick="quoteReply('${r.username.replace(/'/g,"\\'")}','${quoteContent.replace(/'/g,"\\'")}')">引用</button>
@@ -270,12 +279,33 @@
                 post_id: postData.id, user_id: currentUser.user.id,
                 username: currentProfile.username, avatar_url: currentProfile.avatar_url || '', content: safeContent
             }]);
+            if (postData.user_id !== currentUser.user.id) {
+                await supabaseClient.from('notifications').insert([{
+                    user_id: postData.user_id,
+                    from_user: currentProfile.username,
+                    type: 'reply',
+                    content: currentProfile.username + ' 回复了你的帖子「' + postData.title + '」',
+                    link: 'forum-post.html?id=' + postData.id
+                }]);
+            }
+            const mentionRegex = /@(\S+)/g;
+            let match;
+            while ((match = mentionRegex.exec(plainText)) !== null) {
+                const mentionedName = match[1];
+                const { data: mentionedUser } = await supabaseClient.from('profiles').select('id').eq('username', mentionedName).single();
+                if (mentionedUser && mentionedUser.id !== currentUser.user.id) {
+                    await supabaseClient.from('notifications').insert([{
+                        user_id: mentionedUser.id,
+                        from_user: currentProfile.username,
+                        type: 'mention',
+                        content: currentProfile.username + ' 在回复中@了你',
+                        link: 'forum-post.html?id=' + postData.id
+                    }]);
+                }
+            }
             if (replyEditor) replyEditor.clear();
             loadReplies(postData.id);
         }
-
-        let replyEditor = null;
-        let editEditor = null;
 
         function quoteReply(username, content) {
             if (!replyEditor) return;
@@ -339,6 +369,27 @@
             if (!confirm('确定删除？')) return;
             await supabaseClient.from('forum_posts').delete().eq('id', postData.id);
             window.location.href = 'forum.html';
+        }
+
+        async function toggleLike() {
+            if (!currentUser || !postData) return;
+            const { data: existing } = await supabaseClient.from('post_likes').select('id').eq('post_id', postData.id).eq('user_id', currentUser.user.id).single();
+            const isCurrentlyLiked = !!existing;
+            if (existing) {
+                await supabaseClient.from('post_likes').delete().eq('id', existing.id);
+            } else {
+                await supabaseClient.from('post_likes').insert([{ post_id: postData.id, user_id: currentUser.user.id }]);
+                if (postData.user_id !== currentUser.user.id) {
+                    await supabaseClient.from('notifications').insert([{
+                        user_id: postData.user_id,
+                        from_user: currentProfile.username,
+                        type: 'like',
+                        content: currentProfile.username + ' 赞了你的帖子「' + postData.title + '」',
+                        link: 'forum-post.html?id=' + postData.id
+                    }]);
+                }
+            }
+            loadPost(postData.id);
         }
 
         async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
