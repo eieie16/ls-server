@@ -37,7 +37,7 @@ function createEditor(containerId, opts) {
             <button type="button" class="ed-btn ed-color" data-cmd="foreColor" title="字体颜色">
                 <span class="color-bar" style="background:#f00">A</span>
             </button>
-            <button type="button" class="ed-btn ed-color" data-cmd="hiliteColor" title="背景颜色">
+            <button type="button" class="ed-btn ed-color" data-cmd="backColor" title="背景颜色">
                 <span class="color-bar" style="background:#ff0">A</span>
             </button>
             <input type="color" class="ed-colorpicker" id="edColor_${containerId}" value="#ff0000">
@@ -123,13 +123,33 @@ function createEditor(containerId, opts) {
     });
 
     // Color picker
+    var savedSelection = null;
+
+    function saveSelection() {
+        var sel = window.getSelection();
+        if (sel.rangeCount > 0) {
+            savedSelection = sel.getRangeAt(0).cloneRange();
+        }
+    }
+
+    function restoreSelection() {
+        if (savedSelection) {
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(savedSelection);
+        }
+    }
+
     colorPicker.addEventListener('input', function() {
+        restoreSelection();
         document.execCommand(lastColorCmd, false, colorPicker.value);
         body.focus();
     });
+
     container.querySelectorAll('.ed-color').forEach(function(btn) {
         btn.addEventListener('mousedown', function(e) {
             e.preventDefault();
+            saveSelection();
             lastColorCmd = btn.dataset.cmd;
             colorPicker.click();
         });
