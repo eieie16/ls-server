@@ -168,12 +168,13 @@ function createEditor(containerId, opts) {
 }
 .ed-btn:hover { background: #e5e7eb; }
 .ed-btn:active { background: #d1d5db; }
-.ed-select {
+.editor-wrap .ed-select {
     height: 28px; border: 1px solid #d1d5db; border-radius: 4px;
-    font-size: 12px; padding: 0 4px; background: #fff; color: #555; cursor: pointer;
-    width: auto !important; min-width: 56px; flex-shrink: 0;
+    font-size: 12px; padding: 0 6px; background: #fff; color: #555; cursor: pointer;
+    flex-shrink: 0; width: auto;
 }
-.ed-select-font { min-width: 80px; }
+.editor-wrap .ed-select[data-cmd="fontSize"] { width: 62px !important; }
+.editor-wrap .ed-select-font { width: 88px !important; }
 .ed-sep { width: 1px; height: 20px; background: #d1d5db; margin: 0 4px; flex-shrink: 0; }
 .ed-color { position: relative; }
 .ed-color .color-bar { font-weight: 700; font-size: 13px; }
