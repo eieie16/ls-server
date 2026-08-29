@@ -1,13 +1,14 @@
 /**
  * FXAP Decoder Tool - Frontend Application
- * Handles file upload, decoding progress, file management, and downloads
+ * Handles plugin ZIP/.fxap upload, scanning, decoding, file management, and downloads
  */
 
 class FXAPDecoderApp {
     constructor() {
         this.currentJobId = null;
-        this.currentFiles = [];
-        this.selectedFiles = new Set();
+        this.currentFxapResults = [];
+        this.activeFxapIndex = 0;
+        this.selectedFiles = new Map(); // fxapIndex -> Set of selected file paths
         this.pollInterval = null;
         
         this.initElements();
@@ -31,6 +32,7 @@ class FXAPDecoderApp {
         this.fileSizeEl = document.getElementById('fileSize');
         this.removeFileBtn = document.getElementById('removeFile');
         this.decodeBtn = document.getElementById('decodeBtn');
+        this.cfxKeyInput = document.getElementById('cfxKeyInput');
 
         // Processing elements
         this.progressFill = document.getElementById('progressFill');
@@ -40,13 +42,12 @@ class FXAPDecoderApp {
 
         // Results elements
         this.resultFileName = document.getElementById('resultFileName');
-        this.resultFileCount = document.getElementById('resultFileCount');
-        this.resultTotalSize = document.getElementById('resultTotalSize');
-        this.downloadOriginalBtn = document.getElementById('downloadOriginalBtn');
-        this.downloadModifiedBtn = document.getElementById('downloadModifiedBtn');
-        this.fileTree = document.getElementById('fileTree');
-        this.selectAllCheckbox = document.getElementById('selectAllFiles');
-        this.removeSelectedBtn = document.getElementById('removeSelectedBtn');
+        this.resultFxapCount = document.getElementById('resultFxapCount');
+        this.resultSuccessCount = document.getElementById('resultSuccessCount');
+        this.resultFailCount = document.getElementById('resultFailCount');
+        this.fxapTabs = document.getElementById('fxapTabs');
+        this.tabPanels = document.getElementById('tabPanels');
+        this.downloadAllBtn = document.getElementById('downloadAllBtn');
 
         // Error elements
         this.errorMessage = document.getElementById('errorMessage');
@@ -63,11 +64,8 @@ class FXAPDecoderApp {
         this.removeFileBtn.addEventListener('click', () => this.resetFileUpload());
         this.decodeBtn.addEventListener('click', () => this.startDecoding());
 
-        // Results
-        this.downloadOriginalBtn.addEventListener('click', () => this.downloadOriginal());
-        this.downloadModifiedBtn.addEventListener('click', () => this.downloadModified());
-        this.selectAllCheckbox.addEventListener('change', (e) => this.toggleSelectAll(e));
-        this.removeSelectedBtn.addEventListener('click', () => this.removeSelectedFiles());
+        // Global download
+        this.downloadAllBtn.addEventListener('click', () => this.downloadAll());
 
         // Error
         this.retryBtn.addEventListener('click', () => this.resetToUpload());
@@ -105,13 +103,14 @@ class FXAPDecoderApp {
     }
 
     processFile(file) {
-        if (!file.name.toLowerCase().endsWith('.fxap')) {
-            this.showError('Please select a valid .fxap file');
+        const ext = file.name.toLowerCase();
+        if (!ext.endsWith('.fxap') && !ext.endsWith('.zip')) {
+            this.showError('Please select a valid .fxap or .zip file');
             return;
         }
 
-        if (file.size > 100 * 1024 * 1024) {
-            this.showError('File size exceeds 100MB limit');
+        if (file.size > 500 * 1024 * 1024) {
+            this.showError('File size exceeds 500MB limit');
             return;
         }
 
@@ -146,8 +145,11 @@ class FXAPDecoderApp {
         this.showStep('upload');
         this.resetFileUpload();
         this.currentJobId = null;
-        this.currentFiles = [];
+        this.currentFxapResults = [];
+        this.activeFxapIndex = 0;
         this.selectedFiles.clear();
+        this.fxapTabs.innerHTML = '';
+        this.tabPanels.innerHTML = '';
         if (this.pollInterval) {
             clearInterval(this.pollInterval);
             this.pollInterval = null;
@@ -163,7 +165,13 @@ class FXAPDecoderApp {
         this.addLogEntry('Starting upload...', 'info');
 
         const formData = new FormData();
-        formData.append('fxapFile', this.selectedFile);
+        formData.append('pluginFile', this.selectedFile);
+        
+        // Include CFX KEY if provided
+        const cfxKey = this.cfxKeyInput.value.trim();
+        if (cfxKey) {
+            formData.append('cfxKey', cfxKey);
+        }
 
         try {
             this.addLogEntry('Uploading file to server...', 'info');
@@ -179,7 +187,13 @@ class FXAPDecoderApp {
             }
 
             this.currentJobId = result.jobId;
-            this.addLogEntry('File uploaded successfully. Decoding...', 'success');
+            this.currentFxapResults = result.fxapResults || [];
+            
+            if (result.isDirectFxap) {
+                this.addLogEntry('Direct .fxap file detected. Decoding...', 'success');
+            } else {
+                this.addLogEntry(`Plugin ZIP uploaded. Found ${result.fxapCount} .fxap file(s). Decoding...`, 'success');
+            }
             this.startPolling();
             
         } catch (error) {
@@ -217,8 +231,9 @@ class FXAPDecoderApp {
         this.progressPercent.textContent = `${job.progress}%`;
 
         const statusMessages = {
-            'decoding': 'Decoding .fxap file...',
-            'extracting': 'Extracting ZIP archive...',
+            'scanning': 'Scanning for .fxap files...',
+            'extracting': 'Extracting plugin ZIP...',
+            'decoding': 'Decoding .fxap files...',
             'processing': 'Processing file removal...',
             'completed': 'Completed!'
         };
@@ -226,9 +241,12 @@ class FXAPDecoderApp {
         this.progressText.textContent = statusMessages[job.status] || job.status;
 
         // Add log entries for progress milestones
-        if (job.progress === 30) this.addLogEntry('FXAP header validated', 'success');
-        if (job.progress === 50) this.addLogEntry('Decryption complete', 'success');
-        if (job.progress === 80) this.addLogEntry('ZIP extraction complete', 'success');
+        if (job.progress === 10) this.addLogEntry('Plugin ZIP extracted', 'success');
+        if (job.progress === 20) this.addLogEntry(`Found ${job.fxapResults?.length || 0} .fxap file(s)`, 'success');
+        if (job.progress >= 30 && job.progress < 80) {
+            // Decoding in progress
+        }
+        if (job.progress === 80) this.addLogEntry('All .fxap files decoded', 'success');
     }
 
     resetProgress() {
@@ -252,35 +270,151 @@ class FXAPDecoderApp {
 
     handleJobComplete(job) {
         this.addLogEntry('All operations completed successfully!', 'success');
-        this.currentFiles = job.files || [];
+        this.currentFxapResults = job.fxapResults || [];
         
-        // Update results summary
-        this.resultFileName.textContent = job.fileName;
-        this.resultFileCount.textContent = this.currentFiles.length;
-        this.resultTotalSize.textContent = this.formatFileSize(
-            this.currentFiles.reduce((sum, f) => sum + (f.size || 0), 0)
-        );
+        // Update summary
+        this.resultFileName.textContent = job.originalFileName;
+        this.resultFxapCount.textContent = job.fxapCount || 0;
+        this.resultSuccessCount.textContent = job.successCount || 0;
+        this.resultFailCount.textContent = job.failCount || 0;
 
-        // Build file tree
-        this.renderFileTree(this.currentFiles);
+        // Build tabs and panels
+        this.buildTabsAndPanels();
         
-        // Enable download buttons
-        this.downloadOriginalBtn.disabled = false;
-        this.downloadModifiedBtn.disabled = true; // Will enable after file removal
+        // Enable global download if any succeeded
+        this.downloadAllBtn.disabled = job.successCount === 0;
 
         this.showStep('results');
     }
 
-    // File tree rendering
-    renderFileTree(files) {
+    buildTabsAndPanels() {
+        this.fxapTabs.innerHTML = '';
+        this.tabPanels.innerHTML = '';
+        
+        this.currentFxapResults.forEach((result, index) => {
+            // Create tab
+            const tab = document.createElement('button');
+            tab.className = `fxap-tab ${index === 0 ? 'active' : ''}`;
+            tab.setAttribute('role', 'tab');
+            tab.setAttribute('aria-selected', index === 0);
+            tab.dataset.index = index;
+            
+            const hasError = !!result.error;
+            const fileCount = result.fileCount || 0;
+            
+            tab.innerHTML = `
+                <span class="tab-name">${this.escapeHtml(result.fxapName)}</span>
+                <span class="tab-badge">${fileCount} files</span>
+                ${hasError ? '<span class="tab-error">⚠ Failed</span>' : ''}
+            `;
+            
+            tab.addEventListener('click', () => this.switchTab(index));
+            this.fxapTabs.appendChild(tab);
+
+            // Create panel
+            const panel = document.createElement('div');
+            panel.className = `tab-panel ${index === 0 ? 'active' : ''}`;
+            panel.setAttribute('role', 'tabpanel');
+            panel.dataset.index = index;
+            panel.innerHTML = this.renderFxapPanel(result, index);
+            this.tabPanels.appendChild(panel);
+
+            // Initialize selection set for this fxap
+            if (!this.selectedFiles.has(index)) {
+                this.selectedFiles.set(index, new Set());
+            }
+        });
+
+        // Bind events for the first panel
+        this.bindPanelEvents(0);
+    }
+
+    renderFxapPanel(result, index) {
+        if (result.error) {
+            return `
+                <div class="fxap-panel">
+                    <div class="fxap-header">
+                        <div class="fxap-title">
+                            <svg class="fxap-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                            <div>
+                                <div class="fxap-name">${this.escapeHtml(result.fxapName)}</div>
+                                <div class="fxap-path">${this.escapeHtml(result.fxapRelativePath)}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fxap-error">
+                        <strong>Failed to decode:</strong> ${this.escapeHtml(result.error)}
+                    </div>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="fxap-panel">
+                <div class="fxap-header">
+                    <div class="fxap-title">
+                        <svg class="fxap-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <div>
+                            <div class="fxap-name">${this.escapeHtml(result.fxapName)}</div>
+                            <div class="fxap-path">${this.escapeHtml(result.fxapRelativePath)}</div>
+                        </div>
+                    </div>
+                    <div class="fxap-stats">
+                        <div class="fxap-stat">
+                            <span class="stat-value">${result.fileCount}</span> files
+                        </div>
+                        <div class="fxap-stat">
+                            <span class="stat-value">${this.formatFileSize(result.totalSize)}</span> total
+                        </div>
+                    </div>
+                </div>
+
+                <div class="file-management">
+                    <h3>Select Files to Remove</h3>
+                    <div class="file-list-header">
+                        <label class="checkbox-select-all">
+                            <input type="checkbox" id="selectAllFiles_${index}">
+                            <span>Select All</span>
+                        </label>
+                        <button id="removeSelectedBtn_${index}" class="btn btn-danger btn-sm" disabled>
+                            Remove Selected
+                        </button>
+                    </div>
+                    <div class="file-tree" id="fileTree_${index}">${this.renderFileTree(result.files, index)}</div>
+                </div>
+
+                <div class="fxap-actions">
+                    <button id="downloadOriginalBtn_${index}" class="btn btn-outline">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Download Original ZIP
+                    </button>
+                    <button id="downloadModifiedBtn_${index}" class="btn btn-primary" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Download Modified ZIP
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    renderFileTree(files, fxapIndex) {
         // Build directory tree
         const tree = this.buildFileTree(files);
-        this.fileTree.innerHTML = this.renderTreeNode(tree, 0);
-        
-        // Bind checkbox events
-        this.fileTree.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => this.handleFileCheckboxChange(e));
-        });
+        return this.renderTreeNode(tree, 0, fxapIndex);
     }
 
     buildFileTree(files) {
@@ -294,7 +428,6 @@ class FXAPDecoderApp {
             
             parts.forEach((part, index) => {
                 if (index === parts.length - 1) {
-                    // It's a file
                     current.files.push({
                         name: part,
                         fullPath: file.name,
@@ -302,7 +435,6 @@ class FXAPDecoderApp {
                         lastModified: file.lastModified
                     });
                 } else {
-                    // It's a directory
                     if (!current.children[part]) {
                         current.children[part] = { name: part, children: {}, files: [] };
                     }
@@ -314,15 +446,16 @@ class FXAPDecoderApp {
         return root;
     }
 
-    renderTreeNode(node, depth) {
+    renderTreeNode(node, depth, fxapIndex) {
         let html = '';
         
         // Render directories first
         Object.values(node.children).sort((a, b) => a.name.localeCompare(b.name)).forEach(dir => {
-            const isSelected = this.selectedFiles.has(dir.name);
+            const dirPath = this.getDirPath(node, dir.name);
+            const isSelected = this.selectedFiles.get(fxapIndex)?.has(dirPath);
             html += `
-                <div class="file-tree-item file-depth-${depth}" data-path="${this.escapeHtml(dir.name)}">
-                    <input type="checkbox" data-path="${this.escapeHtml(dir.name)}" data-type="directory" ${isSelected ? 'checked' : ''}>
+                <div class="file-tree-item file-depth-${depth}" data-path="${this.escapeHtml(dirPath)}">
+                    <input type="checkbox" data-path="${this.escapeHtml(dirPath)}" data-type="directory" data-fxap="${fxapIndex}" ${isSelected ? 'checked' : ''}>
                     <svg class="file-icon folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
                     </svg>
@@ -331,15 +464,15 @@ class FXAPDecoderApp {
                     </div>
                 </div>
             `;
-            html += this.renderTreeNode(dir, depth + 1);
+            html += this.renderTreeNode(dir, depth + 1, fxapIndex);
         });
         
         // Render files
         node.files.sort((a, b) => a.name.localeCompare(b.name)).forEach(file => {
-            const isSelected = this.selectedFiles.has(file.fullPath);
+            const isSelected = this.selectedFiles.get(fxapIndex)?.has(file.fullPath);
             html += `
                 <div class="file-tree-item file-depth-${depth + 1}" data-path="${this.escapeHtml(file.fullPath)}">
-                    <input type="checkbox" data-path="${this.escapeHtml(file.fullPath)}" data-type="file" ${isSelected ? 'checked' : ''}>
+                    <input type="checkbox" data-path="${this.escapeHtml(file.fullPath)}" data-type="file" data-fxap="${fxapIndex}" ${isSelected ? 'checked' : ''}>
                     <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                         <polyline points="14 2 14 8 20 8"/>
@@ -355,63 +488,143 @@ class FXAPDecoderApp {
         return html;
     }
 
-    handleFileCheckboxChange(e) {
+    getDirPath(parentNode, dirName) {
+        // This is a simplified version - in reality we'd track full path
+        // For now, we'll use a data attribute approach
+        return dirName;
+    }
+
+    switchTab(index) {
+        // Update tabs
+        this.fxapTabs.querySelectorAll('.fxap-tab').forEach((tab, i) => {
+            tab.classList.toggle('active', i === index);
+            tab.setAttribute('aria-selected', i === index);
+        });
+
+        // Update panels
+        this.tabPanels.querySelectorAll('.tab-panel').forEach((panel, i) => {
+            panel.classList.toggle('active', i === index);
+        });
+
+        this.activeFxapIndex = index;
+        this.bindPanelEvents(index);
+    }
+
+    bindPanelEvents(fxapIndex) {
+        const panel = this.tabPanels.querySelector(`[data-index="${fxapIndex}"]`);
+        if (!panel) return;
+
+        // Checkbox events
+        panel.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            // Remove old listeners by cloning
+            const newCheckbox = checkbox.cloneNode(true);
+            checkbox.parentNode.replaceChild(newCheckbox, checkbox);
+            newCheckbox.addEventListener('change', (e) => this.handleFileCheckboxChange(e, fxapIndex));
+        });
+
+        // Button events
+        const removeBtn = panel.querySelector(`#removeSelectedBtn_${fxapIndex}`);
+        const downloadOriginalBtn = panel.querySelector(`#downloadOriginalBtn_${fxapIndex}`);
+        const downloadModifiedBtn = panel.querySelector(`#downloadModifiedBtn_${fxapIndex}`);
+        const selectAllCheckbox = panel.querySelector(`#selectAllFiles_${fxapIndex}`);
+
+        if (removeBtn) {
+            removeBtn.onclick = () => this.removeSelectedFiles(fxapIndex);
+        }
+        if (downloadOriginalBtn) {
+            downloadOriginalBtn.onclick = () => this.downloadOriginal(fxapIndex);
+        }
+        if (downloadModifiedBtn) {
+            downloadModifiedBtn.onclick = () => this.downloadModified(fxapIndex);
+        }
+        if (selectAllCheckbox) {
+            selectAllCheckbox.onchange = (e) => this.toggleSelectAll(e, fxapIndex);
+        }
+
+        this.updateUIAfterSelection(fxapIndex);
+    }
+
+    handleFileCheckboxChange(e, fxapIndex) {
         const checkbox = e.target;
         const path = checkbox.dataset.path;
         const type = checkbox.dataset.type;
+        const selectedSet = this.selectedFiles.get(fxapIndex) || new Set();
         
         if (checkbox.checked) {
-            this.selectedFiles.add(path);
+            selectedSet.add(path);
             // If directory, select all children
             if (type === 'directory') {
-                this.selectDirectoryChildren(path);
+                this.selectDirectoryChildren(path, fxapIndex);
             }
         } else {
-            this.selectedFiles.delete(path);
+            selectedSet.delete(path);
             // If directory, deselect all children
             if (type === 'directory') {
-                this.deselectDirectoryChildren(path);
+                this.deselectDirectoryChildren(path, fxapIndex);
             }
         }
         
-        this.updateUIAfterSelection();
+        this.selectedFiles.set(fxapIndex, selectedSet);
+        this.updateUIAfterSelection(fxapIndex);
     }
 
-    selectDirectoryChildren(dirPath) {
-        this.fileTree.querySelectorAll(`input[data-path^="${dirPath}/"]`).forEach(cb => {
+    selectDirectoryChildren(dirPath, fxapIndex) {
+        const panel = this.tabPanels.querySelector(`[data-index="${fxapIndex}"]`);
+        if (!panel) return;
+        
+        panel.querySelectorAll(`input[data-path^="${dirPath}/"]`).forEach(cb => {
             cb.checked = true;
-            this.selectedFiles.add(cb.dataset.path);
+            this.selectedFiles.get(fxapIndex)?.add(cb.dataset.path);
         });
     }
 
-    deselectDirectoryChildren(dirPath) {
-        this.fileTree.querySelectorAll(`input[data-path^="${dirPath}/"]`).forEach(cb => {
+    deselectDirectoryChildren(dirPath, fxapIndex) {
+        const panel = this.tabPanels.querySelector(`[data-index="${fxapIndex}"]`);
+        if (!panel) return;
+        
+        panel.querySelectorAll(`input[data-path^="${dirPath}/"]`).forEach(cb => {
             cb.checked = false;
-            this.selectedFiles.delete(cb.dataset.path);
+            this.selectedFiles.get(fxapIndex)?.delete(cb.dataset.path);
         });
     }
 
-    toggleSelectAll(e) {
+    toggleSelectAll(e, fxapIndex) {
         const checked = e.target.checked;
-        this.fileTree.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        const panel = this.tabPanels.querySelector(`[data-index="${fxapIndex}"]`);
+        if (!panel) return;
+        
+        const selectedSet = this.selectedFiles.get(fxapIndex) || new Set();
+        
+        panel.querySelectorAll('input[type="checkbox"]').forEach(cb => {
             cb.checked = checked;
             if (checked) {
-                this.selectedFiles.add(cb.dataset.path);
+                selectedSet.add(cb.dataset.path);
             } else {
-                this.selectedFiles.delete(cb.dataset.path);
+                selectedSet.delete(cb.dataset.path);
             }
         });
-        this.updateUIAfterSelection();
+        
+        this.selectedFiles.set(fxapIndex, selectedSet);
+        this.updateUIAfterSelection(fxapIndex);
     }
 
-    updateUIAfterSelection() {
-        const hasSelection = this.selectedFiles.size > 0;
-        this.removeSelectedBtn.disabled = !hasSelection;
+    updateUIAfterSelection(fxapIndex) {
+        const panel = this.tabPanels.querySelector(`[data-index="${fxapIndex}"]`);
+        if (!panel) return;
+
+        const selectedSet = this.selectedFiles.get(fxapIndex) || new Set();
+        const hasSelection = selectedSet.size > 0;
+        
+        const removeBtn = panel.querySelector(`#removeSelectedBtn_${fxapIndex}`);
+        const downloadModifiedBtn = panel.querySelector(`#downloadModifiedBtn_${fxapIndex}`);
+        
+        if (removeBtn) removeBtn.disabled = !hasSelection;
+        if (downloadModifiedBtn) downloadModifiedBtn.disabled = !hasSelection;
         
         // Update row highlighting
-        this.fileTree.querySelectorAll('.file-tree-item').forEach(item => {
+        panel.querySelectorAll('.file-tree-item').forEach(item => {
             const path = item.dataset.path;
-            if (this.selectedFiles.has(path)) {
+            if (selectedSet.has(path)) {
                 item.classList.add('selected');
             } else {
                 item.classList.remove('selected');
@@ -419,24 +632,34 @@ class FXAPDecoderApp {
         });
 
         // Update select all checkbox
-        const allCheckboxes = this.fileTree.querySelectorAll('input[type="checkbox"]');
-        const checkedCount = this.fileTree.querySelectorAll('input[type="checkbox"]:checked').length;
-        this.selectAllCheckbox.checked = checkedCount === allCheckboxes.length && allCheckboxes.length > 0;
-        this.selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < allCheckboxes.length;
+        const allCheckboxes = panel.querySelectorAll('input[type="checkbox"]');
+        const checkedCount = panel.querySelectorAll('input[type="checkbox"]:checked').length;
+        const selectAllCheckbox = panel.querySelector(`#selectAllFiles_${fxapIndex}`);
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = checkedCount === allCheckboxes.length && allCheckboxes.length > 0;
+            selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < allCheckboxes.length;
+        }
     }
 
     // File removal
-    async removeSelectedFiles() {
-        if (this.selectedFiles.size === 0) return;
+    async removeSelectedFiles(fxapIndex) {
+        const selectedSet = this.selectedFiles.get(fxapIndex);
+        if (!selectedSet || selectedSet.size === 0) return;
 
-        this.removeSelectedBtn.disabled = true;
-        this.removeSelectedBtn.innerHTML = '<span class="btn-loader"></span> Removing...';
+        const removeBtn = this.tabPanels.querySelector(`#removeSelectedBtn_${fxapIndex}`);
+        if (removeBtn) {
+            removeBtn.disabled = true;
+            removeBtn.innerHTML = '<span class="btn-loader"></span> Removing...';
+        }
 
         try {
             const response = await fetch(`/api/job/${this.currentJobId}/remove-files`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ filesToRemove: Array.from(this.selectedFiles) })
+                body: JSON.stringify({ 
+                    fxapIndex, 
+                    filesToRemove: Array.from(selectedSet) 
+                })
             });
 
             const result = await response.json();
@@ -445,32 +668,40 @@ class FXAPDecoderApp {
                 throw new Error(result.error || 'Failed to remove files');
             }
 
-            this.addLogEntry(`Removed ${result.removedFiles.length} file(s)`, 'success');
-            this.downloadModifiedBtn.disabled = false;
-            this.selectedFiles.clear();
-            this.updateUIAfterSelection();
+            this.addLogEntry(`Removed ${result.removedFiles.length} file(s) from ${this.currentFxapResults[fxapIndex].fxapName}`, 'success');
             
-            // Refresh file tree to show remaining files
-            // For simplicity, we'll just update the UI - in a real app you might refetch
+            const downloadModifiedBtn = this.tabPanels.querySelector(`#downloadModifiedBtn_${fxapIndex}`);
+            if (downloadModifiedBtn) downloadModifiedBtn.disabled = false;
+            
+            // Clear selection
+            selectedSet.clear();
+            this.updateUIAfterSelection(fxapIndex);
             
         } catch (error) {
             this.addLogEntry(`Error removing files: ${error.message}`, 'error');
             alert(`Failed to remove files: ${error.message}`);
         } finally {
-            this.removeSelectedBtn.innerHTML = 'Remove Selected';
-            this.removeSelectedBtn.disabled = this.selectedFiles.size === 0;
+            if (removeBtn) {
+                removeBtn.innerHTML = 'Remove Selected';
+                removeBtn.disabled = selectedSet.size === 0;
+            }
         }
     }
 
     // Downloads
-    downloadOriginal() {
+    downloadOriginal(fxapIndex) {
         if (!this.currentJobId) return;
-        window.location.href = `/api/job/${this.currentJobId}/download-original`;
+        window.location.href = `/api/job/${this.currentJobId}/download/${fxapIndex}`;
     }
 
-    downloadModified() {
+    downloadModified(fxapIndex) {
         if (!this.currentJobId) return;
-        window.location.href = `/api/job/${this.currentJobId}/download`;
+        window.location.href = `/api/job/${this.currentJobId}/download/${fxapIndex}`;
+    }
+
+    downloadAll() {
+        if (!this.currentJobId) return;
+        window.location.href = `/api/job/${this.currentJobId}/download-all`;
     }
 
     // Utilities

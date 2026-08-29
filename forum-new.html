@@ -36,10 +36,7 @@
             width: 100%; padding: 0.65rem 0.85rem; border: 1px solid #e5e7eb;
             border-radius: 8px; font-size: 0.88rem; font-family: inherit; transition: border-color 0.15s;
         }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
-        }
-        .form-group textarea { min-height: 200px; resize: vertical; line-height: 1.7; }
+        .form-group input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
 
         .form-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; }
         .btn { padding: 0.6rem 1.5rem; border-radius: 8px; font-size: 0.88rem; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
@@ -85,6 +82,7 @@
     </div>
 
     <script src="supabase.min.js"></script>
+    <script src="editor.js"></script>
     <script src="chat-widget.js"></script>
     <script>
         const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
@@ -94,6 +92,7 @@
 
         let currentUser = null;
         let currentProfile = null;
+        let editor = null;
 
         async function init() {
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -130,7 +129,7 @@
                     </div>
                     <div class="form-group">
                         <label>内容</label>
-                        <textarea id="content" placeholder="请输入帖子内容..."></textarea>
+                        <div id="editorContainer"></div>
                     </div>
                     <div class="form-actions">
                         <button class="btn btn-cancel" onclick="window.location.href='forum.html'">取消</button>
@@ -138,15 +137,17 @@
                     </div>
                 </div>
             `;
+            editor = createEditor('editorContainer', { height: 260, placeholder: '请输入帖子内容...' });
         }
 
         async function submitPost() {
             const title = document.getElementById('title').value.trim();
-            const content = document.getElementById('content').value.trim();
+            const content = editor ? editor.getHTML() : '';
             const category = document.getElementById('category').value;
+            const plainText = content.replace(/<[^>]*>/g, '').trim();
 
             if (!title) { showToast('请输入标题', 'error'); return; }
-            if (!content) { showToast('请输入内容', 'error'); return; }
+            if (!plainText) { showToast('请输入内容', 'error'); return; }
 
             const { error } = await supabaseClient.from('forum_posts').insert([{
                 user_id: currentUser.user.id, username: currentProfile.username,

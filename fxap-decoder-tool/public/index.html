@@ -37,8 +37,13 @@
                         </div>
                         <button id="removeFile" class="btn btn-secondary btn-sm">Remove</button>
                     </div>
+                    <div class="cfx-key-group">
+                        <label for="cfxKeyInput" class="cfx-key-label">CFX KEY <span class="optional">(可选)</span></label>
+                        <input type="text" id="cfxKeyInput" class="cfx-key-input" placeholder="cfxk_xxxxxxxxxx" autocomplete="off">
+                        <span class="cfx-key-hint">FiveM CFX 许可证密钥，部分 .fxap 需要此密钥解密</span>
+                    </div>
                     <button id="decodeBtn" class="btn btn-primary btn-lg" disabled>
-                        <span class="btn-text">Scan & Decode</span>
+                        <span class="btn-text">开始解密</span>
                         <span class="btn-loader hidden"></span>
                     </button>
                 </div>

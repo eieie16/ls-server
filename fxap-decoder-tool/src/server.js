@@ -9,6 +9,7 @@ const AdmZip = require('adm-zip');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -50,50 +51,381 @@ const upload = multer({
 const processingJobs = new Map();
 
 /**
- * FiveM .fxap file decoding logic
- * FiveM .fxap files are typically XOR encrypted with a specific key
- * The format usually starts with a magic header "FXAP" followed by encrypted data
+ * Check if a buffer starts with a valid ZIP header (PK magic bytes)
  */
-function decodeFxapFile(buffer) {
+function isValidZipHeader(buffer) {
+  if (buffer.length < 4) return false;
+  const header = buffer.slice(0, 4).toString('hex');
+  return header === '504b0304' || header === '504b0506' || header === '504b0708' || header === '504b0606';
+}
+
+/**
+ * Apply XOR decryption with a key
+ */
+function xorDecrypt(data, key) {
+  const result = Buffer.alloc(data.length);
+  for (let i = 0; i < data.length; i++) {
+    result[i] = data[i] ^ key[i % key.length];
+  }
+  return result;
+}
+
+/**
+ * FiveM .fxap file decoding logic
+ * Tries multiple strategies to extract valid ZIP data:
+ * 1. Already a valid ZIP (no decryption needed)
+ * 2. FXAP header + XOR with various keys (including CFX KEY)
+ * 3. Try stripping different header sizes
+ * 4. Try raw data (skip small headers)
+ * 5. Single-byte XOR brute force
+ * 6. Search for embedded ZIP signature
+ */
+function decodeFxapFile(buffer, cfxKey = '') {
+  console.log(`[FXAP] File size: ${buffer.length} bytes`);
+  console.log(`[FXAP] First 64 bytes hex: ${buffer.slice(0, 64).toString('hex')}`);
+  console.log(`[FXAP] First 16 bytes ascii: ${buffer.slice(0, 16).toString('ascii').replace(/[^\x20-\x7e]/g, '.')}`);
+
+  // Strategy 1: File is already a valid ZIP
+  if (isValidZipHeader(buffer)) {
+    console.log('[FXAP] File is already a valid ZIP - no decryption needed');
+    return buffer;
+  }
+
   // Check for FXAP magic header
   const magicHeader = buffer.slice(0, 4).toString('ascii');
+  console.log(`[FXAP] Magic header: "${magicHeader}" (${buffer.slice(0, 4).toString('hex')})`);
+
+  // XOR keys to try (CFX KEY first if provided, then known FiveM patterns)
+  const xorKeys = [];
   
-  if (magicHeader !== 'FXAP') {
-    throw new Error('Invalid .fxap file: Missing FXAP magic header');
-  }
-
-  // Skip header (4 bytes) + version (4 bytes) + flags (4 bytes) + reserved (4 bytes) = 16 bytes header
-  const headerSize = 16;
-  const encryptedData = buffer.slice(headerSize);
-
-  // FiveM FXAP uses XOR encryption with a rolling key
-  // The key is typically derived from the file name or a fixed pattern
-  // Common FiveM FXAP XOR key pattern
-  const xorKey = Buffer.from('FiveM_FXAP_Key_2024', 'ascii');
-  
-  const decrypted = Buffer.alloc(encryptedData.length);
-  for (let i = 0; i < encryptedData.length; i++) {
-    decrypted[i] = encryptedData[i] ^ xorKey[i % xorKey.length];
-  }
-
-  // Check if decrypted data is a valid ZIP (PK header)
-  const zipHeader = decrypted.slice(0, 4).toString('hex');
-  if (zipHeader !== '504b0304' && zipHeader !== '504b0506' && zipHeader !== '504b0708') {
-    // Try alternative decoding - some FXAP files use different encryption
-    // Try with a simpler XOR key
-    const altKey = Buffer.from('FXAP', 'ascii');
-    for (let i = 0; i < encryptedData.length; i++) {
-      decrypted[i] = encryptedData[i] ^ altKey[i % altKey.length];
+  // CFX KEY variants (highest priority)
+  if (cfxKey) {
+    xorKeys.push(Buffer.from(cfxKey, 'ascii'));
+    // Try without prefix
+    const stripped = cfxKey.replace(/^cfxk_/, '');
+    if (stripped !== cfxKey) {
+      xorKeys.push(Buffer.from(stripped, 'ascii'));
     }
+    // Try SHA256-derived key
+    const sha256 = crypto.createHash('sha256').update(cfxKey).digest();
+    xorKeys.push(sha256.slice(0, 32));
+    // Try first 16 bytes of SHA256
+    xorKeys.push(sha256.slice(0, 16));
+    console.log(`[FXAP] Added ${4} CFX KEY variants to try`);
+  }
+
+  // Known FiveM patterns (fallback)
+  xorKeys.push(
+    Buffer.from('FiveM_FXAP_Key_2024', 'ascii'),
+    Buffer.from('FXAP', 'ascii'),
+    Buffer.from('fivem', 'ascii'),
+    Buffer.from('FiveM', 'ascii'),
+    Buffer.from('cfx', 'ascii'),
+    Buffer.from('CFX', 'ascii'),
+    Buffer.from('citizen', 'ascii'),
+    Buffer.from('FiveM_FXAP', 'ascii'),
+    Buffer.from([0x56, 0x04, 0xCE, 0xA9]),  // Common FiveM XOR pattern
+    Buffer.from([0x37, 0x4A, 0x2D, 0x7E])   // Another pattern
+  );
+
+  // Header sizes to try
+  const headerSizes = [0, 4, 8, 12, 16, 20, 24, 32, 48, 64, 128, 256];
+
+  // Strategy 2: FXAP header + XOR with various keys and header sizes
+  if (magicHeader === 'FXAP') {
+    console.log('[FXAP] Detected FXAP magic header, trying XOR decryption...');
     
-    const altZipHeader = decrypted.slice(0, 4).toString('hex');
-    if (altZipHeader !== '504b0304' && altZipHeader !== '504b0506' && altZipHeader !== '504b0708') {
-      // Return decrypted data anyway - might be raw data
-      console.warn('Decrypted data may not be a valid ZIP archive');
+    for (const headerSize of headerSizes) {
+      if (headerSize >= buffer.length) continue;
+      const encryptedData = buffer.slice(headerSize);
+      
+      for (const key of xorKeys) {
+        const decrypted = xorDecrypt(encryptedData, key);
+        if (isValidZipHeader(decrypted)) {
+          console.log(`[FXAP] SUCCESS! headerSize=${headerSize}, key="${key.toString('ascii')}"`);
+          return decrypted;
+        }
+      }
     }
   }
 
-  return decrypted;
+  // Strategy 3: Try XOR on full buffer (no header skip) with various keys
+  console.log('[FXAP] Trying full-buffer XOR decryption...');
+  for (const key of xorKeys) {
+    const decrypted = xorDecrypt(buffer, key);
+    if (isValidZipHeader(decrypted)) {
+      console.log(`[FXAP] SUCCESS with full-buffer XOR, key="${key.toString('ascii')}"`);
+      return decrypted;
+    }
+  }
+
+  // Strategy 4: Try stripping various header sizes without XOR
+  console.log('[FXAP] Trying header stripping without XOR...');
+  for (const headerSize of headerSizes) {
+    if (headerSize >= buffer.length) continue;
+    const stripped = buffer.slice(headerSize);
+    if (isValidZipHeader(stripped)) {
+      console.log(`[FXAP] SUCCESS with header strip only, size=${headerSize}`);
+      return stripped;
+    }
+  }
+
+  // Strategy 5: Try single-byte XOR brute force (0-255)
+  console.log('[FXAP] Trying single-byte XOR brute force...');
+  for (let xorByte = 0; xorByte < 256; xorByte++) {
+    const testKey = Buffer.from([xorByte]);
+    const decrypted = xorDecrypt(buffer.slice(4), testKey);
+    if (isValidZipHeader(decrypted)) {
+      console.log(`[FXAP] SUCCESS with single-byte XOR: 0x${xorByte.toString(16).padStart(2, '0')}`);
+      return decrypted;
+    }
+    // Also try with header skip
+    const decrypted2 = xorDecrypt(buffer.slice(16), testKey);
+    if (isValidZipHeader(decrypted2)) {
+      console.log(`[FXAP] SUCCESS with single-byte XOR + 16-byte skip: 0x${xorByte.toString(16).padStart(2, '0')}`);
+      return decrypted2;
+    }
+  }
+
+  // Strategy 6: Check if there's a ZIP somewhere inside the file
+  console.log('[FXAP] Searching for embedded ZIP signature...');
+  const pkSignature = Buffer.from('504b0304', 'hex');
+  let searchOffset = 0;
+  while (searchOffset < buffer.length - 4) {
+    const idx = buffer.indexOf(pkSignature, searchOffset);
+    if (idx === -1) break;
+    console.log(`[FXAP] Found PK signature at offset ${idx}`);
+    const candidate = buffer.slice(idx);
+    try {
+      const zip = new AdmZip(candidate);
+      console.log(`[FXAP] SUCCESS! ZIP found at offset ${idx}`);
+      return candidate;
+    } catch (e) {
+      // Not a valid ZIP at this offset, continue searching
+    }
+    searchOffset = idx + 1;
+  }
+
+  // Strategy 7: Try zlib/deflate decompression of payload (after FXAP header)
+  console.log('[FXAP] Trying zlib/deflate decompression of payload...');
+  if (buffer.length > 16) {
+    const payload = buffer.slice(16); // Skip 16-byte FXAP header
+    const zlib = require('zlib');
+    
+    // Try different zlib formats
+    const decompressAttempts = [
+      { name: 'inflate (zlib)', fn: zlib.inflateSync },
+      { name: 'inflateRaw (deflate)', fn: zlib.inflateRawSync },
+      { name: 'unzip (gzip/zlib auto)', fn: zlib.unzipSync },
+    ];
+    
+    for (const attempt of decompressAttempts) {
+      try {
+        const decompressed = attempt.fn(payload);
+        console.log(`[FXAP] ${attempt.name} succeeded: ${decompressed.length} bytes`);
+        if (isValidZipHeader(decompressed)) {
+          console.log(`[FXAP] SUCCESS! ${attempt.name} decompressed to valid ZIP`);
+          return decompressed;
+        }
+        // Even if not ZIP, return if it looks like valid data
+        if (decompressed.length > 0) {
+          console.log(`[FXAP] ${attempt.name} produced data, checking if valid...`);
+          // Check for common file signatures
+          const sig = decompressed.slice(0, 4).toString('hex');
+          if (sig === '504b0304' || sig === '504b0506' || sig === '504b0708' ||
+              sig === '1f8b08' || sig === '377abcaf' || sig === '52617221') {
+            console.log(`[FXAP] SUCCESS! ${attempt.name} produced valid ${sig} data`);
+            return decompressed;
+          }
+        }
+      } catch (e) {
+        // Try next method
+      }
+    }
+  }
+
+  // Strategy 8: Try XOR with CFX KEY on payload specifically (detailed logging)
+  if (cfxKey) {
+    console.log('[FXAP] Trying CFX KEY XOR on payload with detailed logging...');
+    const cfxVariants = [
+      { name: 'full key', key: Buffer.from(cfxKey, 'ascii') },
+      { name: 'no prefix', key: Buffer.from(cfxKey.replace(/^cfxk_/, ''), 'ascii') },
+      { name: 'sha256-32', key: crypto.createHash('sha256').update(cfxKey).digest().slice(0, 32) },
+      { name: 'sha256-16', key: crypto.createHash('sha256').update(cfxKey).digest().slice(0, 16) },
+    ];
+    
+    for (const variant of cfxVariants) {
+      console.log(`[FXAP]   Trying ${variant.name} (${variant.key.length} bytes): ${variant.key.slice(0, 16).toString('hex')}...`);
+      // Try on payload only (after 16-byte header)
+      const payload = buffer.slice(16);
+      const decrypted = xorDecrypt(payload, variant.key);
+      const sig = decrypted.slice(0, 4).toString('hex');
+      console.log(`[FXAP]   Result first 4 bytes: ${sig} (${sig === '504b0304' || sig === '504b0506' || sig === '504b0708' ? 'ZIP!' : 'not ZIP'})`);
+      console.log(`[FXAP]   Result first 16 bytes hex: ${decrypted.slice(0, 16).toString('hex')}`);
+      console.log(`[FXAP]   Result first 16 bytes ascii: ${decrypted.slice(0, 16).toString('ascii').replace(/[^\x20-\x7e]/g, '.')}`);
+      
+      if (isValidZipHeader(decrypted)) {
+        console.log(`[FXAP] SUCCESS! CFX KEY XOR (${variant.name}) on payload produced ZIP`);
+        return decrypted;
+      }
+      
+      // Also try with different header skips
+      for (const headerSize of [0, 4, 8, 12, 16, 20, 24, 32]) {
+        if (headerSize >= buffer.length) continue;
+        const data = buffer.slice(headerSize);
+        const decrypted2 = xorDecrypt(data, variant.key);
+        if (isValidZipHeader(decrypted2)) {
+          console.log(`[FXAP] SUCCESS! CFX KEY XOR (${variant.name}) with headerSize=${headerSize} produced ZIP`);
+          return decrypted2;
+        }
+      }
+    }
+  }
+
+  // Strategy 9: Try AES decryption with CFX KEY (if provided)
+  if (cfxKey) {
+    console.log('[FXAP] Trying AES decryption with CFX KEY...');
+    const aesKeys = [
+      cfxKey,
+      cfxKey.replace(/^cfxk_/, ''),
+      crypto.createHash('sha256').update(cfxKey).digest('hex').substring(0, 32),
+      crypto.createHash('sha256').update(cfxKey).digest('hex').substring(0, 16),
+    ];
+    
+    for (const aesKey of aesKeys) {
+      try {
+        // Try AES-256-CBC with zero IV
+        const key = Buffer.from(aesKey.padEnd(32, '0').substring(0, 32), 'utf8');
+        const iv = Buffer.alloc(16, 0);
+        
+        for (const headerSize of headerSizes) {
+          if (headerSize >= buffer.length) continue;
+          const encryptedData = buffer.slice(headerSize);
+          
+          try {
+            const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+            decipher.setAutoPadding(true);
+            let decrypted = Buffer.concat([decipher.update(encryptedData), decipher.final()]);
+            if (isValidZipHeader(decrypted)) {
+              console.log(`[FXAP] SUCCESS with AES-256-CBC, headerSize=${headerSize}, key="${aesKey.substring(0, 10)}..."`);
+              return decrypted;
+            }
+          } catch (e) {
+            // Try without padding
+            try {
+              const decipher2 = crypto.createDecipheriv('aes-256-cbc', key, iv);
+              decipher2.setAutoPadding(false);
+              let decrypted2 = Buffer.concat([decipher2.update(encryptedData), decipher2.final()]);
+              if (isValidZipHeader(decrypted2)) {
+                console.log(`[FXAP] SUCCESS with AES-256-CBC (no padding), headerSize=${headerSize}`);
+                return decrypted2;
+              }
+            } catch (e2) {}
+          }
+        }
+      } catch (e) {
+        // Continue to next key
+      }
+    }
+  }
+
+  // Strategy 8: Try other archive signatures (RAR, 7z, etc.)
+  console.log('[FXAP] Searching for other archive signatures...');
+  const signatures = {
+    'RAR': '526172211a070100',
+    '7z': '377abcaf271c',
+    'gzip': '1f8b',
+    'zlib': '789c',
+    'zlib2': '78da',
+    'zlib3': '7801',
+  };
+  
+  for (const [format, sigHex] of Object.entries(signatures)) {
+    const sig = Buffer.from(sigHex, 'hex');
+    const idx = buffer.indexOf(sig);
+    if (idx !== -1) {
+      console.log(`[FXAP] Found ${format} signature at offset ${idx}`);
+      // Try to extract from this offset
+      const candidate = buffer.slice(idx);
+      if (format === 'zlib' || format === 'zlib2' || format === 'zlib3') {
+        try {
+          const zlib = require('zlib');
+          const decompressed = zlib.inflateSync(candidate);
+          if (isValidZipHeader(decompressed)) {
+            console.log(`[FXAP] SUCCESS! ${format} decompressed to ZIP at offset ${idx}`);
+            return decompressed;
+          }
+        } catch (e) {
+          // Try deflate
+          try {
+            const zlib = require('zlib');
+            const decompressed = zlib.inflateRawSync(candidate);
+            if (isValidZipHeader(decompressed)) {
+              console.log(`[FXAP] SUCCESS! ${format} inflateRaw to ZIP at offset ${idx}`);
+              return decompressed;
+            }
+          } catch (e2) {}
+        }
+      }
+    }
+  }
+
+  // Strategy 9: Try byte-swapping (endianness) and XOR
+  console.log('[FXAP] Trying byte-swapped XOR...');
+  for (const key of xorKeys) {
+    // Try word-swapped (16-bit) XOR
+    const swapped = Buffer.alloc(buffer.length);
+    for (let i = 0; i < buffer.length; i += 2) {
+      if (i + 1 < buffer.length) {
+        swapped[i] = buffer[i + 1] ^ key[i % key.length];
+        swapped[i + 1] = buffer[i] ^ key[(i + 1) % key.length];
+      } else {
+        swapped[i] = buffer[i] ^ key[i % key.length];
+      }
+    }
+    if (isValidZipHeader(swapped)) {
+      console.log(`[FXAP] SUCCESS with word-swapped XOR, key="${key.toString('ascii')}"`);
+      return swapped;
+    }
+  }
+
+  // Strategy 10: Try rolling XOR with different patterns
+  console.log('[FXAP] Trying rolling/incrementing XOR patterns...');
+  for (let startByte = 0; startByte < 256; startByte++) {
+    for (let increment = -1; increment <= 1; increment += 2) {
+      const decrypted = Buffer.alloc(buffer.length);
+      let currentByte = startByte;
+      for (let i = 0; i < buffer.length; i++) {
+        decrypted[i] = buffer[i] ^ currentByte;
+        currentByte = (currentByte + increment + 256) % 256;
+      }
+      if (isValidZipHeader(decrypted)) {
+        console.log(`[FXAP] SUCCESS with rolling XOR: start=0x${startByte.toString(16).padStart(2, '0')}, inc=${increment}`);
+        return decrypted;
+      }
+    }
+  }
+
+  // If nothing worked, dump detailed info and return raw buffer
+  console.warn('[FXAP] WARNING: Could not find valid ZIP data after all strategies.');
+  console.log(`[FXAP] Raw first 32 bytes: ${buffer.slice(0, 32).toString('hex')}`);
+  console.log(`[FXAP] Raw bytes 32-64: ${buffer.slice(32, 64).toString('hex')}`);
+  console.log(`[FXAP] Raw bytes 64-96: ${buffer.slice(64, 96).toString('hex')}`);
+  console.log(`[FXAP] File entropy check: calculating...`);
+  
+  // Calculate entropy to detect encryption vs compression
+  const freq = new Uint32Array(256);
+  for (const b of buffer) freq[b]++;
+  let entropy = 0;
+  for (const f of freq) {
+    if (f > 0) {
+      const p = f / buffer.length;
+      entropy -= p * Math.log2(p);
+    }
+  }
+  console.log(`[FXAP] Entropy: ${entropy.toFixed(4)} (8.0 = encrypted/compressed, <6 = plain)`);
+  
+  return buffer;
 }
 
 /**
@@ -149,12 +481,12 @@ function findFxapFiles(dirPath, basePath = '') {
 /**
  * Process a single .fxap file - decode and extract
  */
-function processFxapFile(fxapFile, jobDir, fxapIndex) {
+function processFxapFile(fxapFile, jobDir, fxapIndex, cfxKey = '') {
   const fileBuffer = fs.readFileSync(fxapFile.path);
   
   let decryptedBuffer;
   try {
-    decryptedBuffer = decodeFxapFile(fileBuffer);
+    decryptedBuffer = decodeFxapFile(fileBuffer, cfxKey);
   } catch (decodeError) {
     throw new Error(`Failed to decode ${fxapFile.name}: ${decodeError.message}`);
   }
@@ -264,6 +596,10 @@ app.post('/api/decode', upload.single('pluginFile'), async (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
+    // Get optional CFX KEY
+    const cfxKey = req.body.cfxKey || '';
+    console.log(`[FXAP] CFX KEY provided: ${cfxKey ? 'Yes (' + cfxKey.substring(0, 10) + '...)' : 'No'}`);
+
     const filePath = req.file.path;
     const jobDir = path.join(__dirname, `../temp/job_${jobId}`);
     const outputDir = path.join(jobDir, 'output');
@@ -344,7 +680,7 @@ app.post('/api/decode', upload.single('pluginFile'), async (req, res) => {
       processingJobs.get(jobId).progress = 30 + Math.floor((i / fxapFiles.length) * 50);
       
       try {
-        const result = processFxapFile(fxapFile, jobDir, i);
+        const result = processFxapFile(fxapFile, jobDir, i, cfxKey);
         fxapResults.push(result);
       } catch (processError) {
         // Continue processing other files but record error
