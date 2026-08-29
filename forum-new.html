@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>发帖 - 凌云城</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -39,11 +40,28 @@
         .form-group input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
 
         .form-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; }
+        .form-actions .btn-secondary { background: #f3f4f6; color: #555; }
+        .form-actions .btn-secondary:hover { background: #e5e7eb; }
+        .title-count { font-size: 0.72rem; color: #999; text-align: right; margin-top: 0.2rem; }
+        .title-count.warn { color: #ef4444; }
         .btn { padding: 0.6rem 1.5rem; border-radius: 8px; font-size: 0.88rem; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
         .btn-cancel { background: #f3f4f6; color: #666; }
         .btn-cancel:hover { background: #e5e7eb; }
         .btn-primary { background: #6366f1; color: #fff; }
         .btn-primary:hover { background: #5558e6; }
+
+        .preview-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;
+        }
+        .preview-overlay.show { display: flex; }
+        .preview-box {
+            background: #fff; border-radius: 12px; padding: 2rem; max-width: 700px; width: 90%;
+            max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+        }
+        .preview-box h2 { font-size: 1.2rem; margin-bottom: 1rem; }
+        .preview-content { line-height: 1.8; color: #333; }
+        .preview-close { float: right; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #999; }
 
         .hint { font-size: 0.75rem; color: #999; margin-top: 0.25rem; }
         .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 0.85rem 1.25rem; border-radius: 8px; font-size: 0.85rem; z-index: 9999; animation: slideIn 0.2s; }
@@ -127,8 +145,8 @@
                     </div>
                     <div class="form-group">
                         <label>标题</label>
-                        <input type="text" id="title" placeholder="请输入帖子标题" maxlength="100">
-                        <div class="hint">最多 100 字</div>
+                        <input type="text" id="title" placeholder="请输入帖子标题" maxlength="100" oninput="updateTitleCount()">
+                        <div class="title-count" id="titleCount">0 / 100</div>
                     </div>
                     <div class="form-group">
                         <label>内容</label>
@@ -136,11 +154,20 @@
                     </div>
                     <div class="form-actions">
                         <button class="btn btn-cancel" onclick="window.location.href='forum.html'">取消</button>
+                        <button class="btn btn-secondary" onclick="previewPost()">👁️ 预览</button>
                         <button class="btn btn-primary" onclick="submitPost()">发布</button>
                     </div>
                 </div>
             `;
             editor = createEditor('editorContainer', { height: 260, placeholder: '请输入帖子内容...' });
+
+            // 预览弹窗
+            document.body.insertAdjacentHTML('beforeend', '<div class="preview-overlay" id="previewOverlay" onclick="if(event.target===this)closePreview()"><div class="preview-box"><button class="preview-close" onclick="closePreview()">✕</button><h2 id="previewTitle"></h2><div class="preview-content" id="previewContent"></div></div></div>');
+
+            // 离开页面提示
+            window.addEventListener('beforeunload', function(e) {
+                if (hasUnsavedContent()) { e.preventDefault(); e.returnValue = ''; }
+            });
 
             // 恢复草稿
             loadDraft();
@@ -176,6 +203,31 @@
 
         function clearDraft() { localStorage.removeItem(DRAFT_KEY); }
 
+        function hasUnsavedContent() {
+            var title = document.getElementById('title');
+            var content = editor ? editor.getHTML() : '';
+            return (title && title.value.trim()) || content.replace(/<[^>]*>/g, '').trim();
+        }
+
+        function updateTitleCount() {
+            var title = document.getElementById('title');
+            var el = document.getElementById('titleCount');
+            if (!title || !el) return;
+            var len = title.value.length;
+            el.textContent = len + ' / 100';
+            el.className = 'title-count' + (len > 90 ? ' warn' : '');
+        }
+
+        function previewPost() {
+            var title = document.getElementById('title').value.trim() || '无标题';
+            var content = editor ? editor.getHTML() : '<p style="color:#999">暂无内容</p>';
+            document.getElementById('previewTitle').textContent = title;
+            document.getElementById('previewContent').innerHTML = content;
+            document.getElementById('previewOverlay').classList.add('show');
+        }
+
+        function closePreview() { document.getElementById('previewOverlay').classList.remove('show'); }
+
         async function submitPost() {
             const title = document.getElementById('title').value.trim();
             const content = editor ? editor.getHTML() : '';
@@ -197,18 +249,23 @@
             const btn = document.querySelector('.btn-primary');
             setLoading(btn, true);
 
-            const safeContent = sanitizeHTML(content);
-            const { error } = await supabaseClient.from('forum_posts').insert([{
-                user_id: currentUser.user.id, username: currentProfile.username,
-                avatar_url: currentProfile.avatar_url || '', category, title, content: safeContent
-            }]);
+            try {
+                const safeContent = sanitizeHTML(content);
+                const { error } = await supabaseClient.from('forum_posts').insert([{
+                    user_id: currentUser.user.id, username: currentProfile.username,
+                    avatar_url: currentProfile.avatar_url || '', category, title, content: safeContent
+                }]);
 
-            setLoading(btn, false);
-            if (error) { showToast('发布失败: ' + error.message, 'error'); return; }
-            lastPostTime = Date.now();
-            clearDraft();
-            showToast('发布成功！', 'success');
-            setTimeout(() => window.location.href = 'forum.html', 1000);
+                setLoading(btn, false);
+                if (error) { showToast('发布失败: ' + error.message, 'error'); return; }
+                lastPostTime = Date.now();
+                clearDraft();
+                showToast('发布成功！', 'success');
+                setTimeout(() => window.location.href = 'forum.html', 1000);
+            } catch (err) {
+                setLoading(btn, false);
+                showToast('发布失败', 'error');
+            }
         }
 
         async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }

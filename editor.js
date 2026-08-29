@@ -162,12 +162,81 @@ function createEditor(containerId, opts) {
             if (e.key === 'i') { e.preventDefault(); document.execCommand('italic'); }
             if (e.key === 'u') { e.preventDefault(); document.execCommand('underline'); }
         }
-        // Tab indent
         if (e.key === 'Tab') {
             e.preventDefault();
             document.execCommand(e.shiftKey ? 'outdent' : 'indent', false, null);
         }
     });
+
+    // Paste format cleanup - strip dirty styles from Word/web
+    body.addEventListener('paste', function(e) {
+        e.preventDefault();
+        var text = (e.clipboardData || window.clipboardData).getData('text/html') || (e.clipboardData || window.clipboardData).getData('text/plain');
+        if (e.clipboardData.getData('text/html')) {
+            var tmp = document.createElement('div');
+            tmp.innerHTML = text;
+            var clean = tmp.textContent || tmp.innerText || '';
+            document.execCommand('insertText', false, clean);
+        } else {
+            document.execCommand('insertText', false, text);
+        }
+    });
+
+    // Emoji picker
+    var emojiBtn = document.createElement('button');
+    emojiBtn.type = 'button';
+    emojiBtn.className = 'ed-btn';
+    emojiBtn.title = '表情';
+    emojiBtn.textContent = '😀';
+    emojiBtn.style.fontSize = '16px';
+    emojiBtn.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        toggleEmojiPanel();
+    });
+    container.querySelector('.editor-toolbar').appendChild(emojiBtn);
+
+    var emojiPanel = document.createElement('div');
+    emojiPanel.className = 'emoji-panel';
+    emojiPanel.style.display = 'none';
+    var EMOJIS = '😀😃😄😁😆😅🤣😂🙂🙃😉😊😇🥰😍🤩😘😗😚😋😛😜🤪😝🤑🤗🤭🤫🤔🤐🤨😐😑😶😏😒🙄😬🤥😌😔😪🤤😴😷🤒🤕🤢🤮🤧🥵🥶🥴😵🤯🤠🥳🥸😎🤓🧐😕😟🙁☹️😮😯😲😳🥺😦😧😨😰😥😢😭😱😖😣😞😓😩😫🥱😤😡😠🤬😈👿💀☠️💩🤡👹👺👻👽👾🤖😺😸😹😻😼😽🙀😿😾🙈🙉🙊💌💘💝💖💗💓💞💕💟❣️💔❤️🧡💛💚💙💜🖤🤍🤎💔❣️💕💞💓💗💖💘💝🎶🎵🎤🎧🎼🎹🥁🎷🎺🎸🪕🎻🏠🏡🏢🏣🏤🏥🏦🏨🏩🏪🏫🏬🏭🏯🏰💒🗼🗽⛪🕌🛕🕍⛩🕋⛲⛺🌁🌃🏙🌄🌅🌠🎆🎇幽默 Beckoning 🫳 \uD83E\uDEE4 🫴 \uD83E\uDEE2 🫷 \uD83E\uDEE7 🫸 \uD83E\uDEE8 👌🤌🤏✌️🤞🫰🤟🤘🤙👈👉👆🖕👇☝️🫵👍👎✊👊🤛🤜👏🙌👐🤲🤝🙏✍️💅🤳💪🦾🦿🦵🦶👂🦻👃🧠🫀🫁🦷🦴👀👁👅👄👶🧒👦👧🧑👱👨🧔👩🧓👴👵🙍🙎🙅🙆💁🙋🧏🙇🤦🤷👮🕵️💂🥷👷🫅🤴👸👳👲🧕🤵👰🤰🫃🫄🤱👼🎅🧙🧚🧛🧜🧝🧞🧟🧌👳👲🧕🤵👰🤰🤱👼🎅🧙🧚🧛🧜🧝🧞🧟🧌';
+    var emojiChars = EMOJIS.match(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{200D}\u{2764}\u{FE0F}\u{20E3}\u{1F466}-\u{1F469}\u{1F468}\u{1F467}\u{200D}\u{2695}\u{200D}\u{2640}\u{200D}\u{2642}\u{200D}\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}\u{200D}\u{1F466}]/gu) || [];
+    // Simple fallback: common emojis
+    var SIMPLE_EMOJIS = ['😀','😂','🤣','😊','😍','🥰','😘','😜','🤪','😝','🤔','😏','🙄','😬','😴','🥳','😎','🤓','😡','😱','🥺','😭','😤','👍','👎','❤️','🔥','💯','✨','🎉','🎊','💪','🙏','👏','🙌','🤝','✌️','🤞','💕','💖','💗','🎶','🎵','🎮','🏆','⭐','🌟','💡','📢','📌','🎯','🚀','💎','🎁','🔔','✅','❌','⚠️','💬','📝','🔗','📸','🎬','💻','🔧','🎮','🕹️','🎰','🎲','🃏','🀄','🏆','🥇','🥈','🥉','🏅','⚽','🏀','🏈','⚾','🎾','🏐','🎱','🏓','🏸','🥊','🥋','🎽','🛹','🛼','🎿','⛷️','🏂','🏋️','🤼','🤸','⛹️','🤾','🏌️','🏇','🧘','🏄','🏊','🤽','🚣','🧗','🚵','🚴','🏆','🎖️','🏅','🥇','🥈','🥉'];
+    emojiPanel.innerHTML = '<div class="emoji-grid">' + SIMPLE_EMOJIS.map(function(e) {
+        return '<span class="emoji-item" data-emoji="' + e + '">' + e + '</span>';
+    }).join('') + '</div>';
+    body.parentNode.appendChild(emojiPanel);
+
+    emojiPanel.addEventListener('mousedown', function(e) {
+        var item = e.target.closest('.emoji-item');
+        if (item) {
+            e.preventDefault();
+            restoreSelection();
+            document.execCommand('insertText', false, item.dataset.emoji);
+            body.focus();
+            emojiPanel.style.display = 'none';
+        }
+    });
+
+    function toggleEmojiPanel() {
+        saveSelection();
+        var isVisible = emojiPanel.style.display === 'block';
+        emojiPanel.style.display = isVisible ? 'none' : 'block';
+    }
+
+    // Char count & word count
+    var charCountEl = document.createElement('div');
+    charCountEl.className = 'editor-charcount';
+    body.parentNode.appendChild(charCountEl);
+
+    function updateCharCount() {
+        var text = body.innerText || '';
+        var chars = text.replace(/\s/g, '').length;
+        charCountEl.textContent = chars + ' 字';
+        charCountEl.style.color = chars > 5000 ? '#ef4444' : '#999';
+    }
+    body.addEventListener('input', updateCharCount);
+    updateCharCount();
 
     // Toolbar CSS
     if (!document.getElementById('editorStyle')) {
@@ -218,6 +287,18 @@ function createEditor(containerId, opts) {
 }
 .editor-body img { max-width: 100%; border-radius: 6px; margin: 6px 0; }
 .editor-body a { color: #6366f1; }
+.emoji-panel {
+    position: absolute; z-index: 100; background: #fff; border: 1px solid #e5e7eb;
+    border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); padding: 8px;
+    max-width: 320px; max-height: 200px; overflow-y: auto;
+}
+.emoji-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; }
+.emoji-item {
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border-radius: 4px; font-size: 18px; transition: background 0.1s;
+}
+.emoji-item:hover { background: #f3f4f6; }
+.editor-charcount { text-align: right; font-size: 0.72rem; color: #999; padding: 4px 8px; background: #fafafa; border-top: 1px solid #f0f0f0; }
 `;
         document.head.appendChild(style);
     }

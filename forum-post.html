@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>帖子 - 凌云城</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -46,7 +47,9 @@
 
         .post-content { font-size: 0.92rem; line-height: 1.8; color: #444; word-break: break-word; }
         .post-content blockquote { border-left: 3px solid #6366f1; padding-left: 12px; margin: 8px 0; color: #666; background: #f9fafb; border-radius: 0 4px 4px 0; }
-        .post-content pre { background: #f3f4f6; padding: 10px 14px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 13px; overflow-x: auto; border: 1px solid #e5e7eb; }
+        .post-content pre { background: #1e1e2e; padding: 14px 18px; border-radius: 8px; font-family: 'Fira Code', 'Courier New', monospace; font-size: 13px; overflow-x: auto; color: #cdd6f4; line-height: 1.6; margin: 8px 0; }
+        .post-content pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+        .post-content code { background: #f3f4f6; padding: 0.15rem 0.4rem; border-radius: 4px; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.85em; color: #e45649; }
         .post-content img { max-width: 100%; border-radius: 6px; margin: 6px 0; }
         .post-content a { color: #6366f1; }
 
@@ -71,9 +74,17 @@
         .reply-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .reply-info .name { font-size: 0.82rem; font-weight: 600; }
         .reply-info .time { font-size: 0.72rem; color: #999; }
+        .quote-btn {
+            margin-left: auto; padding: 0.25rem 0.6rem; border: 1px solid #e5e7eb;
+            border-radius: 4px; background: #fff; color: #888; font-size: 0.72rem;
+            cursor: pointer; flex-shrink: 0; transition: all 0.15s;
+        }
+        .quote-btn:hover { border-color: #6366f1; color: #6366f1; }
         .reply-content { font-size: 0.88rem; line-height: 1.7; color: #444; }
         .reply-content blockquote { border-left: 3px solid #6366f1; padding-left: 12px; margin: 6px 0; color: #666; background: #f9fafb; border-radius: 0 4px 4px 0; }
-        .reply-content pre { background: #f3f4f6; padding: 8px 12px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 13px; overflow-x: auto; border: 1px solid #e5e7eb; }
+        .reply-content pre { background: #1e1e2e; padding: 10px 14px; border-radius: 6px; font-family: 'Fira Code', 'Courier New', monospace; font-size: 13px; overflow-x: auto; color: #cdd6f4; margin: 6px 0; }
+        .reply-content pre code { background: none; padding: 0; color: inherit; }
+        .reply-content code { background: #f3f4f6; padding: 0.1rem 0.35rem; border-radius: 3px; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.85em; color: #e45649; }
         .reply-content img { max-width: 100%; border-radius: 6px; margin: 4px 0; }
         .reply-content a { color: #6366f1; }
 
@@ -161,82 +172,92 @@
         }
 
         async function loadPost(id) {
-            const { data } = await supabaseClient.from('forum_posts').select('*').eq('id', id).single();
-            if (!data) { document.getElementById('postContent').innerHTML = '<div class="empty-state">帖子不存在</div>'; return; }
+            try {
+                const { data } = await supabaseClient.from('forum_posts').select('*').eq('id', id).single();
+                if (!data) { document.getElementById('postContent').innerHTML = '<div class="empty-state">帖子不存在</div>'; return; }
 
-            postData = data;
-            await supabaseClient.from('forum_posts').update({ views: data.views + 1 }).eq('id', id);
+                postData = data;
+                await supabaseClient.from('forum_posts').update({ views: data.views + 1 }).eq('id', id);
 
-            document.title = data.title + ' - 凌云城';
-            document.getElementById('breadcrumbTitle').textContent = data.title;
+                document.title = data.title + ' - 凌云城';
+                document.getElementById('breadcrumbTitle').textContent = data.title;
 
-            const time = new Date(data.created_at).toLocaleString('zh-CN');
-            const isSolved = data.status === '已解决';
-            const isAuthor = currentUser && currentUser.user.id === data.user_id;
+                const time = new Date(data.created_at).toLocaleString('zh-CN');
+                const isSolved = data.status === '已解决';
+                const isAuthor = currentUser && currentUser.user.id === data.user_id;
 
-            document.getElementById('postContent').innerHTML = `
-                <div class="post-card">
-                    <div class="post-header">
-                        <div>
-                            <div class="post-title">${data.title}</div>
-                            <div class="post-tags">
-                                <span class="tag tag-cat">${data.category}</span>
-                                <span class="tag ${isSolved ? 'tag-solved' : 'tag-unsolved'}">${data.status}</span>
+                document.getElementById('postContent').innerHTML = `
+                    <div class="post-card">
+                        <div class="post-header">
+                            <div>
+                                <div class="post-title">${data.title}</div>
+                                <div class="post-tags">
+                                    <span class="tag tag-cat">${data.category}</span>
+                                    <span class="tag ${isSolved ? 'tag-solved' : 'tag-unsolved'}">${data.status}</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="post-author">
-                        <div class="author-avatar">${data.avatar_url ? '<img src="'+data.avatar_url+'">' : DEFAULT_AVATAR}</div>
-                        <div class="author-info">
-                            <div class="name">${data.username}</div>
-                            <div class="time">${time} · 浏览 ${data.views + 1}</div>
+                        <div class="post-author">
+                            <div class="author-avatar">${data.avatar_url ? '<img src="'+data.avatar_url+'">' : DEFAULT_AVATAR}</div>
+                            <div class="author-info">
+                                <div class="name">${data.username}</div>
+                                <div class="time">${time} · 浏览 ${data.views + 1}</div>
+                            </div>
+                        </div>
+                        <div class="post-content">${data.content}</div>
+                        <div class="post-actions">
+                            ${isAuthor ? '<button class="action-btn" onclick="startEdit()">✏️ 编辑</button>' : ''}
+                            ${isAuthor && !isSolved ? '<button class="action-btn" onclick="markSolved()">✅ 标记已解决</button>' : ''}
+                            ${isAuthor || (currentUser && currentProfile && currentProfile.role === 'admin') ? '<button class="action-btn danger" onclick="deletePost()">🗑️ 删除</button>' : ''}
                         </div>
                     </div>
-                    <div class="post-content">${data.content}</div>
-                    <div class="post-actions">
-                        ${isAuthor ? '<button class="action-btn" onclick="startEdit()">✏️ 编辑</button>' : ''}
-                        ${isAuthor && !isSolved ? '<button class="action-btn" onclick="markSolved()">✅ 标记已解决</button>' : ''}
-                        ${isAuthor || (currentUser && currentProfile && currentProfile.role === 'admin') ? '<button class="action-btn danger" onclick="deletePost()">🗑️ 删除</button>' : ''}
-                    </div>
-                </div>
-            `;
+                `;
+            } catch (err) {
+                showToast('加载失败', 'error');
+            }
         }
 
         async function loadReplies(postId) {
-            const { data } = await supabaseClient.from('forum_replies').select('*').eq('post_id', postId).order('created_at', { ascending: true });
-            const replies = data || [];
+            try {
+                const { data } = await supabaseClient.from('forum_replies').select('*').eq('post_id', postId).order('created_at', { ascending: true });
+                const replies = data || [];
 
-            document.getElementById('repliesHeader').textContent = `回复 (${replies.length})`;
-            document.getElementById('repliesSection').style.display = 'block';
+                document.getElementById('repliesHeader').textContent = `回复 (${replies.length})`;
+                document.getElementById('repliesSection').style.display = 'block';
 
-            if (replies.length === 0) {
-                document.getElementById('repliesList').innerHTML = '<div class="empty-state">暂无回复，快来参与讨论吧！</div>';
-            } else {
-                document.getElementById('repliesList').innerHTML = replies.map(r => {
-                    const time = new Date(r.created_at).toLocaleString('zh-CN');
-                    return `<div class="reply-item">
-                        <div class="reply-header">
-                            <div class="reply-avatar">${r.avatar_url ? '<img src="'+r.avatar_url+'">' : DEFAULT_AVATAR}</div>
-                            <div class="reply-info">
-                                <div class="name">${r.username}</div>
-                                <div class="time">${time}</div>
+                if (replies.length === 0) {
+                    document.getElementById('repliesList').innerHTML = '<div class="empty-state">暂无回复，快来参与讨论吧！</div>';
+                } else {
+                    document.getElementById('repliesList').innerHTML = replies.map(r => {
+                        const time = new Date(r.created_at).toLocaleString('zh-CN');
+                        const quoteContent = r.content.replace(/<[^>]*>/g, '').substring(0, 200);
+                        return `<div class="reply-item">
+                            <div class="reply-header">
+                                <div class="reply-avatar">${r.avatar_url ? '<img src="'+r.avatar_url+'">' : DEFAULT_AVATAR}</div>
+                                <div class="reply-info">
+                                    <div class="name">${r.username}</div>
+                                    <div class="time">${time}</div>
+                                </div>
+                                <button class="quote-btn" onclick="quoteReply('${r.username.replace(/'/g,"\\'")}','${quoteContent.replace(/'/g,"\\'")}')">引用</button>
                             </div>
-                        </div>
-                        <div class="reply-content">${r.content}</div>
-                    </div>`;
-                }).join('');
-            }
+                            <div class="reply-content">${r.content}</div>
+                        </div>`;
+                    }).join('');
+                }
 
-            if (currentUser) {
-                document.getElementById('replyFormArea').innerHTML = `
-                    <div class="reply-form">
-                        <h3>发表回复</h3>
-                        <div id="replyEditorContainer"></div>
-                        <div class="form-footer"><button class="btn-submit" onclick="submitReply()">回复</button></div>
-                    </div>`;
-                replyEditor = createEditor('replyEditorContainer', { height: 150, placeholder: '写下你的回复...' });
-            } else {
-                document.getElementById('replyFormArea').innerHTML = '<div class="login-hint"><a href="login.html">登录</a>后参与回复</div>';
+                if (currentUser) {
+                    document.getElementById('replyFormArea').innerHTML = `
+                        <div class="reply-form">
+                            <h3>发表回复</h3>
+                            <div id="replyEditorContainer"></div>
+                            <div class="form-footer"><button class="btn-submit" onclick="submitReply()">回复</button></div>
+                        </div>`;
+                    replyEditor = createEditor('replyEditorContainer', { height: 150, placeholder: '写下你的回复...' });
+                } else {
+                    document.getElementById('replyFormArea').innerHTML = '<div class="login-hint"><a href="login.html">登录</a>后参与回复</div>';
+                }
+            } catch (err) {
+                showToast('加载失败', 'error');
             }
         }
 
@@ -253,7 +274,16 @@
             loadReplies(postData.id);
         }
 
+        let replyEditor = null;
         let editEditor = null;
+
+        function quoteReply(username, content) {
+            if (!replyEditor) return;
+            const quoteHtml = '<blockquote><b>' + username + ' 说：</b><br>' + content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</blockquote><p></p>';
+            replyEditor.setHTML(quoteHtml + (replyEditor.getHTML() || ''));
+            replyEditor.focus();
+            document.querySelector('.reply-form').scrollIntoView({ behavior: 'smooth' });
+        }
 
         function startEdit() {
             if (!postData) return;

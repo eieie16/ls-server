@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>兑换码 - 凌云城</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -209,79 +210,88 @@
             btn.className = 'btn-redeem loading';
             resultEl.className = 'result';
 
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) {
-                resultEl.className = 'result show error';
-                resultEl.innerHTML = '<h3>❌ 请先登录</h3><p style="font-size:0.85rem;color:#888">登录后才能使用兑换码</p>';
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) {
+                    resultEl.className = 'result show error';
+                    resultEl.innerHTML = '<h3>❌ 请先登录</h3><p style="font-size:0.85rem;color:#888">登录后才能使用兑换码</p>';
+                    btn.className = 'btn-redeem';
+                    return;
+                }
+
+                const { data: profile } = await supabaseClient.from('profiles').select('username').eq('id', session.user.id).single();
+
+                const { data } = await supabaseClient.from('redemption_codes').select('*').eq('code', code).single();
+
+                if (!data) {
+                    resultEl.className = 'result show error';
+                    resultEl.innerHTML = '<h3>❌ 兑换码不存在</h3>';
+                    btn.className = 'btn-redeem';
+                    return;
+                }
+
+                if (data.used_count >= data.max_uses) {
+                    resultEl.className = 'result show error';
+                    resultEl.innerHTML = '<h3>❌ 兑换码已被使用完毕</h3>';
+                    btn.className = 'btn-redeem';
+                    return;
+                }
+
+                await supabaseClient.from('redemption_codes').update({ used_count: data.used_count + 1 }).eq('id', data.id);
+
+                const isAnonymous = document.getElementById('anonCheck').checked;
+                await supabaseClient.from('redeem_logs').insert([{
+                    user_id: session.user.id,
+                    username: isAnonymous ? '匿名玩家' : ((profile && profile.username) || session.user.email),
+                    code: code,
+                    prize: data.prize,
+                    is_anonymous: isAnonymous
+                }]);
+
+                resultEl.className = 'result show success';
+                resultEl.innerHTML = `
+                    <h3>✅ 兑换成功</h3>
+                    <div class="prize" onclick="navigator.clipboard.writeText('${data.prize.replace(/'/g,"\\'")}');this.textContent='已复制 ✓'">${data.prize}</div>
+                    <div class="prize-hint">点击上方奖品可复制</div>
+                    ${data.image_url ? '<img src="'+data.image_url+'">' : ''}
+                `;
                 btn.className = 'btn-redeem';
-                return;
-            }
-
-            const { data: profile } = await supabaseClient.from('profiles').select('username').eq('id', session.user.id).single();
-
-            const { data } = await supabaseClient.from('redemption_codes').select('*').eq('code', code).single();
-
-            if (!data) {
-                resultEl.className = 'result show error';
-                resultEl.innerHTML = '<h3>❌ 兑换码不存在</h3>';
+                loadHistory();
+            } catch (err) {
                 btn.className = 'btn-redeem';
-                return;
+                showToast('加载失败', 'error');
             }
-
-            if (data.used_count >= data.max_uses) {
-                resultEl.className = 'result show error';
-                resultEl.innerHTML = '<h3>❌ 兑换码已被使用完毕</h3>';
-                btn.className = 'btn-redeem';
-                return;
-            }
-
-            await supabaseClient.from('redemption_codes').update({ used_count: data.used_count + 1 }).eq('id', data.id);
-
-            const isAnonymous = document.getElementById('anonCheck').checked;
-            await supabaseClient.from('redeem_logs').insert([{
-                user_id: session.user.id,
-                username: isAnonymous ? '匿名玩家' : ((profile && profile.username) || session.user.email),
-                code: code,
-                prize: data.prize,
-                is_anonymous: isAnonymous
-            }]);
-
-            resultEl.className = 'result show success';
-            resultEl.innerHTML = `
-                <h3>✅ 兑换成功</h3>
-                <div class="prize" onclick="navigator.clipboard.writeText('${data.prize.replace(/'/g,"\\'")}');this.textContent='已复制 ✓'">${data.prize}</div>
-                <div class="prize-hint">点击上方奖品可复制</div>
-                ${data.image_url ? '<img src="'+data.image_url+'">' : ''}
-            `;
-            btn.className = 'btn-redeem';
-            loadHistory();
         }
 
         document.getElementById('redeemInput').addEventListener('keydown', e => { if (e.key === 'Enter') handleRedeem(); });
 
         async function loadHistory() {
-            const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-            const { data } = await supabaseClient.from('redeem_logs')
-                .select('*').gte('created_at', since).order('created_at', { ascending: false }).limit(20);
+            try {
+                const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+                const { data } = await supabaseClient.from('redeem_logs')
+                    .select('*').gte('created_at', since).order('created_at', { ascending: false }).limit(20);
 
-            const list = document.getElementById('historyList');
-            if (!data || data.length === 0) {
-                list.innerHTML = '<li class="history-empty">暂无兑换记录</li>';
-                return;
+                const list = document.getElementById('historyList');
+                if (!data || data.length === 0) {
+                    list.innerHTML = '<li class="history-empty">暂无兑换记录</li>';
+                    return;
+                }
+                list.innerHTML = data.map(log => {
+                    const time = new Date(log.created_at).toLocaleString('zh-CN', { hour:'2-digit', minute:'2-digit', month:'numeric', day:'numeric' });
+                    const isAnon = log.is_anonymous;
+                    const initial = isAnon ? '?' : (log.username || '?').substring(0, 1);
+                    return `<li class="history-item">
+                        <div class="history-avatar">${isAnon ? '?' : initial}</div>
+                        <div class="history-info">
+                            <div class="name">${log.username}</div>
+                            <div class="prize">🎁 ${log.prize}</div>
+                            <div class="time">${time}</div>
+                        </div>
+                    </li>`;
+                }).join('');
+            } catch (err) {
+                showToast('加载失败', 'error');
             }
-            list.innerHTML = data.map(log => {
-                const time = new Date(log.created_at).toLocaleString('zh-CN', { hour:'2-digit', minute:'2-digit', month:'numeric', day:'numeric' });
-                const isAnon = log.is_anonymous;
-                const initial = isAnon ? '?' : (log.username || '?').substring(0, 1);
-                return `<li class="history-item">
-                    <div class="history-avatar">${isAnon ? '?' : initial}</div>
-                    <div class="history-info">
-                        <div class="name">${log.username}</div>
-                        <div class="prize">🎁 ${log.prize}</div>
-                        <div class="time">${time}</div>
-                    </div>
-                </li>`;
-            }).join('');
         }
 
         async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }

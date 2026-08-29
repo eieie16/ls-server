@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户面板 - 凌云城</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -198,16 +199,20 @@
         let currentProfile = null;
 
         async function init() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) { window.location.href = 'login.html'; return; }
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) { window.location.href = 'login.html'; return; }
 
-            const { data: profile } = await supabaseClient
-                .from('profiles').select('*').eq('id', session.user.id).single();
+                const { data: profile } = await supabaseClient
+                    .from('profiles').select('*').eq('id', session.user.id).single();
 
-            currentProfile = profile || { username: session.user.email, role: 'user', avatar_url: '', created_at: new Date().toISOString() };
+                currentProfile = profile || { username: session.user.email, role: 'user', avatar_url: '', created_at: new Date().toISOString() };
 
-            updateNav(session.user, currentProfile);
-            renderDashboard(session.user, currentProfile);
+                updateNav(session.user, currentProfile);
+                renderDashboard(session.user, currentProfile);
+            } catch (err) {
+                showToast('加载失败', 'error');
+            }
         }
 
         function getAvatarHTML(avatarUrl, size) {
@@ -295,33 +300,45 @@
         }
 
         async function saveAvatar() {
-            const url = document.getElementById('avatarUrlInput').value.trim();
-            if (!currentProfile) return;
+            try {
+                const url = document.getElementById('avatarUrlInput').value.trim();
+                if (!currentProfile) return;
 
-            await supabaseClient.from('profiles').update({ avatar_url: url }).eq('id', currentProfile.id);
-            currentProfile.avatar_url = url;
+                await supabaseClient.from('profiles').update({ avatar_url: url }).eq('id', currentProfile.id);
+                currentProfile.avatar_url = url;
 
-            updateNav({ email: currentProfile.email }, currentProfile);
-            renderDashboard({ email: currentProfile.email }, currentProfile);
-            closeAvatarModal();
+                updateNav({ email: currentProfile.email }, currentProfile);
+                renderDashboard({ email: currentProfile.email }, currentProfile);
+                closeAvatarModal();
+            } catch (err) {
+                showToast('加载失败', 'error');
+            }
         }
 
         async function removeAvatar() {
-            if (!currentProfile) return;
-            await supabaseClient.from('profiles').update({ avatar_url: '' }).eq('id', currentProfile.id);
-            currentProfile.avatar_url = '';
-            updateNav({ email: currentProfile.email }, currentProfile);
-            renderDashboard({ email: currentProfile.email }, currentProfile);
-            closeAvatarModal();
+            try {
+                if (!currentProfile) return;
+                await supabaseClient.from('profiles').update({ avatar_url: '' }).eq('id', currentProfile.id);
+                currentProfile.avatar_url = '';
+                updateNav({ email: currentProfile.email }, currentProfile);
+                renderDashboard({ email: currentProfile.email }, currentProfile);
+                closeAvatarModal();
+            } catch (err) {
+                showToast('加载失败', 'error');
+            }
         }
 
         async function updateUsername() {
-            const newName = document.getElementById('newUsername').value.trim();
-            if (!newName || !currentProfile) return;
-            await supabaseClient.from('profiles').update({ username: newName }).eq('id', currentProfile.id);
-            currentProfile.username = newName;
-            document.getElementById('displayName').textContent = newName;
-            updateNav({ email: currentProfile.email }, currentProfile);
+            try {
+                const newName = document.getElementById('newUsername').value.trim();
+                if (!newName || !currentProfile) return;
+                await supabaseClient.from('profiles').update({ username: newName }).eq('id', currentProfile.id);
+                currentProfile.username = newName;
+                document.getElementById('displayName').textContent = newName;
+                updateNav({ email: currentProfile.email }, currentProfile);
+            } catch (err) {
+                showToast('加载失败', 'error');
+            }
         }
 
         async function handleLogout() {
