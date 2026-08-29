@@ -82,6 +82,7 @@
     </div>
 
     <script src="supabase.min.js"></script>
+    <script src="utils.js"></script>
     <script src="editor.js"></script>
     <script src="chat-widget.js"></script>
     <script>
@@ -89,10 +90,12 @@
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const DEFAULT_AVATAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+        const DRAFT_KEY = 'forum_draft';
 
         let currentUser = null;
         let currentProfile = null;
         let editor = null;
+        let lastPostTime = 0;
 
         async function init() {
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -138,7 +141,40 @@
                 </div>
             `;
             editor = createEditor('editorContainer', { height: 260, placeholder: '请输入帖子内容...' });
+
+            // 恢复草稿
+            loadDraft();
+            // 自动保存草稿
+            setInterval(saveDraft, 5000);
         }
+
+        function saveDraft() {
+            if (!editor) return;
+            const title = document.getElementById('title');
+            const category = document.getElementById('category');
+            if (!title || !category) return;
+            const content = editor.getHTML();
+            const plainText = content.replace(/<[^>]*>/g, '').trim();
+            if (!title.value && !plainText) return;
+            localStorage.setItem(DRAFT_KEY, JSON.stringify({
+                title: title.value, category: category.value, content: content, time: Date.now()
+            }));
+        }
+
+        function loadDraft() {
+            const raw = localStorage.getItem(DRAFT_KEY);
+            if (!raw) return;
+            try {
+                const draft = JSON.parse(raw);
+                if (Date.now() - draft.time > 24 * 60 * 60 * 1000) { localStorage.removeItem(DRAFT_KEY); return; }
+                document.getElementById('title').value = draft.title || '';
+                document.getElementById('category').value = draft.category || '讨论';
+                if (editor && draft.content) editor.setHTML(draft.content);
+                showToast('已恢复上次编辑的草稿', 'success');
+            } catch(e) {}
+        }
+
+        function clearDraft() { localStorage.removeItem(DRAFT_KEY); }
 
         async function submitPost() {
             const title = document.getElementById('title').value.trim();
@@ -149,26 +185,36 @@
             if (!title) { showToast('请输入标题', 'error'); return; }
             if (!plainText) { showToast('请输入内容', 'error'); return; }
 
+            // 频率限制：30秒内不能重复发帖
+            if (Date.now() - lastPostTime < 30000) {
+                showToast('发帖太频繁，请30秒后再试', 'error'); return;
+            }
+
+            // 敏感词检查
+            const banned = checkBannedWords(title + plainText);
+            if (banned) { showToast('内容包含敏感词: ' + banned, 'error'); return; }
+
+            const btn = document.querySelector('.btn-primary');
+            setLoading(btn, true);
+
+            const safeContent = sanitizeHTML(content);
             const { error } = await supabaseClient.from('forum_posts').insert([{
                 user_id: currentUser.user.id, username: currentProfile.username,
-                avatar_url: currentProfile.avatar_url || '', category, title, content
+                avatar_url: currentProfile.avatar_url || '', category, title, content: safeContent
             }]);
 
+            setLoading(btn, false);
             if (error) { showToast('发布失败: ' + error.message, 'error'); return; }
+            lastPostTime = Date.now();
+            clearDraft();
             showToast('发布成功！', 'success');
             setTimeout(() => window.location.href = 'forum.html', 1000);
-        }
-
-        function showToast(msg, type) {
-            const t = document.createElement('div');
-            t.className = 'toast ' + type;
-            t.textContent = msg;
-            document.body.appendChild(t);
-            setTimeout(() => t.remove(), 3000);
         }
 
         async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
         init();
     </script>
+    <script src="footer.js"></script>
+    <script src="mobile-menu.js"></script>
 </body>
 </html>

@@ -233,6 +233,7 @@
     </footer>
 
     <script src="supabase.min.js"></script>
+    <script src="utils.js"></script>
     <script>
         const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
@@ -251,5 +252,7 @@
         async function handleLogout(e) { e.preventDefault(); await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
     </script>
     <script src="chat-widget.js"></script>
+    <script src="footer.js"></script>
+    <script src="mobile-menu.js"></script>
 </body>
 </html>

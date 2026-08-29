@@ -125,6 +125,7 @@
     </div>
 
     <script src="supabase.min.js"></script>
+    <script src="utils.js"></script>
     <script src="editor.js"></script>
     <script src="chat-widget.js"></script>
     <script>
@@ -243,9 +244,10 @@
             const content = replyEditor ? replyEditor.getHTML() : '';
             const plainText = content.replace(/<[^>]*>/g, '').trim();
             if (!plainText || !currentUser || !postData) return;
+            const safeContent = sanitizeHTML(content);
             await supabaseClient.from('forum_replies').insert([{
                 post_id: postData.id, user_id: currentUser.user.id,
-                username: currentProfile.username, avatar_url: currentProfile.avatar_url || '', content
+                username: currentProfile.username, avatar_url: currentProfile.avatar_url || '', content: safeContent
             }]);
             if (replyEditor) replyEditor.clear();
             loadReplies(postData.id);
@@ -289,7 +291,8 @@
             if (!title) { alert('请输入标题'); return; }
             if (!plainText) { alert('请输入内容'); return; }
 
-            await supabaseClient.from('forum_posts').update({ title, category, content, updated_at: new Date().toISOString() }).eq('id', postData.id);
+            const safeContent = sanitizeHTML(content);
+            await supabaseClient.from('forum_posts').update({ title, category, content: safeContent, updated_at: new Date().toISOString() }).eq('id', postData.id);
             postData.title = title;
             postData.category = category;
             postData.content = content;
@@ -311,5 +314,7 @@
         async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
         init();
     </script>
+    <script src="footer.js"></script>
+    <script src="mobile-menu.js"></script>
 </body>
 </html>

@@ -75,6 +75,30 @@
         .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
         .empty-state p { font-size: 0.9rem; }
 
+        .search-bar { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .search-bar input {
+            flex: 1; padding: 0.6rem 1rem; border: 1px solid #e5e7eb; border-radius: 8px;
+            font-size: 0.88rem; background: #fff;
+        }
+        .search-bar input:focus { outline: none; border-color: #6366f1; }
+        .search-bar button {
+            padding: 0.6rem 1rem; background: #6366f1; color: #fff; border: none;
+            border-radius: 8px; font-size: 0.85rem; cursor: pointer;
+        }
+        .search-bar button:hover { background: #5558e6; }
+
+        .pagination { display: flex; justify-content: center; gap: 0.3rem; margin-top: 1.25rem; }
+        .page-btn {
+            padding: 0.4rem 0.75rem; border: 1px solid #e5e7eb; background: #fff;
+            border-radius: 6px; font-size: 0.82rem; cursor: pointer; color: #555;
+        }
+        .page-btn:hover { border-color: #6366f1; color: #6366f1; }
+        .page-btn.active { background: #6366f1; color: #fff; border-color: #6366f1; }
+        .page-dots { padding: 0.4rem 0.3rem; color: #999; font-size: 0.82rem; }
+
+        .btn-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         @media (max-width: 640px) {
             nav { padding: 0 1.5rem; }
             .nav-center { display: none; }
@@ -116,12 +140,19 @@
             <button class="filter-btn" onclick="filterPosts('展示', this)">🎉 展示</button>
         </div>
 
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="搜索帖子标题或内容..." onkeydown="if(event.key==='Enter')doSearch()">
+            <button onclick="doSearch()">🔍 搜索</button>
+        </div>
+
         <div class="post-list" id="postList">
             <div class="empty-state"><div class="icon">📝</div><p>加载中...</p></div>
         </div>
+        <div id="pagination"></div>
     </div>
 
     <script src="supabase.min.js"></script>
+    <script src="utils.js"></script>
     <script src="chat-widget.js"></script>
     <script>
         const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
@@ -130,13 +161,15 @@
         const DEFAULT_AVATAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
 
         let allPosts = [];
+        let filteredPosts = [];
         let currentFilter = 'all';
-        let isLoggedIn = false;
+        let currentPage = 1;
+        let searchQuery = '';
+        const PAGE_SIZE = 15;
 
         async function init() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
-                isLoggedIn = true;
                 let avatarUrl = '';
                 const { data: profile } = await supabaseClient.from('profiles').select('avatar_url, username').eq('id', session.user.id).single();
                 if (profile) avatarUrl = profile.avatar_url || '';
@@ -155,26 +188,45 @@
         async function loadPosts() {
             const { data } = await supabaseClient.from('forum_posts').select('*').order('created_at', { ascending: false });
             allPosts = data || [];
+            applyFilters();
+        }
+
+        function applyFilters() {
+            filteredPosts = allPosts;
+            if (currentFilter !== 'all') {
+                filteredPosts = filteredPosts.filter(p => p.category === currentFilter);
+            }
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase();
+                filteredPosts = filteredPosts.filter(p =>
+                    p.title.toLowerCase().includes(q) || p.content.toLowerCase().includes(q)
+                );
+            }
+            currentPage = 1;
             renderPosts();
         }
 
         function renderPosts() {
             const list = document.getElementById('postList');
-            let filtered = currentFilter === 'all' ? allPosts : allPosts.filter(p => p.category === currentFilter);
+            const totalPages = Math.ceil(filteredPosts.length / PAGE_SIZE);
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const pagePosts = filteredPosts.slice(start, start + PAGE_SIZE);
 
-            if (filtered.length === 0) {
-                list.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>暂无帖子，快来发第一个帖子吧！</p></div>';
+            if (pagePosts.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>' + (searchQuery ? '没有找到匹配的帖子' : '暂无帖子，快来发第一个帖子吧！') + '</p></div>';
+                document.getElementById('pagination').innerHTML = '';
                 return;
             }
 
-            list.innerHTML = filtered.map(p => {
+            list.innerHTML = pagePosts.map(p => {
                 const time = new Date(p.created_at).toLocaleDateString('zh-CN');
                 const isSolved = p.status === '已解决';
+                const titleHtml = searchQuery ? highlightMatch(p.title, searchQuery) : p.title;
                 return `<a href="forum-post.html?id=${p.id}" class="post-item">
                     <div class="post-avatar">${p.avatar_url ? '<img src="'+p.avatar_url+'">' : DEFAULT_AVATAR}</div>
                     <div class="post-body">
                         <div class="post-title">
-                            <span>${p.title}</span>
+                            <span>${titleHtml}</span>
                             <span class="tag tag-cat">${p.category}</span>
                             <span class="tag ${isSolved ? 'tag-solved' : 'tag-unsolved'}">${p.status}</span>
                         </div>
@@ -185,17 +237,35 @@
                     </div>
                 </a>`;
             }).join('');
+
+            renderPagination('pagination', currentPage, totalPages, function(page) {
+                currentPage = page;
+                renderPosts();
+                window.scrollTo({ top: 200, behavior: 'smooth' });
+            });
+        }
+
+        function highlightMatch(text, query) {
+            const regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+            return text.replace(regex, '<mark style="background:#fef08a;padding:0 2px;border-radius:2px">$1</mark>');
         }
 
         function filterPosts(cat, el) {
             currentFilter = cat;
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
-            renderPosts();
+            applyFilters();
+        }
+
+        function doSearch() {
+            searchQuery = document.getElementById('searchInput').value.trim();
+            applyFilters();
         }
 
         async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
         init();
     </script>
+    <script src="footer.js"></script>
+    <script src="mobile-menu.js"></script>
 </body>
 </html>
