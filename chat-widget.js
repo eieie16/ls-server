@@ -76,6 +76,16 @@
         }
         .chat-send:hover { background: #5558e6; }
         .chat-send:disabled { opacity: 0.5; cursor: not-allowed; }
+        .chat-color-btn {
+            width: 32px; height: 32px; border-radius: 8px; border: 1px solid #e5e7eb;
+            background: #fff; cursor: pointer; font-size: 0.85rem; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.15s;
+        }
+        .chat-color-btn:hover { border-color: #d1d5db; background: #f9fafb; }
+        .chat-color-btn.active { border-color: #ef4444; background: #fef2f2; }
+        .chat-color-btn.active .color-dot { background: #ef4444; }
+        .color-dot { width: 10px; height: 10px; border-radius: 50%; background: #888; transition: background 0.15s; }
 
         .chat-login-hint {
             text-align: center; padding: 1rem; color: #999; font-size: 0.82rem;
@@ -118,6 +128,7 @@
     let chatOpen = false;
     let lastMsgId = null;
     let pollInterval = null;
+    let chatRedMode = false;
 
     function getAvatarHTML(url, size) {
         if (url) return `<img src="${url}" style="width:${size}px;height:${size}px;border-radius:8px;object-fit:cover">`;
@@ -137,6 +148,7 @@
             document.getElementById('chatInputArea').innerHTML = `
                 <div class="chat-input-area">
                     <input type="text" id="chatInput" placeholder="输入消息..." maxlength="500">
+                    <button class="chat-color-btn" id="chatColorBtn" onclick="chatColorToggle()" title="切换红色字体"><span class="color-dot"></span></button>
                     <button class="chat-send" id="chatSendBtn" onclick="chatSend()">发送</button>
                 </div>
             `;
@@ -162,11 +174,17 @@
         container.innerHTML = data.map(m => {
             const isMine = currentUser && m.user_id === currentUser.user.id;
             const time = new Date(m.created_at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            let msgText = escapeHtml(m.message);
+            let msgStyle = '';
+            if (msgText.startsWith('[red]')) {
+                msgText = msgText.substring(5);
+                msgStyle = 'color:#ef4444;font-weight:600;';
+            }
             return `<div class="chat-msg ${isMine ? 'mine' : ''}">
                 <div class="msg-avatar">${getAvatarHTML(m.avatar_url, 32)}</div>
                 <div class="msg-body">
                     <div class="msg-name">${m.username}</div>
-                    <div class="msg-text">${escapeHtml(m.message)}</div>
+                    <div class="msg-text" style="${msgStyle}">${msgText}</div>
                     <div class="msg-time">${time}</div>
                 </div>
             </div>`;
@@ -186,13 +204,14 @@
 
         const btn = document.getElementById('chatSendBtn');
         btn.disabled = true;
+        const finalMsg = chatRedMode ? '[red]' + msg : msg;
         input.value = '';
 
         await supabase.from('chat_messages').insert([{
             user_id: currentUser.user.id,
             username: currentProfile.username || currentUser.user.email,
             avatar_url: currentProfile.avatar_url || '',
-            message: msg
+            message: finalMsg
         }]);
 
         btn.disabled = false;
@@ -212,6 +231,11 @@
             const container = document.getElementById('chatMessages');
             setTimeout(() => container.scrollTop = container.scrollHeight, 100);
         }
+    };
+
+    window.chatColorToggle = function() {
+        chatRedMode = !chatRedMode;
+        document.getElementById('chatColorBtn').classList.toggle('active', chatRedMode);
     };
 
     window.chatSend = chatSend;
