@@ -228,6 +228,7 @@
                             ${isAuthor ? '<button class="action-btn" onclick="startEdit()">✏️ 编辑</button>' : ''}
                             ${isAuthor && !isSolved ? '<button class="action-btn" onclick="markSolved()">✅ 标记已解决</button>' : ''}
                             ${isAuthor || (currentUser && currentProfile && currentProfile.role === 'admin') ? '<button class="action-btn danger" onclick="deletePost()">🗑️ 删除</button>' : ''}
+                            ${!isAuthor && currentUser ? '<button class="action-btn" onclick="reportPost()">🚩 举报</button>' : ''}
                         </div>
                     </div>
                 `;
@@ -260,6 +261,7 @@
                                 <button class="quote-btn" onclick="quoteReply('${r.username.replace(/'/g,"\\'")}','${quoteContent.replace(/'/g,"\\'")}')">引用</button>
                             </div>
                             <div class="reply-content">${r.content}</div>
+                            ${currentUser && r.user_id !== currentUser.user.id ? '<div style="margin-top:0.5rem"><button class="action-btn" style="font-size:0.75rem;padding:2px 8px" onclick="reportReply(\'' + r.id + '\')">🚩 举报</button></div>' : ''}
                         </div>`;
                     }).join('');
                 }
@@ -388,6 +390,28 @@
             if (!await modalConfirm('确定删除？', '删除帖子')) return;
             await supabaseClient.from('forum_posts').delete().eq('id', postData.id);
             window.location.href = 'forum.html';
+        }
+
+        async function reportPost() {
+            if (!currentUser) { modalAlert('请先登录', 'info'); return; }
+            if (!await modalConfirm('确定要举报这篇帖子吗？', '举报帖子')) return;
+            try {
+                await supabaseClient.from('reports').insert([{
+                    reporter_id: currentUser.user.id, target_type: 'post', target_id: postData.id, reason: '违规内容'
+                }]);
+                modalAlert('举报已提交，管理员会尽快处理', 'success');
+            } catch (err) { modalAlert('举报失败', 'error'); }
+        }
+
+        async function reportReply(replyId) {
+            if (!currentUser) { modalAlert('请先登录', 'info'); return; }
+            if (!await modalConfirm('确定要举报这条回复吗？', '举报回复')) return;
+            try {
+                await supabaseClient.from('reports').insert([{
+                    reporter_id: currentUser.user.id, target_type: 'reply', target_id: replyId, reason: '违规内容'
+                }]);
+                modalAlert('举报已提交，管理员会尽快处理', 'success');
+            } catch (err) { modalAlert('举报失败', 'error'); }
         }
 
         async function toggleLike() {
