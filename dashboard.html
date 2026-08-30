@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户面板 - 凌云城</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+            background: #f0f2f5; color: #1a1a1a; min-height: 100vh;
+        }
+
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            padding: 0 3rem; height: 64px;
+            display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+            background: #fff; border-bottom: 1px solid #e5e7eb;
+        }
+        .logo { font-size: 1.05rem; font-weight: 700; color: #6366f1; letter-spacing: 0.05em; }
+        .nav-center { display: flex; gap: 2rem; list-style: none; justify-self: center; }
+        .nav-center a { font-size: 0.88rem; color: #666; text-decoration: none; transition: color 0.15s; font-weight: 500; }
+        .nav-center a:hover { color: #1a1a1a; }
+        .nav-right { display: flex; align-items: center; gap: 0.75rem; justify-self: end; }
+        .nav-btn { padding: 0.5rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none; text-decoration: none; }
+        .nav-btn.outline { background: #fff; color: #333; border: 1px solid #d1d5db; }
+        .nav-btn.outline:hover { background: #f9fafb; border-color: #999; }
+        .nav-btn.filled { background: #6366f1; color: #fff; }
+        .nav-btn.filled:hover { background: #5558e6; }
+        .user-badge { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.85rem 0.4rem 0.4rem; background: #f3f4f6; border-radius: 8px; text-decoration: none; color: #333; font-size: 0.85rem; font-weight: 500; transition: background 0.15s; }
+        .user-badge:hover { background: #e5e7eb; }
+        .user-badge .avatar { width: 30px; height: 30px; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .user-badge .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 6rem 1.5rem 3rem; }
+
+        .profile-card {
+            background: #fff; border-radius: 16px; padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem;
+        }
+        .avatar-wrapper { position: relative; cursor: pointer; flex-shrink: 0; }
+        .avatar-lg {
+            width: 72px; height: 72px; border-radius: 18px; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            background: #e5e7eb; transition: opacity 0.15s;
+        }
+        .avatar-lg img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-lg svg { width: 40px; height: 40px; color: #9ca3af; }
+        .avatar-wrapper:hover .avatar-lg { opacity: 0.85; }
+        .avatar-edit-hint {
+            position: absolute; bottom: -4px; right: -4px;
+            width: 24px; height: 24px; border-radius: 50%;
+            background: #6366f1; color: #fff; font-size: 0.7rem;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid #fff;
+        }
+        .profile-info h2 { font-size: 1.3rem; font-weight: 600; margin-bottom: 0.2rem; }
+        .profile-info .email { font-size: 0.88rem; color: #888; margin-bottom: 0.5rem; }
+        .role-badge { display: inline-block; padding: 0.2rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 500; }
+        .role-badge.admin { background: #fef2f2; color: #ef4444; }
+        .role-badge.user { background: #f0f0f0; color: #666; }
+
+        .section-card { background: #fff; border-radius: 16px; padding: 1.75rem 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 1.5rem; }
+        .section-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+
+        .action-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+        .action-item { display: flex; align-items: center; gap: 1rem; padding: 0.85rem 1rem; background: #f8f9fa; border-radius: 10px; text-decoration: none; color: inherit; transition: all 0.15s; }
+        .action-item:hover { background: #f0f0f0; }
+        .action-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+        .action-icon.purple { background: #ede9fe; }
+        .action-icon.green { background: #dcfce7; }
+        .action-icon.blue { background: #dbeafe; }
+        .action-icon.orange { background: #ffedd5; }
+        .action-item h4 { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.1rem; }
+        .action-item p { font-size: 0.76rem; color: #999; }
+
+        .admin-link { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #ef4444; font-size: 0.85rem; font-weight: 500; text-decoration: none; margin-top: 1rem; transition: all 0.15s; }
+        .admin-link:hover { background: #fee2e2; }
+
+        .edit-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+        .edit-row input {
+            padding: 0.35rem 0.6rem; border: 1px solid #d1d5db; border-radius: 6px;
+            font-size: 0.85rem; width: 160px;
+        }
+        .edit-row input:focus { outline: none; border-color: #6366f1; }
+        .edit-row button {
+            padding: 0.35rem 0.7rem; background: #6366f1; color: #fff; border: none;
+            border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: background 0.15s;
+        }
+        .edit-row button:hover { background: #5558e6; }
+        .edit-row .ok { background: #22c55e; }
+
+        /* Avatar Picker Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.2s; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal { background: #fff; border-radius: 16px; padding: 2rem; width: 90%; max-width: 420px; transform: translateY(10px); transition: transform 0.2s; }
+        .modal-overlay.active .modal { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-title { font-size: 1.05rem; font-weight: 600; }
+        .modal-close { width: 30px; height: 30px; border-radius: 6px; border: 1px solid #e5e7eb; background: #fff; color: #888; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
+        .modal-close:hover { border-color: #ef4444; color: #ef4444; }
+
+        .avatar-grid { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
+        .avatar-input-group { display: flex; gap: 0.5rem; }
+        .avatar-input {
+            flex: 1; padding: 0.65rem 0.85rem; background: #f9fafb;
+            border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.88rem; color: #333;
+        }
+        .avatar-input:focus { outline: none; border-color: #6366f1; }
+        .btn-use { padding: 0.65rem 1rem; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+        .btn-use:hover { background: #e5e7eb; }
+        .avatar-preview { width: 120px; height: 120px; margin: 0 auto; border-radius: 12px; border: 2px dashed #d1d5db; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f9fafb; }
+        .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-preview svg { width: 36px; height: 36px; color: #9ca3af; }
+        .avatar-hint { font-size: 0.78rem; color: #999; margin-top: 0.25rem; }
+
+        .btn-save { width: 100%; padding: 0.55rem; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+        .btn-save:hover { background: #5558e6; }
+        .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-remove { padding: 0.55rem 0.8rem; background: #fff; color: #666; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+        .btn-remove:hover { border-color: #ef4444; color: #ef4444; }
+        .modal-footer { display: flex; gap: 0.5rem; }
+
+        .loading { text-align: center; padding: 4rem; color: #999; }
+
+        @media (max-width: 640px) {
+            nav { padding: 0 1.5rem; }
+            .nav-center { display: none; }
+            .action-list { grid-template-columns: 1fr; }
+            .profile-card { flex-direction: column; text-align: center; }
+            .avatar-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">凌云城</div>
+        <ul class="nav-center">
+            <li><a href="index.html">首页</a></li>
+            <li><a href="features.html">特色</a></li>
+            <li><a href="rules.html">规则</a></li>
+            <li><a href="connect.html">加入</a></li>
+            <li><a href="redeem.html">兑换</a></li>
+            <li><a href="forum.html">论坛</a></li>
+        </ul>
+        <div class="nav-right" id="navRight">
+            <a href="dashboard.html" class="user-badge" id="userBadge" style="display:none">
+                <div class="avatar" id="navAvatar"></div>
+                <span id="navName">加载中</span>
+            </a>
+            <a href="login.html" class="nav-btn outline" id="btnLogin">登录</a>
+            <a href="login.html" class="nav-btn filled" id="btnRegister">注册</a>
+            <button class="nav-btn outline" id="btnLogout" style="display:none" onclick="handleLogout()">退出</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="mainContent"><div class="loading">加载中...</div></div>
+    </div>
+
+    <!-- Avatar Picker Modal -->
+    <div class="modal-overlay" id="avatarModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">自定义头像</span>
+                <button class="modal-close" onclick="closeAvatarModal()">&times;</button>
+            </div>
+            <div class="avatar-grid">
+                <div class="avatar-preview" id="avatarPreview">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div class="avatar-input-group">
+                    <input type="url" class="avatar-input" id="avatarUrlInput" placeholder="粘贴图片链接 (URL)" oninput="previewAvatar(this.value)">
+                    <button class="btn-use" onclick="previewAvatar(document.getElementById('avatarUrlInput').value)">预览</button>
+                </div>
+                <div class="avatar-hint">支持 JPG、PNG 等图片链接，建议正方形图片</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-save" style="flex:1" onclick="saveAvatar()">保存头像</button>
+                <button class="btn-remove" onclick="removeAvatar()">移除</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="supabase.min.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const DEFAULT_AVATAR_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+
+        let currentProfile = null;
+
+        async function init() {
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) { window.location.href = 'login.html'; return; }
+
+                const { data: profile } = await supabaseClient
+                    .from('profiles').select('*').eq('id', session.user.id).single();
+
+                currentProfile = profile || { username: session.user.email, role: 'user', avatar_url: '', created_at: new Date().toISOString() };
+
+                updateNav(session.user, currentProfile);
+                renderDashboard(session.user, currentProfile);
+                loadUserStats();
+            } catch (err) {
+                console.error('init error:', err);
+                showToast('加载失败，请刷新重试', 'error');
+            }
+        }
+
+        function getAvatarHTML(avatarUrl, size) {
+            if (avatarUrl) {
+                return `<img src="${avatarUrl}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`;
+            }
+            return `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;background:#e5e7eb;border-radius:50%">${DEFAULT_AVATAR_SVG}</div>`;
+        }
+
+        function updateNav(user, data) {
+            const navAvatar = document.getElementById('navAvatar');
+            navAvatar.innerHTML = '';
+            navAvatar.style.background = '#e5e7eb';
+            if (data.avatar_url) {
+                navAvatar.innerHTML = `<img src="${data.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
+            } else {
+                navAvatar.innerHTML = DEFAULT_AVATAR_SVG;
+            }
+            document.getElementById('navName').textContent = data.username || user.email;
+            document.getElementById('userBadge').style.display = 'flex';
+            document.getElementById('btnLogin').style.display = 'none';
+            document.getElementById('btnRegister').style.display = 'none';
+            document.getElementById('btnLogout').style.display = 'inline-block';
+        }
+
+        function renderDashboard(user, data) {
+            const isAdmin = data.role === 'admin';
+
+            document.getElementById('mainContent').innerHTML = `
+                <div class="profile-card">
+                    <div class="avatar-wrapper" onclick="openAvatarModal()">
+                        <div class="avatar-lg" id="profileAvatar"></div>
+                        <div class="avatar-edit-hint">✏</div>
+                    </div>
+                    <div class="profile-info">
+                        <h2 id="displayName">${data.username || '玩家'}</h2>
+                        <div class="email">${user.email}</div>
+                        <span class="role-badge ${isAdmin ? 'admin' : 'user'}">${isAdmin ? '管理员' : '普通用户'}</span>
+                        <div class="edit-row">
+                            <input type="text" id="newUsername" value="${data.username || ''}" placeholder="输入新用户名">
+                            <button onclick="updateUsername()">修改</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h3>快捷入口</h3>
+                    <div class="action-list">
+                        <a href="index.html" class="action-item"><div class="action-icon purple">🏠</div><div><h4>返回首页</h4><p>查看服务器信息</p></div></a>
+                        <a href="connect.html" class="action-item"><div class="action-icon green">🎮</div><div><h4>开始游戏</h4><p>连接服务器</p></div></a>
+                        <a href="https://kook.vip/71Hw5z" target="_blank" class="action-item"><div class="action-icon blue">💬</div><div><h4>Kook 社区</h4><p>加入讨论</p></div></a>
+                        <a href="redeem.html" class="action-item"><div class="action-icon orange">🎁</div><div><h4>兑换码</h4><p>兑换奖励</p></div></a>
+                        <a href="forum.html" class="action-item"><div class="action-icon purple">📝</div><div><h4>论坛</h4><p>参与讨论</p></div></a>
+                        <a href="https://qm.qq.com/q/zzUzFa6ytw" target="_blank" class="action-item"><div class="action-icon orange">📱</div><div><h4>QQ 群</h4><p>交流互动</p></div></a>
+                        <a href="javascript:void(0)" onclick="handleCheckin()" class="action-item" id="checkinBtn">
+                            <div class="action-icon orange">📅</div>
+                            <div><h4>每日签到</h4><p id="checkinText">签到领积分</p></div>
+                        </a>
+                    </div>
+                    ${isAdmin ? '<a href="admin.html" class="admin-link">🔐 进入管理后台</a>' : ''}
+                </div>
+
+                <div class="section-card" id="statsCard">
+                    <h3>我的等级</h3>
+                    <div style="display:flex;align-items:center;gap:1rem;margin-top:0.75rem">
+                        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;font-weight:700" id="levelBadge">1</div>
+                        <div>
+                            <div style="font-size:0.9rem;font-weight:600" id="levelText">等级 1</div>
+                            <div style="font-size:0.78rem;color:#999" id="pointsText">0 积分</div>
+                            <div style="width:150px;height:6px;background:#e5e7eb;border-radius:3px;margin-top:0.3rem;overflow:hidden">
+                                <div style="height:100%;background:#6366f1;border-radius:3px;transition:width 0.3s" id="levelProgress"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const avatarEl = document.getElementById('profileAvatar');
+            if (data.avatar_url) {
+                avatarEl.innerHTML = `<img src="${data.avatar_url}" style="width:100%;height:100%;object-fit:cover">`;
+            } else {
+                avatarEl.innerHTML = DEFAULT_AVATAR_SVG;
+            }
+        }
+
+        function openAvatarModal() {
+            document.getElementById('avatarUrlInput').value = currentProfile.avatar_url || '';
+            previewAvatar(currentProfile.avatar_url || '');
+            document.getElementById('avatarModal').classList.add('active');
+        }
+
+        function closeAvatarModal() {
+            document.getElementById('avatarModal').classList.remove('active');
+        }
+
+        function previewAvatar(url) {
+            const preview = document.getElementById('avatarPreview');
+            if (url) {
+                preview.innerHTML = `<img src="${url}" onerror="this.parentElement.innerHTML='<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1.5\\'><path d=\\'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\\'/><circle cx=\\'12\\' cy=\\'7\\' r=\\'4\\'/></svg>'">`;
+            } else {
+                preview.innerHTML = DEFAULT_AVATAR_SVG;
+            }
+        }
+
+        async function saveAvatar() {
+            try {
+                const url = document.getElementById('avatarUrlInput').value.trim();
+                if (!currentProfile) return;
+
+                await supabaseClient.from('profiles').update({ avatar_url: url }).eq('id', currentProfile.id);
+                currentProfile.avatar_url = url;
+
+                updateNav({ email: currentProfile.email }, currentProfile);
+                renderDashboard({ email: currentProfile.email }, currentProfile);
+                closeAvatarModal();
+            } catch (err) {
+                showToast('加载失败', 'error');
+            }
+        }
+
+        async function removeAvatar() {
+            try {
+                if (!currentProfile) return;
+                await supabaseClient.from('profiles').update({ avatar_url: '' }).eq('id', currentProfile.id);
+                currentProfile.avatar_url = '';
+                updateNav({ email: currentProfile.email }, currentProfile);
+                renderDashboard({ email: currentProfile.email }, currentProfile);
+                closeAvatarModal();
+            } catch (err) {
+                showToast('加载失败', 'error');
+            }
+        }
+
+        async function updateUsername() {
+            try {
+                const newName = document.getElementById('newUsername').value.trim();
+                if (!newName || !currentProfile) return;
+                await supabaseClient.from('profiles').update({ username: newName }).eq('id', currentProfile.id);
+                currentProfile.username = newName;
+                document.getElementById('displayName').textContent = newName;
+                updateNav({ email: currentProfile.email }, currentProfile);
+            } catch (err) {
+                showToast('加载失败', 'error');
+            }
+        }
+
+        async function handleCheckin() {
+            if (!currentUser) return;
+            const today = new Date().toISOString().split('T')[0];
+            const { data: existing } = await supabaseClient.from('checkin_logs')
+                .select('id').eq('user_id', currentUser.user.id)
+                .gte('created_at', today + 'T00:00:00').single();
+            if (existing) { showToast('今天已经签到过了', 'error'); return; }
+
+            await supabaseClient.from('checkin_logs').insert([{
+                user_id: currentUser.user.id, points_earned: 10
+            }]);
+
+            const { data: stats } = await supabaseClient.from('user_stats').select('*').eq('user_id', currentUser.user.id).single();
+            if (stats) {
+                const newStreak = stats.last_checkin === new Date(Date.now() - 86400000).toISOString().split('T')[0] ? stats.checkin_streak + 1 : 1;
+                await supabaseClient.from('user_stats').update({
+                    points: stats.points + 10,
+                    checkin_streak: newStreak,
+                    last_checkin: today
+                }).eq('user_id', currentUser.user.id);
+            } else {
+                await supabaseClient.from('user_stats').insert([{
+                    user_id: currentUser.user.id, points: 10, checkin_streak: 1, last_checkin: today
+                }]);
+            }
+            showToast('签到成功！+10 积分', 'success');
+            loadUserStats();
+        }
+
+        function getLevel(points) {
+            const levels = [0, 50, 150, 300, 500, 800, 1200, 1800, 2500, 3500, 5000];
+            let level = 1;
+            for (let i = 1; i < levels.length; i++) {
+                if (points >= levels[i]) level = i + 1;
+            }
+            return level;
+        }
+
+        function getLevelName(level) {
+            const names = ['新手玩家','初级玩家','进阶玩家','资深玩家','精英玩家','社区达人','论坛元老','凌云精英','凌云大师','凌云传奇','凌云之巅'];
+            return names[Math.min(level - 1, names.length - 1)];
+        }
+
+        function getNextLevelPoints(level) {
+            const levels = [0, 50, 150, 300, 500, 800, 1200, 1800, 2500, 3500, 5000];
+            return levels[Math.min(level, levels.length - 1)] || 99999;
+        }
+
+        async function loadUserStats() {
+            if (!currentUser) return;
+            const { data: stats } = await supabaseClient.from('user_stats').select('*').eq('user_id', currentUser.user.id).single();
+            if (!stats) return;
+            const level = getLevel(stats.points);
+            const nextPoints = getNextLevelPoints(level);
+            const prevPoints = getNextLevelPoints(level - 1);
+            const progress = nextPoints > prevPoints ? ((stats.points - prevPoints) / (nextPoints - prevPoints)) * 100 : 100;
+
+            document.getElementById('levelBadge').textContent = level;
+            document.getElementById('levelText').textContent = 'Lv.' + level + ' ' + getLevelName(level);
+            document.getElementById('pointsText').textContent = stats.points + ' 积分 · 连续签到 ' + stats.checkin_streak + ' 天';
+            document.getElementById('levelProgress').style.width = Math.min(progress, 100) + '%';
+
+            const today = new Date().toISOString().split('T')[0];
+            if (stats.last_checkin === today) {
+                document.getElementById('checkinText').textContent = '今日已签到 ✓';
+            }
+        }
+
+        async function handleLogout() {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        init();
+    </script>
+    <script src="modal.js"></script>
+    <script src="chat-widget.js"></script>
+    <script src="notifications-bell.js"></script>
+    <script src="footer.js"></script>
+    <script src="mobile-menu.js"></script>
+</body>
+</html>

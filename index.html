@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>凌云城-轻RP 4.0 - FiveM 服务器</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0d0d0d;
+            --bg2: #141414;
+            --card: #1a1a1a;
+            --card2: #222222;
+            --accent: #e8a87c;
+            --accent2: #d4a574;
+            --text: #f5f5f5;
+            --text2: #a0a0a0;
+            --border: #2a2a2a;
+        }
+
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: var(--bg); color: var(--text); }
+        a { text-decoration: none; color: inherit; }
+
+        /* Nav */
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            padding: 0 4rem; height: 72px;
+            display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+            background: rgba(13,13,13,0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+        .logo {
+            font-size: 1.1rem; font-weight: 600; letter-spacing: 0.1em;
+            color: var(--accent);
+        }
+
+        .nav-links { display: flex; gap: 2.5rem; list-style: none; justify-self: center; }
+        .nav-links a {
+            font-size: 0.85rem; color: var(--text2); transition: color 0.2s;
+            letter-spacing: 0.05em;
+        }
+        .nav-links a:hover, .nav-links a.active { color: var(--text); }
+        .nav-links .cta {
+            background: var(--accent); color: var(--bg);
+            padding: 0.5rem 1.2rem; border-radius: 6px;
+            font-weight: 500;
+        }
+        .nav-links .cta:hover { background: var(--accent2); color: var(--bg); }
+
+        .nav-right { display: flex; align-items: center; gap: 0.75rem; justify-self: end; }
+        .nav-btn {
+            padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.82rem;
+            font-weight: 500; cursor: pointer; transition: all 0.15s; border: none;
+            text-decoration: none; letter-spacing: 0.02em;
+        }
+        .nav-btn.outline { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+        .nav-btn.outline:hover { border-color: var(--text); color: var(--text); }
+        .nav-btn.filled { background: var(--accent); color: var(--bg); }
+        .nav-btn.filled:hover { background: var(--accent2); }
+        .user-badge {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.35rem 0.7rem 0.35rem 0.35rem;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 6px; text-decoration: none; color: var(--text);
+            font-size: 0.82rem; transition: all 0.15s;
+        }
+        .user-badge:hover { border-color: var(--accent); }
+        .user-badge .avatar {
+            width: 28px; height: 28px; border-radius: 6px;
+            background: #e5e7eb; color: var(--text2); display: flex;
+            align-items: center; justify-content: center;
+            font-weight: 600; font-size: 0.7rem; overflow: hidden; flex-shrink: 0;
+        }
+
+        .mobile-menu { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+        .mobile-menu span { width: 22px; height: 1.5px; background: var(--text); }
+
+        /* Hero */
+        .hero {
+            min-height: 100vh; display: flex; align-items: center;
+            justify-content: center; text-align: center;
+            padding: 6rem 2rem;
+            background: var(--bg);
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(232,168,124,0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-content { position: relative; z-index: 1; max-width: 700px; }
+
+        .badge {
+            display: inline-block; padding: 0.4rem 1rem;
+            border: 1px solid var(--border); border-radius: 50px;
+            font-size: 0.75rem; color: var(--text2); letter-spacing: 0.1em;
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 700; line-height: 1.1;
+            margin-bottom: 1.5rem; letter-spacing: -0.02em;
+        }
+
+        .hero h1 .accent { color: var(--accent); }
+
+        .hero p {
+            font-size: 1.1rem; color: var(--text2);
+            line-height: 1.8; margin-bottom: 2.5rem;
+        }
+
+        .btn-row { display: flex; gap: 1rem; justify-content: center; margin-bottom: 3rem; }
+
+        .btn {
+            padding: 0.9rem 2rem; border-radius: 8px;
+            font-size: 0.9rem; font-weight: 500;
+            transition: all 0.2s; cursor: pointer; border: none;
+        }
+
+        .btn-primary {
+            background: var(--accent); color: var(--bg);
+        }
+        .btn-primary:hover { background: var(--accent2); transform: translateY(-2px); }
+
+        .btn-secondary {
+            background: transparent; color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { border-color: var(--text2); }
+
+        .ip-box {
+            display: inline-flex; align-items: center; gap: 1rem;
+            padding: 0.8rem 1.5rem; background: var(--card);
+            border: 1px solid var(--border); border-radius: 8px;
+        }
+
+        .ip-box label { font-size: 0.8rem; color: var(--text2); }
+        .ip-box code { font-size: 1rem; color: var(--accent); font-family: 'SF Mono', monospace; }
+
+        .copy-btn {
+            background: none; border: 1px solid var(--border);
+            color: var(--text2); padding: 0.4rem 0.8rem; border-radius: 4px;
+            font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+        }
+        .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* Stats */
+        .stats {
+            padding: 3rem;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stats-grid {
+            max-width: 900px; margin: 0 auto;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;
+        }
+
+        .stat { text-align: center; }
+        .stat-num {
+            font-size: 2rem; font-weight: 600; color: var(--accent);
+            margin-bottom: 0.3rem;
+        }
+        .stat-label { font-size: 0.8rem; color: var(--text2); letter-spacing: 0.05em; }
+
+        /* Features */
+        .features { padding: 6rem 2rem; max-width: 1100px; margin: 0 auto; }
+
+        .section-title {
+            font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .section-sub { color: var(--text2); font-size: 0.95rem; margin-bottom: 3rem; }
+
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+
+        .feature {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 2rem; transition: all 0.2s;
+        }
+        .feature:hover { border-color: #333; transform: translateY(-3px); }
+        .feature-icon { font-size: 1.5rem; margin-bottom: 1rem; }
+        .feature h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .feature p { font-size: 0.9rem; color: var(--text2); line-height: 1.6; }
+
+        /* Footer */
+        footer {
+            padding: 4rem 4rem 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-inner {
+            max-width: 1100px; margin: 0 auto;
+            display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-brand .logo { margin-bottom: 1rem; display: block; }
+        .footer-brand p { font-size: 0.9rem; color: var(--text2); line-height: 1.7; max-width: 280px; }
+
+        .footer-col h4 {
+            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text2); margin-bottom: 1rem;
+        }
+        .footer-col ul { list-style: none; }
+        .footer-col li { margin-bottom: 0.6rem; }
+        .footer-col a { font-size: 0.9rem; color: var(--text2); transition: color 0.2s; }
+        .footer-col a:hover { color: var(--accent); }
+
+        .footer-bottom {
+            max-width: 1100px; margin: 0 auto;
+            padding-top: 2rem; border-top: 1px solid var(--border);
+            font-size: 0.8rem; color: var(--text2);
+            display: flex; justify-content: space-between;
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 0 1.5rem; }
+            .nav-links { display: none; }
+            .nav-right { gap: 0.5rem; }
+            .mobile-menu { display: flex; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .features-grid { grid-template-columns: 1fr; }
+            .footer-inner { grid-template-columns: 1fr; }
+            .footer-bottom { flex-direction: column; gap: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">凌云城</div>
+        <ul class="nav-links">
+            <li><a href="index.html" class="active">首页</a></li>
+            <li><a href="features.html">特色</a></li>
+            <li><a href="rules.html">规则</a></li>
+            <li><a href="connect.html">加入</a></li>
+            <li><a href="redeem.html">兑换</a></li>
+            <li><a href="forum.html">论坛</a></li>
+        </ul>
+        <div class="nav-right" id="navAuth">
+            <a href="login.html" class="nav-btn outline">登录</a>
+            <a href="login.html" class="nav-btn filled">注册</a>
+        </div>
+        <div class="mobile-menu">
+            <span></span><span></span><span></span>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="badge">全新赛季 4.0</div>
+            <h1>凌云城<br><span class="accent">轻RP</span></h1>
+            <p>欢迎来到 【凌云城-轻RP 4.0】—— 最优质的中文 FiveM 轻 RP 服务器，体验轻松愉快的角色扮演乐趣。</p>
+            <div class="btn-row">
+                <a href="connect.html" class="btn btn-primary">开始游戏</a>
+            </div>
+            <div class="ip-box">
+                <label>服务器地址</label>
+                <code id="serverIp">connect oaa5897</code>
+                <button class="copy-btn" onclick="copyIp()">复制</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="stats">
+        <div class="stats-grid">
+            <div class="stat">
+                <div class="stat-num">500+</div>
+                <div class="stat-label">注册玩家</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">64</div>
+                <div class="stat-label">最大容量</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">99.9%</div>
+                <div class="stat-label">在线率</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">24/7</div>
+                <div class="stat-label">运营时间</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <span class="logo">凌云城</span>
+                <p>优质的中文 FiveM 轻 RP 服务器，为你提供轻松愉快的角色扮演体验。加入我们，开始你的故事。</p>
+            </div>
+            <div class="footer-col">
+                <h4>导航</h4>
+                <ul>
+                    <li><a href="features.html">服务器特色</a></li>
+                    <li><a href="rules.html">服务器规则</a></li>
+                    <li><a href="connect.html">如何加入</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>社区</h4>
+                <ul>
+                    <li><a href="https://kook.vip/71Hw5z">Kook</a></li>
+                    <li><a href="https://qm.qq.com/q/zzUzFa6ytw">QQ 群</a></li>
+                    <li><a href="#">投诉建议</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2026 凌云城-轻RP 4.0</span>
+            <span>本站与 Rockstar Games 无任何关联</span>
+        </div>
+    </footer>
+
+    <!-- Supabase SDK -->
+    <script src="supabase.min.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const DEFAULT_AVATAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+
+        supabaseClient.auth.getSession().then(async ({ data: { session } }) => {
+            const navAuth = document.getElementById('navAuth');
+            if (session) {
+                let avatarUrl = '';
+                const { data: profile } = await supabaseClient.from('profiles').select('avatar_url').eq('id', session.user.id).single();
+                if (profile) avatarUrl = profile.avatar_url || '';
+
+                let avatarHTML = '';
+                if (avatarUrl) {
+                    avatarHTML = `<div class="avatar"><img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:6px"></div>`;
+                } else {
+                    avatarHTML = `<div class="avatar">${DEFAULT_AVATAR}</div>`;
+                }
+
+                navAuth.innerHTML = `
+                    <a href="dashboard.html" class="user-badge">
+                        ${avatarHTML}
+                        <span>个人中心</span>
+                    </a>
+                    <a href="#" class="nav-btn outline" onclick="handleLogout(event)">退出</a>
+                `;
+            }
+        });
+
+        async function handleLogout(e) {
+            e.preventDefault();
+            await supabaseClient.auth.signOut();
+            window.location.href = 'index.html';
+        }
+    </script>
+    <script src="modal.js"></script>
+    <script src="chat-widget.js"></script>
+    <script src="notifications-bell.js"></script>
+    <script src="footer.js"></script>
+    <script src="mobile-menu.js"></script>
+</body>
+</html>
