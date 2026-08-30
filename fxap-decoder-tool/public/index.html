@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FXAP Decoder Tool - FiveM Plugin .fxap Decoder</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔧 FXAP Decoder Tool</h1>
+            <p class="subtitle">Upload FiveM plugin ZIP or .fxap file → Auto-scan → Decode → Manage</p>
+        </header>
+
+        <main>
+            <!-- Step 1: File Upload -->
+            <section id="step-upload" class="step active">
+                <div class="card">
+                    <h2>Step 1: Upload Plugin</h2>
+                    <div class="upload-area" id="uploadArea">
+                        <input type="file" id="fileInput" accept=".fxap,.zip" hidden>
+                        <div class="upload-content">
+                            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            <p>Drag & drop a <strong>.zip plugin</strong> or <strong>.fxap file</strong> here, or click to browse</p>
+                            <span class="file-hint">Supports .zip (plugins) and .fxap files up to 500MB</span>
+                        </div>
+                    </div>
+                    <div id="fileInfo" class="file-info hidden">
+                        <div class="file-details">
+                            <span class="file-name" id="fileName"></span>
+                            <span class="file-size" id="fileSize"></span>
+                        </div>
+                        <button id="removeFile" class="btn btn-secondary btn-sm">Remove</button>
+                    </div>
+                    <div class="cfx-key-group">
+                        <label for="cfxKeyInput" class="cfx-key-label">CFX KEY <span class="optional">(可选)</span></label>
+                        <input type="text" id="cfxKeyInput" class="cfx-key-input" placeholder="cfxk_xxxxxxxxxx" autocomplete="off">
+                        <span class="cfx-key-hint">FiveM CFX 许可证密钥，部分 .fxap 需要此密钥解密</span>
+                    </div>
+                    <button id="decodeBtn" class="btn btn-primary btn-lg" disabled>
+                        <span class="btn-text">开始解密</span>
+                        <span class="btn-loader hidden"></span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Step 2: Processing Status -->
+            <section id="step-processing" class="step hidden">
+                <div class="card">
+                    <h2>Step 2: Processing</h2>
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span id="progressText">Initializing...</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                    </div>
+                    <div class="status-log" id="statusLog"></div>
+                </div>
+            </section>
+
+            <!-- Step 3: Results - Multiple FXAP Tabs -->
+            <section id="step-results" class="step hidden">
+                <div class="card">
+                    <h2>Step 3: Results</h2>
+                    
+                    <div class="results-summary">
+                        <div class="summary-item">
+                            <span class="summary-label">Original File:</span>
+                            <span class="summary-value" id="resultFileName"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">FXAP Found:</span>
+                            <span class="summary-value" id="resultFxapCount">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Decoded:</span>
+                            <span class="summary-value" id="resultSuccessCount">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Failed:</span>
+                            <span class="summary-value" id="resultFailCount">0</span>
+                        </div>
+                    </div>
+
+                    <!-- FXAP Tabs -->
+                    <div class="fxap-tabs" id="fxapTabs" role="tablist"></div>
+
+                    <!-- Tab Panels -->
+                    <div class="tab-panels" id="tabPanels"></div>
+
+                    <!-- Global Download -->
+                    <div class="action-buttons global-actions">
+                        <button id="downloadAllBtn" class="btn btn-primary" disabled>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download All Decoded (Combined ZIP)
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Error Display -->
+            <section id="step-error" class="step hidden">
+                <div class="card error-card">
+                    <h2>❌ Error</h2>
+                    <p id="errorMessage"></p>
+                    <button id="retryBtn" class="btn btn-primary">Try Another File</button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>FXAP Decoder Tool for FiveM • Built with Node.js & Vanilla JS</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
