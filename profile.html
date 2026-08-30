@@ -1,204 +1,445 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户主页 - 凌云城</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户主页 - 凌云城</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👤</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .page-hero{
+      min-height:45vh;display:flex;align-items:center;justify-content:center;
+      position:relative;overflow:hidden;text-align:center;
+      padding:7rem 1.5rem 3rem;
+    }
+    .page-hero-bg{
+      position:absolute;inset:0;z-index:0;
+      background:
+        radial-gradient(ellipse 70% 50% at 30% 20%,rgba(212,168,83,0.07) 0%,transparent 60%),
+        radial-gradient(ellipse 50% 40% at 75% 70%,rgba(94,234,212,0.04) 0%,transparent 50%);
+    }
+    .page-hero-content{position:relative;z-index:2;max-width:700px}
+    .page-hero h1{
+      font-family:var(--font-display);font-size:clamp(2rem,5vw,3.2rem);
+      line-height:1.15;margin-bottom:.5rem;
+      animation:fadeUp .8s ease .1s both;
+    }
+    .page-hero h1 .line1{
+      display:block;
+      background:linear-gradient(135deg,#fff 20%,var(--text2));
+      -webkit-background-clip:text;background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+    .page-hero h1 .line2{
+      display:block;position:relative;
+      background:linear-gradient(135deg,var(--gold),var(--gold2),#fff,var(--gold));
+      background-size:300% 300%;
+      -webkit-background-clip:text;background-clip:text;
+      -webkit-text-fill-color:transparent;
+      animation:shimmer 5s ease infinite;
+    }
+    .page-hero p{
+      font-size:clamp(.85rem,1.5vw,1rem);color:var(--text2);
+      line-height:1.7;max-width:450px;margin-inline:auto;
+      animation:fadeUp .8s ease .25s both;
+    }
+    @keyframes fadeUp{
+      from{opacity:0;transform:translateY(24px)}
+      to{opacity:1;transform:translateY(0)}
+    }
 
-        nav { position: fixed; top: 0; width: 100%; z-index: 100; padding: 0 3rem; height: 64px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; background: #fff; border-bottom: 1px solid #e5e7eb; }
-        .logo { font-size: 1.05rem; font-weight: 700; color: #6366f1; letter-spacing: 0.05em; }
-        .nav-center { display: flex; gap: 2rem; list-style: none; justify-self: center; }
-        .nav-center a { font-size: 0.88rem; color: #666; text-decoration: none; transition: color 0.15s; font-weight: 500; }
-        .nav-center a:hover { color: #1a1a1a; }
-        .nav-center a.active { color: #6366f1; }
-        .nav-right { display: flex; align-items: center; gap: 0.75rem; justify-self: end; }
-        .nav-btn { padding: 0.5rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none; text-decoration: none; }
-        .nav-btn.outline { background: #fff; color: #333; border: 1px solid #d1d5db; }
-        .nav-btn.outline:hover { background: #f9fafb; }
-        .nav-btn.filled { background: #6366f1; color: #fff; }
-        .nav-btn.filled:hover { background: #5558e6; }
-        .user-badge { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.85rem 0.4rem 0.4rem; background: #f3f4f6; border-radius: 8px; text-decoration: none; color: #333; font-size: 0.85rem; font-weight: 500; }
-        .user-badge:hover { background: #e5e7eb; }
-        .user-badge .avatar { width: 30px; height: 30px; border-radius: 8px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+    .profile-section{
+      max-width:800px;margin:0 auto;
+      padding:0 clamp(1rem,4vw,4rem) clamp(3rem,6vh,5rem);
+    }
 
-        .container { max-width: 800px; margin: 0 auto; padding: 5.5rem 1.5rem 3rem; }
+    /* Profile Card */
+    .profile-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:2rem;overflow:hidden;
+      position:relative;
+    }
+    .profile-card::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(212,168,83,0.3),transparent);
+    }
+    .profile-header{display:flex;align-items:center;gap:1.5rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)}
+    .avatar-circle{
+      width:80px;height:80px;border-radius:50%;flex-shrink:0;
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      display:flex;align-items:center;justify-content:center;
+      font-size:2rem;font-weight:700;color:#000;
+      font-family:var(--font-heading);
+      box-shadow:0 4px 20px rgba(212,168,83,0.3);
+    }
+    .avatar-circle img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+    .profile-info{flex:1;min-width:0}
+    .profile-info h1{
+      font-family:var(--font-heading);font-size:1.4rem;font-weight:700;
+      margin-bottom:.3rem;
+    }
+    .profile-info .role-badge{
+      display:inline-block;padding:.2rem .7rem;border-radius:50px;
+      font-size:.75rem;font-weight:600;margin-bottom:.3rem;
+    }
+    .role-badge.admin{background:rgba(248,113,113,0.12);color:var(--red)}
+    .role-badge.user{background:var(--gold-dim);color:var(--gold)}
+    .profile-info .join-date{font-size:.82rem;color:var(--text3)}
+    .profile-actions{display:flex;gap:.5rem;flex-shrink:0}
 
-        .profile-card { background: #fff; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 1.5rem; }
-        .profile-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #f0f0f0; }
-        .profile-avatar { width: 80px; height: 80px; border-radius: 16px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
-        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-info h1 { font-size: 1.3rem; font-weight: 600; margin-bottom: 0.25rem; }
-        .profile-info .join-date { font-size: 0.82rem; color: #999; }
-        .profile-stats { display: flex; gap: 2rem; margin-bottom: 1.5rem; }
-        .profile-stat { text-align: center; }
-        .profile-stat .value { font-size: 1.2rem; font-weight: 700; color: #1a1a1a; }
-        .profile-stat .label { font-size: 0.75rem; color: #999; margin-top: 0.15rem; }
+    /* Level Section */
+    .level-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:1.8rem;margin-top:1.2rem;
+      position:relative;overflow:hidden;
+    }
+    .level-card::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(212,168,83,0.3),transparent);
+    }
+    .level-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+    .level-badge-wrap{display:flex;align-items:center;gap:1rem}
+    .level-icon{
+      width:60px;height:60px;border-radius:50%;
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.5rem;font-weight:900;color:#000;
+      font-family:var(--font-heading);
+      box-shadow:0 4px 16px rgba(212,168,83,0.3);
+    }
+    .level-info h3{font-size:1.15rem;font-weight:700;margin-bottom:.15rem}
+    .level-info p{color:var(--text2);font-size:.88rem}
+    .points-display{text-align:right}
+    .points-value{
+      font-size:2rem;font-weight:900;color:var(--gold);
+      font-family:var(--font-heading);line-height:1;
+    }
+    .points-label{color:var(--text3);font-size:.78rem;margin-top:.15rem}
 
-        .btn-follow { padding: 0.55rem 1.25rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none; }
-        .btn-follow.follow { background: #6366f1; color: #fff; }
-        .btn-follow.follow:hover { background: #5558e6; }
-        .btn-follow.unfollow { background: #fff; color: #333; border: 1px solid #d1d5db; }
-        .btn-follow.unfollow:hover { background: #f9fafb; }
+    .progress-section{margin-top:1rem}
+    .progress-header{
+      display:flex;justify-content:space-between;
+      margin-bottom:.5rem;font-size:.88rem;color:var(--text2);
+    }
+    .progress-bar{
+      width:100%;height:10px;background:var(--surface2);
+      border-radius:5px;overflow:hidden;
+    }
+    .progress-fill{
+      height:100%;border-radius:5px;
+      background:linear-gradient(90deg,var(--gold),var(--gold2));
+      transition:width .6s cubic-bezier(.4,0,.2,1);
+    }
 
-        .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    /* Inventory Section */
+    .inventory-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:1.8rem;margin-top:1.2rem;
+      position:relative;overflow:hidden;
+    }
+    .inventory-card::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(212,168,83,0.3),transparent);
+    }
+    .inventory-card h2{
+      font-size:1rem;font-weight:600;margin-bottom:1rem;
+      display:flex;align-items:center;gap:.5rem;
+    }
+    .inventory-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.8rem}
+    .inventory-item{
+      padding:1rem;background:var(--bg2);border:1px solid var(--border);
+      border-radius:8px;display:flex;align-items:center;gap:.75rem;
+      transition:all .25s;
+    }
+    .inventory-item:hover{border-color:var(--border2);transform:translateY(-2px)}
+    .inventory-item .item-icon{
+      width:40px;height:40px;border-radius:8px;
+      background:var(--gold-dim);border:1px solid rgba(212,168,83,0.1);
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;font-size:1.1rem;
+    }
+    .inventory-item .item-name{font-size:.88rem;font-weight:500;color:var(--text)}
+    .inventory-item .item-meta{font-size:.72rem;color:var(--text3);margin-top:.1rem}
 
-        .post-item { background: #fff; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 0.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.03); text-decoration: none; color: inherit; display: block; transition: all 0.15s; border: 1px solid transparent; }
-        .post-item:hover { border-color: #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        .post-item .post-title { font-size: 0.92rem; font-weight: 600; margin-bottom: 0.3rem; }
-        .post-item .post-meta { font-size: 0.78rem; color: #999; }
-        .tag { padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.7rem; font-weight: 500; }
-        .tag-cat { background: #ede9fe; color: #6366f1; }
-        .tag-solved { background: #dcfce7; color: #16a34a; }
-        .tag-unsolved { background: #fef2f2; color: #ef4444; }
+    .empty{text-align:center;padding:2rem;color:var(--text3);font-size:.88rem}
 
-        .empty-state { text-align: center; padding: 2rem; color: #999; font-size: 0.88rem; }
-
-        @media (max-width: 640px) {
-            nav { padding: 0 1.5rem; }
-            .nav-center { display: none; }
-            .profile-header { flex-direction: column; text-align: center; }
-            .profile-stats { justify-content: center; }
-        }
-    </style>
+    @media(max-width:600px){
+      .profile-header{flex-direction:column;text-align:center}
+      .profile-actions{justify-content:center}
+      .level-header{flex-direction:column;gap:1rem;text-align:center}
+      .points-display{text-align:center}
+      .inventory-list{grid-template-columns:1fr}
+    }
+  </style>
 </head>
 <body>
-    <nav>
-        <div class="logo">凌云城</div>
-        <ul class="nav-center">
-            <li><a href="index.html">首页</a></li>
-            <li><a href="features.html">特色</a></li>
-            <li><a href="rules.html">规则</a></li>
-            <li><a href="connect.html">加入</a></li>
-            <li><a href="redeem.html">兑换</a></li>
-            <li><a href="forum.html">论坛</a></li>
+  <canvas id="particles-canvas"></canvas>
+
+  <nav class="nav" id="mainNav">
+    <a href="index.html" class="nav-logo">凌云城</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">首页</a></li>
+      <li><a href="features.html">特色</a></li>
+      <li><a href="rules.html">规则</a></li>
+      <li><a href="connect.html">加入</a></li>
+      <li><a href="redeem.html">兑换</a></li>
+      <li><a href="forum.html">论坛</a></li>
+    </ul>
+    <div class="nav-right" id="navAuth">
+      <a href="login.html" class="nav-btn outline">登录</a>
+      <a href="login.html" class="nav-btn filled">注册</a>
+    </div>
+    <button class="nav-toggle" id="navToggle" onclick="toggleNav()">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <section class="page-hero">
+    <div class="page-hero-bg"></div>
+    <div class="page-hero-content">
+      <h1>
+        <span class="line1">玩家</span>
+        <span class="line2">个人主页</span>
+      </h1>
+      <p>查看玩家的游戏资料、等级和背包物品</p>
+    </div>
+  </section>
+
+  <section class="profile-section" id="profileArea">
+    <div class="empty">加载中...</div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo">凌云城</span>
+        <p>优质的中文 FiveM 轻 RP 服务器，为你提供轻松愉快的角色扮演体验。</p>
+      </div>
+      <div class="footer-col">
+        <h4>导航</h4>
+        <ul>
+          <li><a href="features.html">服务器特色</a></li>
+          <li><a href="rules.html">服务器规则</a></li>
+          <li><a href="connect.html">如何加入</a></li>
         </ul>
-        <div class="nav-right" id="navRight">
-            <a href="dashboard.html" class="user-badge" id="userBadge" style="display:none"><div class="avatar" id="navAvatar"></div><span id="navName"></span></a>
-            <a href="login.html" class="nav-btn outline" id="btnLogin">登录</a>
-            <a href="login.html" class="nav-btn filled" id="btnRegister">注册</a>
-            <button class="nav-btn outline" id="btnLogout" style="display:none" onclick="handleLogout()">退出</button>
-        </div>
-    </nav>
+      </div>
+      <div class="footer-col">
+        <h4>社区</h4>
+        <ul>
+          <li><a href="https://kook.vip/71Hw5z" target="_blank">Kook</a></li>
+          <li><a href="https://qm.qq.com/q/zzUzFa6ytw" target="_blank">QQ 群</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 凌云城-轻RP 4.0</span>
+      <span>本站与 Rockstar Games 无任何关联</span>
+    </div>
+  </footer>
 
-    <div class="container" id="profileArea"><div class="empty-state">加载中...</div></div>
+  <script src="supabase.min.js"></script>
+  <script src="utils.js"></script>
+  <script>
+    const SUPABASE_URL="https://mxajreukeniayoqyvybe.supabase.co";
+    const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
+    const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-    <script src="supabase.min.js"></script>
-    <script src="utils.js"></script>
-    <script src="chat-widget.js"></script>
-    <script>
-        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const DEFAULT_AVATAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+    const LEVELS=[0,50,150,300,500,800,1200,1800,2500,3500,5000];
+    const LEVEL_NAMES=['新手玩家','初级玩家','进阶玩家','资深玩家','精英玩家','社区达人','论坛元老','凌云精英','凌云大师','凌云传奇','凌云之巅'];
 
-        let currentUser = null;
-        let currentProfile = null;
+    // 粒子系统
+    (function(){
+      const c=document.getElementById('particles-canvas');
+      const ctx=c.getContext('2d');
+      let w,h,particles=[];
+      function resize(){w=c.width=window.innerWidth;h=c.height=window.innerHeight}
+      window.addEventListener('resize',resize);resize();
+      class Particle{
+        constructor(){this.reset()}
+        reset(){
+          this.x=Math.random()*w;this.y=Math.random()*h;
+          this.size=Math.random()*1.5+.5;
+          this.speedX=(Math.random()-.5)*.3;this.speedY=(Math.random()-.5)*.3;
+          this.opacity=Math.random()*.4+.1;
+          this.color=Math.random()>.7?'212,168,83':'255,255,255';
+        }
+        update(){this.x+=this.speedX;this.y+=this.speedY;if(this.x<0||this.x>w||this.y<0||this.y>h)this.reset()}
+        draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fillStyle=`rgba(${this.color},${this.opacity})`;ctx.fill()}
+      }
+      for(let i=0;i<60;i++)particles.push(new Particle());
+      function animate(){ctx.clearRect(0,0,w,h);particles.forEach(p=>{p.update();p.draw()});requestAnimationFrame(animate)}
+      animate();
+    })();
 
-        async function init() {
-            try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (session) {
-                    currentUser = session;
-                    const { data: profile } = await supabaseClient.from('profiles').select('avatar_url, username').eq('id', session.user.id).single();
-                    currentProfile = profile || { username: session.user.email, avatar_url: '' };
-                    const navAvatar = document.getElementById('navAvatar');
-                    navAvatar.innerHTML = currentProfile.avatar_url ? '<img src="'+currentProfile.avatar_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">' : DEFAULT_AVATAR;
-                    document.getElementById('navName').textContent = currentProfile.username;
-                    document.getElementById('userBadge').style.display = 'flex';
-                    document.getElementById('btnLogin').style.display = 'none';
-                    document.getElementById('btnRegister').style.display = 'none';
-                    document.getElementById('btnLogout').style.display = 'inline-block';
-                }
+    // 导航滚动
+    window.addEventListener('scroll',()=>{
+      document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>50);
+    });
+    function toggleNav(){
+      document.getElementById('navLinks').classList.toggle('open');
+      document.getElementById('navToggle').classList.toggle('open');
+    }
 
-                const userId = new URLSearchParams(window.location.search).get('id');
-                if (!userId) { document.getElementById('profileArea').innerHTML = '<div class="empty-state">未指定用户</div>'; return; }
-                await loadProfile(userId);
-            } catch (err) {
-                console.error('init error:', err);
-                showToast('页面加载异常，请刷新重试', 'error');
-            }
+    let currentUser=null;
+    let myUserId=null;
+
+    function getLevel(points){
+      let level=0;
+      for(let i=LEVELS.length-1;i>=0;i--){
+        if(points>=LEVELS[i]){level=i;break}
+      }
+      return level;
+    }
+
+    function getLevelProgress(points,level){
+      if(level>=LEVELS.length-1)return 100;
+      const next=LEVELS[level+1];
+      const current=LEVELS[level];
+      return((points-current)/(next-current))*100;
+    }
+
+    async function init(){
+      try{
+        const{data:{session}}=await supabaseClient.auth.getSession();
+        const navAuth=document.getElementById('navAuth');
+        if(session){
+          currentUser=session;
+          myUserId=session.user.id;
+          const{data:p}=await supabaseClient.from('profiles').select('avatar_url,username').eq('id',session.user.id).single();
+          const name=(p&&p.username)||'玩家';
+          const avatar=p&&p.avatar_url?`<img src="${p.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">`:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+          navAuth.innerHTML=`
+            <a href="dashboard.html" class="user-badge"><div class="avatar">${avatar}</div><span>${name}</span></a>
+            <a href="#" class="nav-btn outline" onclick="logout(event)">退出</a>`;
         }
 
-        async function loadProfile(userId) {
-            const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', userId).single();
-            if (!profile) { document.getElementById('profileArea').innerHTML = '<div class="empty-state">用户不存在</div>'; return; }
+        const userId=new URLSearchParams(window.location.search).get('id');
+        if(userId){
+          await loadProfile(userId);
+        }else if(myUserId){
+          await loadProfile(myUserId);
+        }else{
+          document.getElementById('profileArea').innerHTML='<div class="empty">未指定用户</div>';
+        }
+      }catch(e){console.error('init error:',e)}
+    }
 
-            const { count: postCount } = await supabaseClient.from('forum_posts').select('*', { count: 'exact', head: true }).eq('user_id', userId);
-            const { count: replyCount } = await supabaseClient.from('forum_replies').select('*', { count: 'exact', head: true }).eq('user_id', userId);
+    async function loadProfile(userId){
+      try{
+        const{data:profile}=await supabaseClient.from('profiles').select('*').eq('id',userId).single();
+        if(!profile){
+          document.getElementById('profileArea').innerHTML='<div class="empty">用户不存在</div>';
+          return;
+        }
 
-            let isFollowing = false;
-            if (currentUser && currentUser.user.id !== userId) {
-                const { data: follow } = await supabaseClient.from('follows').select('id').eq('follower_id', currentUser.user.id).eq('following_id', userId).single();
-                isFollowing = !!follow;
-            }
+        const{data:stats}=await supabaseClient.from('user_stats')
+          .select('*').eq('user_id',userId).single();
 
-            const isOwnProfile = currentUser && currentUser.user.id === userId;
-            const avatarHtml = profile.avatar_url ? '<img src="'+profile.avatar_url+'">' : DEFAULT_AVATAR;
-            const joinDate = new Date(profile.created_at).toLocaleDateString('zh-CN');
+        const points=(stats&&stats.points)||0;
+        const level=getLevel(points);
+        const progress=getLevelProgress(points,level);
+        const nextPoints=level<LEVELS.length-1?LEVELS[level+1]:LEVELS[level];
+        const levelName=LEVEL_NAMES[level]||'新手玩家';
+        const isOwnProfile=myUserId===userId;
+        const role=(stats&&stats.role)||'user';
 
-            document.title = profile.username + ' - 凌云城';
+        const initial=(profile.username||'?')[0].toUpperCase();
+        const avatarHtml=profile.avatar_url
+          ?`<img src="${profile.avatar_url}">`
+          :initial;
+        const joinDate=new Date(profile.created_at).toLocaleDateString('zh-CN');
 
-            document.getElementById('profileArea').innerHTML = `
-                <div class="profile-card">
-                    <div class="profile-header">
-                        <div class="profile-avatar">${avatarHtml}</div>
-                        <div class="profile-info">
-                            <h1>${profile.username}</h1>
-                            <div class="join-date">注册于 ${joinDate}</div>
-                            ${!isOwnProfile && currentUser ? `<button class="btn-follow ${isFollowing ? 'unfollow' : 'follow'}" onclick="toggleFollow('${userId}')" id="followBtn">${isFollowing ? '取消关注' : '+ 关注'}</button>` : ''}
-                        </div>
-                    </div>
-                    <div class="profile-stats">
-                        <div class="profile-stat"><div class="value">${postCount || 0}</div><div class="label">帖子</div></div>
-                        <div class="profile-stat"><div class="value">${replyCount || 0}</div><div class="label">回复</div></div>
-                    </div>
+        document.title=profile.username+' - 凌云城';
+
+        document.getElementById('profileArea').innerHTML=`
+          <div class="profile-card">
+            <div class="profile-header">
+              <div class="avatar-circle">${avatarHtml}</div>
+              <div class="profile-info">
+                <h1>${profile.username}</h1>
+                <span class="role-badge ${role}">${role==='admin'?'管理员':'玩家'}</span>
+                <div class="join-date">加入于 ${joinDate}</div>
+              </div>
+              ${isOwnProfile?`<div class="profile-actions">
+                <a href="dashboard.html" class="btn btn-ghost" style="font-size:.82rem;padding:.5rem 1rem">编辑资料</a>
+              </div>`:''}
+            </div>
+          </div>
+
+          <div class="level-card">
+            <div class="level-header">
+              <div class="level-badge-wrap">
+                <div class="level-icon">${level+1}</div>
+                <div class="level-info">
+                  <h3>${levelName}</h3>
+                  <p>等级 ${level+1}</p>
                 </div>
-                <div class="section-title">TA 的帖子</div>
-                <div id="userPosts"><div class="empty-state">加载中...</div></div>
-            `;
+              </div>
+              <div class="points-display">
+                <div class="points-value">${points}</div>
+                <div class="points-label">积分</div>
+              </div>
+            </div>
+            <div class="progress-section">
+              <div class="progress-header">
+                <span>升级进度</span>
+                <span>${points} / ${nextPoints}</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:${progress}%"></div>
+              </div>
+            </div>
+          </div>
 
-            await loadUserPosts(userId);
+          <div class="inventory-card">
+            <h2>🎒 背包物品</h2>
+            <div id="inventoryList"><div class="empty">加载中...</div></div>
+          </div>
+        `;
+
+        await loadInventory(userId);
+      }catch(e){
+        console.error('load profile error:',e);
+        document.getElementById('profileArea').innerHTML='<div class="empty">加载失败，请刷新重试</div>';
+      }
+    }
+
+    async function loadInventory(userId){
+      try{
+        const{data}=await supabaseClient.from('user_inventory')
+          .select('*').eq('user_id',userId).order('created_at',{ascending:false});
+
+        const container=document.getElementById('inventoryList');
+        const items=data||[];
+        if(items.length===0){
+          container.innerHTML='<div class="empty">暂无物品</div>';
+          return;
         }
+        container.innerHTML=`<div class="inventory-list">${items.map(item=>{
+          const t=new Date(item.created_at).toLocaleDateString('zh-CN');
+          return`<div class="inventory-item">
+            <div class="item-icon">🎁</div>
+            <div>
+              <div class="item-name">${item.item_name}</div>
+              <div class="item-meta">${t}</div>
+            </div>
+          </div>`;
+        }).join('')}</div>`;
+      }catch(e){
+        console.error('load inventory error:',e);
+        document.getElementById('inventoryList').innerHTML='<div class="empty">加载失败</div>';
+      }
+    }
 
-        async function loadUserPosts(userId) {
-            const { data } = await supabaseClient.from('forum_posts').select('*').eq('user_id', userId).order('created_at', { ascending: false });
-            const posts = data || [];
-            const container = document.getElementById('userPosts');
-            if (posts.length === 0) { container.innerHTML = '<div class="empty-state">暂无帖子</div>'; return; }
-            container.innerHTML = posts.map(p => {
-                const time = new Date(p.created_at).toLocaleDateString('zh-CN');
-                const statusClass = p.status === '已解决' ? 'tag-solved' : 'tag-unsolved';
-                return `<a class="post-item" href="forum-post.html?id=${p.id}">
-                    <div class="post-title">${p.title} <span class="tag tag-cat">${p.category}</span> <span class="tag ${statusClass}">${p.status}</span></div>
-                    <div class="post-meta">${time} · 浏览 ${p.views}</div>
-                </a>`;
-            }).join('');
-        }
+    async function logout(e){
+      e.preventDefault();
+      await supabaseClient.auth.signOut();
+      location.reload();
+    }
 
-        async function toggleFollow(userId) {
-            if (!currentUser) return;
-            const { data: existing } = await supabaseClient.from('follows').select('id').eq('follower_id', currentUser.user.id).eq('following_id', userId).single();
-            if (existing) {
-                await supabaseClient.from('follows').delete().eq('id', existing.id);
-            } else {
-                await supabaseClient.from('follows').insert([{ follower_id: currentUser.user.id, following_id: userId }]);
-            }
-            loadProfile(userId);
-        }
-
-        async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
-        init();
-    </script>
-    <script src="modal.js"></script>
-    <script src="footer.js"></script>
-    <script src="mobile-menu.js"></script>
-    <script src="notifications-bell.js"></script>
+    init();
+  </script>
+  <script src="modal.js"></script>
+  <script src="mobile-menu.js"></script>
 </body>
 </html>

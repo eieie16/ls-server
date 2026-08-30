@@ -1,281 +1,344 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>如何加入 - 凌云城-轻RP 4.0</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --bg: #0d0d0d; --bg2: #141414; --card: #1a1a1a;
-            --accent: #e8a87c; --text: #f5f5f5; --text2: #a0a0a0; --border: #2a2a2a;
-        }
-        html { scroll-behavior: smooth; }
-        body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: var(--bg); color: var(--text); }
-        a { text-decoration: none; color: inherit; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>如何加入 - 凌云城-轻RP 4.0</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ===== Page Header ===== */
+    .page-header{
+      padding:clamp(5rem,12vh,9rem) 1.5rem clamp(2rem,5vh,4rem);
+      text-align:center;position:relative;
+    }
+    .page-header::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:100%;
+      background:radial-gradient(ellipse 60% 50% at 50% 30%,rgba(212,168,83,0.06) 0%,transparent 70%);
+      pointer-events:none;
+    }
+    .page-header h1{
+      font-family:var(--font-display);font-size:clamp(2rem,5vw,3.2rem);
+      font-weight:700;margin-bottom:.5rem;position:relative;
+    }
+    .page-header p{color:var(--text2);font-size:.95rem;position:relative}
 
-        nav {
-            position: fixed; top: 0; width: 100%; z-index: 100;
-            padding: 0 4rem; height: 72px;
-            display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-            background: rgba(13,13,13,0.8);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-        }
-        .logo { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.1em; color: var(--accent); }
-        .nav-links { display: flex; gap: 2.5rem; list-style: none; justify-self: center; }
-        .nav-links a { font-size: 0.85rem; color: var(--text2); transition: color 0.2s; letter-spacing: 0.05em; }
-        .nav-links a:hover, .nav-links a.active { color: var(--text); }
-        .nav-links .cta { background: var(--accent); color: var(--bg); padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: 500; }
-        .nav-links .cta:hover { background: var(--accent); color: var(--bg); }
-        .nav-right { display: flex; align-items: center; gap: 0.75rem; justify-self: end; }
-        .nav-btn { padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none; text-decoration: none; }
-        .nav-btn.outline { background: transparent; color: var(--text2); border: 1px solid var(--border); }
-        .nav-btn.outline:hover { border-color: var(--text); color: var(--text); }
-        .nav-btn.filled { background: var(--accent); color: var(--bg); }
-        .nav-btn.filled:hover { background: var(--accent2); }
-        .user-badge { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.7rem 0.35rem 0.35rem; background: var(--card); border: 1px solid var(--border); border-radius: 6px; text-decoration: none; color: var(--text); font-size: 0.82rem; transition: all 0.15s; }
-        .user-badge:hover { border-color: var(--accent); }
-        .user-badge .avatar { width: 28px; height: 28px; border-radius: 6px; background: #e5e7eb; color: #999; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
-        .mobile-menu { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
-        .mobile-menu span { width: 22px; height: 1.5px; background: var(--text); }
+    /* ===== Steps ===== */
+    .steps-section{
+      padding:2rem clamp(1rem,4vw,4rem) 5rem;max-width:960px;margin:0 auto;
+    }
+    .steps-grid{
+      display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;
+      margin-bottom:4rem;
+    }
+    .step-card{padding:2rem;text-align:center;position:relative}
+    .step-card::after{
+      content:'\2192';position:absolute;right:-.75rem;top:50%;
+      transform:translateY(-50%);color:var(--text3);font-size:1.1rem;
+    }
+    .step-card:last-child::after{display:none}
+    .step-num{
+      width:36px;height:36px;border-radius:50%;
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      color:#000;display:flex;align-items:center;justify-content:center;
+      font-size:.9rem;font-weight:700;margin:0 auto 1.2rem;
+      box-shadow:0 0 20px rgba(212,168,83,0.25);
+    }
+    .step-card h3{font-size:1.05rem;font-weight:600;margin-bottom:.5rem}
+    .step-card p{font-size:.88rem;color:var(--text2);line-height:1.6}
 
-        .page-header { padding: 8rem 2rem 4rem; text-align: center; }
-        .page-header h1 { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; }
-        .page-header p { color: var(--text2); font-size: 0.95rem; }
+    /* ===== Server Info ===== */
+    .server-section{
+      background:var(--bg2);padding:clamp(3rem,8vh,5rem) clamp(1rem,4vw,4rem);
+    }
+    .server-section .section-header{padding-bottom:2rem}
+    .info-box{
+      max-width:600px;margin:0 auto;
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);overflow:hidden;
+    }
+    .info-row{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:1rem 1.5rem;border-bottom:1px solid var(--border);
+    }
+    .info-row:last-child{border-bottom:none}
+    .info-label{color:var(--text2);font-size:.9rem}
+    .info-value{color:var(--gold);font-size:.9rem;font-weight:600}
 
-        .steps { padding: 4rem 2rem 6rem; max-width: 900px; margin: 0 auto; }
-        .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 4rem; }
+    .ip-copy{
+      display:flex;gap:1rem;align-items:center;
+      justify-content:center;margin-top:2rem;
+    }
+    .ip-copy code{
+      font-family:'SF Mono',Consolas,monospace;font-size:1rem;
+      color:var(--gold);background:var(--surface);
+      padding:.8rem 1.5rem;border-radius:8px;
+      border:1px solid var(--border);letter-spacing:.02em;
+    }
+    .ip-copy .copy-btn{
+      background:var(--gold);color:#000;
+      border:none;padding:.8rem 1.5rem;border-radius:8px;
+      font-size:.88rem;font-weight:600;cursor:pointer;
+      transition:all .25s;font-family:var(--font-body);
+    }
+    .ip-copy .copy-btn:hover{
+      background:var(--gold2);box-shadow:0 4px 20px rgba(212,168,83,0.35);
+      transform:translateY(-1px);
+    }
 
-        .step {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 2rem; text-align: center;
-            transition: all 0.2s; position: relative;
-        }
-        .step:hover { border-color: #333; transform: translateY(-3px); }
-        .step::after {
-            content: '→'; position: absolute; right: -1rem; top: 50%;
-            transform: translateY(-50%); color: var(--text2); font-size: 1.2rem;
-        }
-        .step:last-child::after { display: none; }
+    /* ===== Community Links ===== */
+    .links-section{
+      padding:clamp(3rem,8vh,5rem) clamp(1rem,4vw,4rem);text-align:center;
+    }
+    .links-section .section-header{padding-bottom:2rem}
+    .links-grid{display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap}
 
-        .step-num {
-            width: 32px; height: 32px; background: var(--accent); color: var(--bg);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 0.85rem; font-weight: 600; margin: 0 auto 1.2rem;
-        }
-        .step h3 { font-size: 1rem; font-weight: 500; margin-bottom: 0.5rem; }
-        .step p { font-size: 0.85rem; color: var(--text2); line-height: 1.6; }
+    .link-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:2rem 2.5rem;text-align:center;
+      transition:all .35s cubic-bezier(.4,0,.2,1);min-width:170px;
+      text-decoration:none;color:inherit;position:relative;overflow:hidden;
+    }
+    .link-card::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(212,168,83,0.2),transparent);
+      opacity:0;transition:opacity .3s;
+    }
+    .link-card:hover{
+      border-color:var(--border2);transform:translateY(-4px);
+      box-shadow:0 12px 40px rgba(0,0,0,0.3),0 0 0 1px rgba(212,168,83,0.05);
+    }
+    .link-card:hover::before{opacity:1}
+    .link-card .icon{font-size:2rem;margin-bottom:.8rem}
+    .link-card h4{font-size:1rem;font-weight:600;margin-bottom:.3rem}
+    .link-card p{font-size:.82rem;color:var(--text2)}
 
-        .server-info { background: var(--bg2); padding: 4rem 2rem; }
-        .server-info h2 { font-size: 1.3rem; font-weight: 600; text-align: center; margin-bottom: 2.5rem; }
+    /* ===== FAQ ===== */
+    .faq-section{
+      background:var(--bg2);
+      padding:clamp(3rem,8vh,5rem) clamp(1rem,4vw,4rem);
+    }
+    .faq-section .section-header{padding-bottom:2rem}
+    .faq-grid{max-width:700px;margin:0 auto;display:grid;gap:.8rem}
 
-        .info-box {
-            max-width: 600px; margin: 0 auto;
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 12px; overflow: hidden;
-        }
-        .info-row {
-            display: flex; justify-content: space-between;
-            padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
-        }
-        .info-row:last-child { border-bottom: none; }
-        .info-label { color: var(--text2); font-size: 0.9rem; }
-        .info-value { color: var(--accent); font-size: 0.9rem; font-weight: 500; }
+    .faq-item{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:10px;padding:1.3rem 1.5rem;
+      transition:border-color .25s;
+    }
+    .faq-item:hover{border-color:var(--border2)}
+    .faq-item h4{font-size:.95rem;font-weight:600;margin-bottom:.4rem;color:var(--gold)}
+    .faq-item p{font-size:.88rem;color:var(--text2);line-height:1.6}
 
-        .ip-copy {
-            display: flex; gap: 1rem; align-items: center;
-            justify-content: center; margin-top: 2rem;
-        }
-        .ip-copy code {
-            font-family: 'SF Mono', monospace; font-size: 1rem;
-            color: var(--text); background: var(--card);
-            padding: 0.8rem 1.5rem; border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-        .copy-btn {
-            background: var(--accent); color: var(--bg);
-            border: none; padding: 0.8rem 1.5rem; border-radius: 8px;
-            font-size: 0.85rem; font-weight: 500; cursor: pointer;
-            transition: all 0.2s;
-        }
-        .copy-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-
-        .links-section { padding: 4rem 2rem 6rem; text-align: center; }
-        .links-section h2 { font-size: 1.3rem; font-weight: 600; margin-bottom: 2rem; }
-        .links-grid { display: flex; justify-content: center; gap: 1.5rem; }
-
-        .link-card {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 2rem 2.5rem; text-align: center;
-            transition: all 0.2s; min-width: 160px;
-        }
-        .link-card:hover { border-color: #333; transform: translateY(-3px); }
-        .link-card .icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
-        .link-card h4 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.3rem; }
-        .link-card p { font-size: 0.8rem; color: var(--text2); }
-
-        .faq-section { background: var(--bg2); padding: 4rem 2rem 6rem; }
-        .faq-section h2 { font-size: 1.3rem; font-weight: 600; text-align: center; margin-bottom: 2.5rem; }
-        .faq-grid { max-width: 700px; margin: 0 auto; display: grid; gap: 0.8rem; }
-
-        .faq {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 10px; padding: 1.3rem 1.5rem;
-        }
-        .faq h4 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.4rem; color: var(--accent); }
-        .faq p { font-size: 0.85rem; color: var(--text2); line-height: 1.5; }
-
-        footer { background: var(--bg); padding: 3rem 4rem; border-top: 1px solid var(--border); }
-        .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-        .footer-links { display: flex; gap: 2rem; }
-        .footer-links a { font-size: 0.85rem; color: var(--text2); transition: color 0.2s; }
-        .footer-links a:hover { color: var(--accent); }
-        .footer-copy { text-align: center; padding-top: 2rem; margin-top: 2rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text2); max-width: 1100px; margin-left: auto; margin-right: auto; }
-
-        @media (max-width: 768px) {
-            nav { padding: 0 1.5rem; }
-            .nav-links { display: none; }
-            .mobile-menu { display: flex; }
-            .steps-grid { grid-template-columns: 1fr; }
-            .step::after { display: none; }
-            .links-grid { flex-direction: column; align-items: center; }
-        }
-    </style>
+    @media(max-width:768px){
+      .steps-grid{grid-template-columns:1fr}
+      .step-card::after{display:none}
+      .links-grid{flex-direction:column;align-items:center}
+      .ip-copy{flex-direction:column}
+    }
+  </style>
 </head>
 <body>
-    <nav>
-        <div class="logo">凌云城</div>
-        <ul class="nav-links">
-            <li><a href="index.html">首页</a></li>
-            <li><a href="features.html">特色</a></li>
-            <li><a href="rules.html">规则</a></li>
-            <li><a href="connect.html" class="active">加入</a></li>
-            <li><a href="redeem.html">兑换</a></li>
-            <li><a href="forum.html">论坛</a></li>
-        </ul>
-        <div class="nav-right" id="navAuth">
-            <a href="login.html" class="nav-btn outline">登录</a>
-            <a href="login.html" class="nav-btn filled">注册</a>
-        </div>
-        <div class="mobile-menu"><span></span><span></span><span></span></div>
-    </nav>
-
-    <div class="page-header">
-        <h1>如何加入</h1>
-        <p>三步开始你的角色扮演之旅</p>
+  <!-- 导航 -->
+  <nav class="nav" id="mainNav">
+    <a href="index.html" class="nav-logo">凌云城</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">首页</a></li>
+      <li><a href="features.html">特色</a></li>
+      <li><a href="rules.html">规则</a></li>
+      <li><a href="connect.html" class="active">加入</a></li>
+      <li><a href="redeem.html">兑换</a></li>
+      <li><a href="forum.html">论坛</a></li>
+    </ul>
+    <div class="nav-right" id="navAuth">
+      <a href="login.html" class="nav-btn outline">登录</a>
+      <a href="login.html" class="nav-btn filled">注册</a>
     </div>
+    <button class="nav-toggle" id="navToggle" onclick="toggleNav()">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
 
-    <section class="steps">
-        <div class="steps-grid">
-            <div class="step">
-                <div class="step-num">1</div>
-                <h3>安装 FiveM</h3>
-                <p>访问 fivem.net 下载并安装 FiveM 客户端</p>
-            </div>
-            <div class="step">
-                <div class="step-num">2</div>
-                <h3>加入 Kook</h3>
-                <p>访问我们的 Kook 服务器，完成注册和身份认证</p>
-            </div>
-            <div class="step">
-                <div class="step-num">3</div>
-                <h3>开始游戏</h3>
-                <p>打开 FiveM，输入地址连接，开始你的故事</p>
-            </div>
-        </div>
-    </section>
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1><span class="art-text">如何加入</span></h1>
+    <p>三步开始你的角色扮演之旅</p>
+  </div>
 
-    <section class="server-info">
-        <h2>服务器信息</h2>
-        <div class="info-box">
-            <div class="info-row"><span class="info-label">服务器名称</span><span class="info-value">凌云城-轻RP 4.0</span></div>
-            <div class="info-row"><span class="info-label">服务器地址</span><span class="info-value">connect oaa5897</span></div>
-            <div class="info-row"><span class="info-label">最大玩家数</span><span class="info-value">64 人</span></div>
-            <div class="info-row"><span class="info-label">语言要求</span><span class="info-value">中文</span></div>
-            <div class="info-row"><span class="info-label">服务器类型</span><span class="info-value">轻 RP</span></div>
-        </div>
-        <div class="ip-copy">
-            <code>connect oaa5897</code>
-            <button class="copy-btn" onclick="copyIp()">复制地址</button>
-        </div>
-    </section>
+  <!-- Steps -->
+  <section class="steps-section">
+    <div class="steps-grid">
+      <div class="card step-card reveal">
+        <div class="step-num">1</div>
+        <h3>安装 FiveM</h3>
+        <p>访问 fivem.net 下载并安装 FiveM 客户端，这是连接服务器的必备工具</p>
+      </div>
+      <div class="card step-card reveal reveal-delay-1">
+        <div class="step-num">2</div>
+        <h3>加入 Kook</h3>
+        <p>访问我们的 Kook 社区服务器，完成注册并进行身份认证</p>
+      </div>
+      <div class="card step-card reveal reveal-delay-2">
+        <div class="step-num">3</div>
+        <h3>开始游戏</h3>
+        <p>打开 FiveM，输入服务器地址连接，开启你的角色故事</p>
+      </div>
+    </div>
+  </section>
 
-    <section class="links-section">
-        <h2>相关链接</h2>
-        <div class="links-grid">
-            <a href="https://kook.vip/71Hw5z" class="link-card">
-                <div class="icon">💬</div>
-                <h4>Kook</h4>
-                <p>加入社区</p>
-            </a>
-            <a href="https://qm.qq.com/q/zzUzFa6ytw" class="link-card">
-                <div class="icon">📱</div>
-                <h4>QQ 群</h4>
-                <p>加入聊天</p>
-            </a>
-        </div>
-    </section>
+  <!-- Server Info -->
+  <section class="server-section">
+    <div class="section-header">
+      <h1><span class="art-text">服务器信息</span></h1>
+    </div>
+    <div class="info-box reveal">
+      <div class="info-row">
+        <span class="info-label">服务器名称</span>
+        <span class="info-value">凌云城-轻RP 4.0</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">服务器地址</span>
+        <span class="info-value">connect oaa5897</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">最大玩家数</span>
+        <span class="info-value">64 人</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">语言要求</span>
+        <span class="info-value">中文</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">服务器类型</span>
+        <span class="info-value">轻 RP</span>
+      </div>
+    </div>
+    <div class="ip-copy reveal">
+      <code>connect oaa5897</code>
+      <button class="copy-btn" onclick="copyIp()">复制地址</button>
+    </div>
+  </section>
 
-    <section class="faq-section">
-        <h2>常见问题</h2>
-        <div class="faq-grid">
-            <div class="faq"><h4>FiveM 是免费的吗？</h4><p>是的，FiveM 完全免费。只需下载客户端即可加入服务器。</p></div>
-            <div class="faq"><h4>需要购买 GTA V 吗？</h4><p>是的，你需要拥有正版 GTA V 才能使用 FiveM。</p></div>
-            <div class="faq"><h4>服务器什么时候在线？</h4><p>服务器 24/7 全天候运行，随时可以加入。</p></div>
-            <div class="faq"><h4>如何申请成为管理员？</h4><p>在 Kook 中查看管理员招募信息，通常需要活跃的游戏时间和良好的记录。</p></div>
-        </div>
-    </section>
+  <!-- Community Links -->
+  <section class="links-section">
+    <div class="section-header">
+      <h1><span class="art-text">加入社区</span></h1>
+    </div>
+    <div class="links-grid">
+      <a href="https://kook.vip/71Hw5z" target="_blank" class="link-card reveal">
+        <div class="icon">💬</div>
+        <h4>Kook</h4>
+        <p>加入社区</p>
+      </a>
+      <a href="https://qm.qq.com/q/zzUzFa6ytw" target="_blank" class="link-card reveal reveal-delay-1">
+        <div class="icon">📱</div>
+        <h4>QQ 群</h4>
+        <p>加入聊天</p>
+      </a>
+    </div>
+  </section>
 
-    <footer>
-        <div class="footer-inner">
-            <span class="logo">凌云城</span>
-            <div class="footer-links">
-                <a href="index.html">首页</a>
-                <a href="features.html">特色</a>
-                <a href="rules.html">规则</a>
-                <a href="connect.html">加入</a>
-            </div>
-        </div>
-        <div class="footer-copy">&copy; 2026 凌云城-轻RP 4.0. All rights reserved.</div>
-    </footer>
+  <!-- FAQ -->
+  <section class="faq-section">
+    <div class="section-header">
+      <h1><span class="art-text">常见问题</span></h1>
+    </div>
+    <div class="faq-grid">
+      <div class="faq-item reveal">
+        <h4>FiveM 是免费的吗？</h4>
+        <p>是的，FiveM 完全免费。只需下载客户端即可加入服务器。</p>
+      </div>
+      <div class="faq-item reveal reveal-delay-1">
+        <h4>需要购买 GTA V 吗？</h4>
+        <p>是的，你需要拥有正版 GTA V 才能使用 FiveM 连接服务器。</p>
+      </div>
+      <div class="faq-item reveal reveal-delay-2">
+        <h4>服务器什么时候在线？</h4>
+        <p>服务器 24/7 全天候运行，随时都可以加入游戏。</p>
+      </div>
+      <div class="faq-item reveal reveal-delay-3">
+        <h4>如何申请成为管理员？</h4>
+        <p>在 Kook 社区中查看管理员招募信息，通常需要活跃的游戏时间和良好的记录。</p>
+      </div>
+    </div>
+  </section>
 
-    <script>
-        function copyIp() {
-            navigator.clipboard.writeText('connect oaa5897');
-            const btn = document.querySelector('.copy-btn');
-            btn.textContent = '已复制';
-            setTimeout(() => btn.textContent = '复制地址', 2000);
-        }
-    </script>
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo">凌云城</span>
+        <p>优质的中文 FiveM 轻 RP 服务器，为你提供轻松愉快的角色扮演体验。</p>
+      </div>
+      <div class="footer-col">
+        <h4>导航</h4>
+        <ul>
+          <li><a href="features.html">服务器特色</a></li>
+          <li><a href="rules.html">服务器规则</a></li>
+          <li><a href="connect.html">如何加入</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>社区</h4>
+        <ul>
+          <li><a href="https://kook.vip/71Hw5z" target="_blank">Kook</a></li>
+          <li><a href="https://qm.qq.com/q/zzUzFa6ytw" target="_blank">QQ 群</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 凌云城-轻RP 4.0</span>
+      <span>本站与 Rockstar Games 无任何关联</span>
+    </div>
+  </footer>
 
-    <script src="supabase.min.js"></script>
-    <script src="utils.js"></script>
-    <script>
-        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const DEFAULT_AVATAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
-        supabaseClient.auth.getSession().then(async ({ data: { session } }) => {
-            const navAuth = document.getElementById('navAuth');
-            if (session) {
-                let avatarUrl = '';
-                const { data: profile } = await supabaseClient.from('profiles').select('avatar_url').eq('id', session.user.id).single();
-                if (profile) avatarUrl = profile.avatar_url || '';
-                let avatarHTML = avatarUrl ? '<div class="avatar"><img src="' + avatarUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:6px"></div>' : '<div class="avatar">' + DEFAULT_AVATAR + '</div>';
-                navAuth.innerHTML = '<a href="dashboard.html" class="user-badge">' + avatarHTML + '<span>个人中心</span></a><a href="#" class="nav-btn outline" onclick="handleLogout(event)">退出</a>';
-            }
-        });
-        async function handleLogout(e) { e.preventDefault(); await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
-    </script>
-    <script src="modal.js"></script>
-    <script src="chat-widget.js"></script>
-    <script src="notifications-bell.js"></script>
-    <script src="footer.js"></script>
-    <script src="mobile-menu.js"></script>
+  <!-- Scripts -->
+  <script src="supabase.min.js"></script>
+  <script src="utils.js"></script>
+  <script>
+    const SUPABASE_URL="https://mxajreukeniayoqyvybe.supabase.co";
+    const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
+    const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+    // ===== 导航滚动 =====
+    window.addEventListener('scroll',()=>{
+      document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>50);
+    });
+    function toggleNav(){
+      document.getElementById('navLinks').classList.toggle('open');
+      document.getElementById('navToggle').classList.toggle('open');
+    }
+
+    // ===== 复制IP =====
+    function copyIp(){
+      navigator.clipboard.writeText('connect oaa5897');
+      const btn=document.querySelector('.copy-btn');
+      btn.textContent='已复制';
+      btn.style.background='var(--gold2)';
+      setTimeout(()=>{btn.textContent='复制地址';btn.style.background=''},2000);
+    }
+
+    // ===== 滚动动画 =====
+    const observer=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}});
+    },{threshold:0.1});
+    document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+    // ===== 登录状态 =====
+    supabaseClient.auth.getSession().then(async({data:{session}})=>{
+      const navAuth=document.getElementById('navAuth');
+      if(session){
+        const{data:p}=await supabaseClient.from('profiles').select('avatar_url,username').eq('id',session.user.id).single();
+        const name=(p&&p.username)||'玩家';
+        const avatar=p&&p.avatar_url?`<img src="${p.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">`:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+        navAuth.innerHTML=`
+          <a href="dashboard.html" class="user-badge"><div class="avatar">${avatar}</div><span>${name}</span></a>
+          <a href="#" class="nav-btn outline" onclick="logout(event)">退出</a>`;
+      }
+    });
+    async function logout(e){e.preventDefault();await supabaseClient.auth.signOut();location.reload()}
+  </script>
+  <script src="modal.js"></script>
+  <script src="mobile-menu.js"></script>
 </body>
 </html>

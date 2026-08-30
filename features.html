@@ -1,261 +1,578 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>服务器特色 - 凌云城-轻RP 4.0</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --bg: #0d0d0d; --bg2: #141414; --card: #1a1a1a; --card2: #222;
-            --accent: #e8a87c; --text: #f5f5f5; --text2: #a0a0a0; --border: #2a2a2a;
-        }
-        html { scroll-behavior: smooth; }
-        body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: var(--bg); color: var(--text); }
-        a { text-decoration: none; color: inherit; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>服务器特色 - 凌云城-轻RP 4.0</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏯</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ===== Page Header ===== */
+    .page-hero{
+      min-height:55vh;display:flex;align-items:center;justify-content:center;
+      position:relative;overflow:hidden;text-align:center;
+      padding:7rem 1.5rem 4rem;
+    }
+    .page-hero-bg{
+      position:absolute;inset:0;z-index:0;
+      background:
+        radial-gradient(ellipse 70% 50% at 30% 20%,rgba(212,168,83,0.07) 0%,transparent 60%),
+        radial-gradient(ellipse 50% 40% at 75% 70%,rgba(94,234,212,0.04) 0%,transparent 50%),
+        radial-gradient(ellipse 40% 30% at 50% 50%,rgba(212,168,83,0.03) 0%,transparent 50%);
+    }
+    .page-hero-content{position:relative;z-index:2;max-width:700px}
+    .page-hero h1{
+      font-family:var(--font-display);font-size:clamp(2.4rem,6vw,4.2rem);
+      line-height:1.15;margin-bottom:1rem;
+      animation:fadeUp .8s ease .1s both;
+    }
+    .page-hero h1 .line1{
+      display:block;
+      background:linear-gradient(135deg,#fff 20%,var(--text2));
+      -webkit-background-clip:text;background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+    .page-hero h1 .line2{
+      display:block;position:relative;
+      background:linear-gradient(135deg,var(--gold),var(--gold2),#fff,var(--gold));
+      background-size:300% 300%;
+      -webkit-background-clip:text;background-clip:text;
+      -webkit-text-fill-color:transparent;
+      animation:shimmer 5s ease infinite;
+    }
+    .page-hero h1 .line2::after{
+      content:'';position:absolute;bottom:-6px;left:15%;right:15%;height:2px;
+      background:linear-gradient(90deg,transparent,var(--gold),transparent);
+      opacity:.35;
+    }
+    .page-hero p{
+      font-size:clamp(.88rem,1.6vw,1.05rem);color:var(--text2);
+      line-height:1.8;max-width:480px;margin-inline:auto;
+      animation:fadeUp .8s ease .25s both;
+    }
+    .page-hero .badge-row{
+      display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;
+      margin-top:1.5rem;animation:fadeUp .8s ease .35s both;
+    }
 
-        nav {
-            position: fixed; top: 0; width: 100%; z-index: 100;
-            padding: 0 4rem; height: 72px;
-            display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-            background: rgba(13,13,13,0.8);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-        }
-        .logo { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.1em; color: var(--accent); }
-        .nav-links { display: flex; gap: 2.5rem; list-style: none; justify-self: center; }
-        .nav-links a { font-size: 0.85rem; color: var(--text2); transition: color 0.2s; letter-spacing: 0.05em; }
-        .nav-links a:hover, .nav-links a.active { color: var(--text); }
-        .nav-links .cta { background: var(--accent); color: var(--bg); padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: 500; }
-        .nav-links .cta:hover { background: var(--accent); color: var(--bg); }
-        .nav-right { display: flex; align-items: center; gap: 0.75rem; justify-self: end; }
-        .nav-btn { padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none; text-decoration: none; }
-        .nav-btn.outline { background: transparent; color: var(--text2); border: 1px solid var(--border); }
-        .nav-btn.outline:hover { border-color: var(--text); color: var(--text); }
-        .nav-btn.filled { background: var(--accent); color: var(--bg); }
-        .nav-btn.filled:hover { background: var(--accent2); }
-        .user-badge { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.7rem 0.35rem 0.35rem; background: var(--card); border: 1px solid var(--border); border-radius: 6px; text-decoration: none; color: var(--text); font-size: 0.82rem; transition: all 0.15s; }
-        .user-badge:hover { border-color: var(--accent); }
-        .user-badge .avatar { width: 28px; height: 28px; border-radius: 6px; background: #e5e7eb; color: #999; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
-        .mobile-menu { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
-        .mobile-menu span { width: 22px; height: 1.5px; background: var(--text); }
+    @keyframes fadeUp{
+      from{opacity:0;transform:translateY(24px)}
+      to{opacity:1;transform:translateY(0)}
+    }
 
-        .page-header { padding: 8rem 2rem 4rem; text-align: center; }
-        .page-header h1 { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; }
-        .page-header p { color: var(--text2); font-size: 0.95rem; }
+    /* ===== 核心特色 - 不对称网格 ===== */
+    .core-features{
+      padding:clamp(2rem,6vh,5rem) clamp(1rem,4vw,4rem);
+      max-width:1200px;margin:0 auto;
+    }
+    .core-grid{
+      display:grid;
+      grid-template-columns:1.2fr 0.8fr 1fr;
+      grid-template-rows:auto auto;
+      gap:1.2rem;
+    }
+    .core-grid .card:nth-child(1){grid-row:1/3}
+    .core-grid .card:nth-child(4){grid-column:2/4}
 
-        .features { padding: 4rem 2rem 6rem; max-width: 1100px; margin: 0 auto; }
-        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .core-grid .card .card-icon{
+      background:linear-gradient(135deg,var(--gold-dim),rgba(212,168,83,0.04));
+      border:1px solid rgba(212,168,83,0.1);
+      width:52px;height:52px;font-size:1.5rem;
+    }
+    .core-grid .card h3{
+      font-family:var(--font-heading);font-size:1.1rem;font-weight:700;
+      margin-bottom:.5rem;
+    }
+    .core-grid .card p{font-size:.88rem;color:var(--text2);line-height:1.7}
+    .core-grid .card .detail-tag{
+      display:inline-block;margin-top:.8rem;
+      padding:.25rem .7rem;border-radius:50px;
+      background:var(--gold-dim);color:var(--gold);
+      font-size:.72rem;font-weight:500;letter-spacing:.04em;
+    }
 
-        .feature {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 2rem; transition: all 0.2s;
-        }
-        .feature:hover { border-color: #333; transform: translateY(-3px); }
-        .feature-icon { font-size: 1.5rem; margin-bottom: 1rem; }
-        .feature h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
-        .feature p { font-size: 0.9rem; color: var(--text2); line-height: 1.6; }
+    /* 特色卡片顶部发光线 */
+    .core-grid .card::after{
+      content:'';position:absolute;top:0;left:20%;right:20%;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(212,168,83,0.3),transparent);
+      opacity:0;transition:opacity .4s;
+    }
+    .core-grid .card:hover::after{opacity:1}
 
-        .jobs-section { padding: 4rem 2rem 6rem; background: var(--bg2); }
-        .jobs-section h2 { font-size: 1.5rem; font-weight: 600; text-align: center; margin-bottom: 3rem; }
-        .jobs-grid { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    /* ===== 职业系统 - 交错布局 ===== */
+    .jobs-section{
+      padding:clamp(3rem,8vh,6rem) clamp(1rem,4vw,4rem);
+      position:relative;overflow:hidden;
+    }
+    .jobs-section::before{
+      content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+      background:linear-gradient(180deg,transparent,rgba(212,168,83,0.015) 50%,transparent);
+      pointer-events:none;
+    }
+    .jobs-section .section-header{position:relative;z-index:1}
+    .jobs-container{
+      max-width:1100px;margin:0 auto;position:relative;z-index:1;
+    }
+    .jobs-grid{
+      display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;
+    }
+    .job-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:1.6rem;
+      display:flex;gap:1rem;align-items:flex-start;
+      transition:all .35s cubic-bezier(.4,0,.2,1);
+      position:relative;overflow:hidden;
+    }
+    .job-card::before{
+      content:'';position:absolute;top:0;left:0;width:3px;height:0;
+      background:var(--gold);transition:height .35s cubic-bezier(.4,0,.2,1);
+      border-radius:0 0 2px 0;
+    }
+    .job-card:hover{
+      border-color:var(--border2);transform:translateY(-3px);
+      box-shadow:0 8px 32px rgba(0,0,0,0.25);
+    }
+    .job-card:hover::before{height:100%}
+    .job-card .job-icon{
+      width:44px;height:44px;border-radius:10px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.2rem;
+      background:var(--gold-dim);border:1px solid rgba(212,168,83,0.08);
+    }
+    .job-card h4{
+      font-size:.95rem;font-weight:600;margin-bottom:.25rem;
+      font-family:var(--font-heading);
+    }
+    .job-card p{font-size:.82rem;color:var(--text2);line-height:1.6}
+    .job-card .job-tag{
+      display:inline-block;margin-top:.5rem;
+      padding:.15rem .5rem;border-radius:4px;
+      font-size:.68rem;font-weight:500;
+    }
+    .job-card .tag-law{background:rgba(96,165,250,0.12);color:#60a5fa}
+    .job-card .tag-med{background:rgba(52,211,153,0.12);color:#34d399}
+    .job-card .tag-justice{background:rgba(167,139,250,0.12);color:#a78bfa}
+    .job-card .tag-tech{background:rgba(251,191,36,0.12);color:#fbbf24}
+    .job-card .tag-biz{background:rgba(244,114,182,0.12);color:#f472b6}
+    .job-card .tag-art{background:rgba(248,113,113,0.12);color:#f87171}
 
-        .job-item {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 10px; padding: 1.2rem 1.5rem;
-            display: flex; align-items: center; gap: 1rem; transition: all 0.2s;
-        }
-        .job-item:hover { border-color: #333; }
-        .job-item .job-icon { font-size: 1.3rem; }
-        .job-item h4 { font-size: 0.95rem; font-weight: 500; }
-        .job-item p { font-size: 0.8rem; color: var(--text2); }
+    @media(max-width:900px){
+      .jobs-grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media(max-width:600px){
+      .jobs-grid{grid-template-columns:1fr}
+    }
 
-        .vehicles-section { padding: 4rem 2rem 6rem; }
-        .vehicles-section h2 { font-size: 1.5rem; font-weight: 600; text-align: center; margin-bottom: 0.5rem; }
-        .vehicles-section > p { text-align: center; color: var(--text2); margin-bottom: 3rem; font-size: 0.9rem; }
-        .vehicle-grid { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+    /* ===== 车辆系统 - 大数字展示 ===== */
+    .vehicles-section{
+      padding:clamp(3rem,8vh,6rem) clamp(1rem,4vw,4rem);
+      max-width:1100px;margin:0 auto;
+    }
+    .vehicle-showcase{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;
+      margin-top:1rem;
+    }
+    .vehicle-block{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:2rem 1.5rem;
+      text-align:center;position:relative;overflow:hidden;
+      transition:all .35s cubic-bezier(.4,0,.2,1);
+    }
+    .vehicle-block::after{
+      content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+      background:linear-gradient(90deg,transparent,var(--gold),transparent);
+      transform:scaleX(0);transition:transform .4s cubic-bezier(.4,0,.2,1);
+    }
+    .vehicle-block:hover{
+      border-color:var(--border2);transform:translateY(-4px);
+      box-shadow:0 12px 40px rgba(0,0,0,0.3);
+    }
+    .vehicle-block:hover::after{transform:scaleX(1)}
+    .vehicle-block .v-icon{
+      font-size:2.2rem;margin-bottom:1rem;display:block;
+      filter:drop-shadow(0 0 8px rgba(212,168,83,0.2));
+    }
+    .vehicle-block .v-count{
+      font-family:var(--font-heading);font-size:clamp(2rem,4vw,2.8rem);
+      font-weight:900;color:var(--gold);line-height:1;
+      margin-bottom:.3rem;
+      background:linear-gradient(180deg,var(--gold),var(--gold2));
+      -webkit-background-clip:text;background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+    .vehicle-block .v-label{
+      font-size:.85rem;color:var(--text2);font-weight:500;
+    }
+    .vehicle-block .v-sub{
+      font-size:.72rem;color:var(--text3);margin-top:.4rem;
+    }
 
-        .vehicle-cat {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 2rem; text-align: center; transition: all 0.2s;
-        }
-        .vehicle-cat:hover { border-color: #333; transform: translateY(-3px); }
-        .vehicle-cat .cat-icon { font-size: 2rem; margin-bottom: 1rem; }
-        .vehicle-cat h4 { font-size: 0.9rem; font-weight: 500; margin-bottom: 0.3rem; }
-        .vehicle-cat span { font-size: 1.5rem; font-weight: 600; color: var(--accent); }
+    .vehicle-block:nth-child(1){transition-delay:0s}
+    .vehicle-block:nth-child(2){transition-delay:.05s}
+    .vehicle-block:nth-child(3){transition-delay:.1s}
+    .vehicle-block:nth-child(4){transition-delay:.15s}
 
-        footer { background: var(--bg); padding: 3rem 4rem; border-top: 1px solid var(--border); }
-        .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-        .footer-links { display: flex; gap: 2rem; }
-        .footer-links a { font-size: 0.85rem; color: var(--text2); transition: color 0.2s; }
-        .footer-links a:hover { color: var(--accent); }
-        .footer-copy { text-align: center; padding-top: 2rem; margin-top: 2rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text2); max-width: 1100px; margin-left: auto; margin-right: auto; }
+    @media(max-width:768px){
+      .vehicle-showcase{grid-template-columns:repeat(2,1fr)}
+    }
+    @media(max-width:480px){
+      .vehicle-showcase{grid-template-columns:1fr 1fr;gap:.8rem}
+      .vehicle-block{padding:1.5rem 1rem}
+    }
 
-        @media (max-width: 768px) {
-            nav { padding: 0 1.5rem; }
-            .nav-links { display: none; }
-            .mobile-menu { display: flex; }
-            .features-grid, .jobs-grid { grid-template-columns: 1fr; }
-            .vehicle-grid { grid-template-columns: repeat(2, 1fr); }
-            .footer-inner { flex-direction: column; gap: 1.5rem; }
-        }
-    </style>
+    /* ===== 底部CTA ===== */
+    .feat-cta{
+      padding:clamp(4rem,10vh,7rem) 1.5rem;text-align:center;
+      position:relative;overflow:hidden;
+    }
+    .feat-cta::before{
+      content:'';position:absolute;top:50%;left:50%;
+      width:500px;height:500px;transform:translate(-50%,-50%);
+      background:radial-gradient(circle,rgba(212,168,83,0.05) 0%,transparent 70%);
+      pointer-events:none;
+    }
+    .feat-cta h2{
+      font-family:var(--font-display);font-size:clamp(1.6rem,4vw,2.4rem);
+      margin-bottom:.8rem;position:relative;
+    }
+    .feat-cta p{color:var(--text2);margin-bottom:2rem;font-size:.95rem;position:relative}
+    .feat-cta .btn-row{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;position:relative}
+
+    /* ===== 装饰分割线 ===== */
+    .divider{
+      max-width:1100px;margin:0 auto;
+      height:1px;
+      background:linear-gradient(90deg,transparent,var(--border2),transparent);
+    }
+
+    /* ===== 特色数字统计条 ===== */
+    .feat-stats{
+      border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+      padding:2.5rem 1.5rem;
+      background:linear-gradient(180deg,rgba(212,168,83,0.02),transparent);
+    }
+    .feat-stats-grid{
+      max-width:1000px;margin:0 auto;
+      display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;
+    }
+    .feat-stat{text-align:center}
+    .feat-stat-num{
+      font-family:var(--font-heading);font-size:clamp(1.4rem,3vw,2rem);
+      font-weight:700;color:var(--gold);margin-bottom:.2rem;
+    }
+    .feat-stat-label{font-size:.78rem;color:var(--text3);letter-spacing:.06em}
+
+    @media(max-width:768px){
+      .feat-stats-grid{grid-template-columns:repeat(2,1fr)}
+    }
+  </style>
 </head>
 <body>
-    <nav>
-        <div class="logo">凌云城</div>
-        <ul class="nav-links">
-            <li><a href="index.html">首页</a></li>
-            <li><a href="features.html" class="active">特色</a></li>
-            <li><a href="rules.html">规则</a></li>
-            <li><a href="connect.html">加入</a></li>
-            <li><a href="redeem.html">兑换</a></li>
-            <li><a href="forum.html">论坛</a></li>
-        </ul>
-        <div class="nav-right" id="navAuth">
-            <a href="login.html" class="nav-btn outline">登录</a>
-            <a href="login.html" class="nav-btn filled">注册</a>
-        </div>
-        <div class="mobile-menu"><span></span><span></span><span></span></div>
-    </nav>
+  <canvas id="particles-canvas"></canvas>
 
-    <div class="page-header">
-        <h1>服务器特色</h1>
-        <p>探索我们精心打造的各项特色系统</p>
+  <nav class="nav" id="mainNav">
+    <a href="index.html" class="nav-logo">凌云城</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">首页</a></li>
+      <li><a href="features.html" class="active">特色</a></li>
+      <li><a href="rules.html">规则</a></li>
+      <li><a href="connect.html">加入</a></li>
+      <li><a href="redeem.html">兑换</a></li>
+      <li><a href="forum.html">论坛</a></li>
+    </ul>
+    <div class="nav-right" id="navAuth">
+      <a href="login.html" class="nav-btn outline">登录</a>
+      <a href="login.html" class="nav-btn filled">注册</a>
     </div>
+    <button class="nav-toggle" id="navToggle" onclick="toggleNav()">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
 
-    <section class="features">
-        <div class="features-grid">
-            <div class="feature">
-                <div class="feature-icon">🏢</div>
-                <h3>丰富职业系统</h3>
-                <p>超过30种职业，每种都有独特的成长路线和专属装备。</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🚗</div>
-                <h3>豪华车辆收藏</h3>
-                <p>超过500辆正版授权车辆，从日常代步到超级跑车。</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🏠</div>
-                <h3>房产与生意</h3>
-                <p>购买豪宅、经营商店，建立你的商业帝国。</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🎭</div>
-                <h3>轻RP体验</h3>
-                <p>宽松的角色扮演规则，轻松友好的游戏氛围。</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">💬</div>
-                <h3>中文语音支持</h3>
-                <p>专为中文玩家优化，流畅的语音通信和中文界面。</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🛡️</div>
-                <h3>反作弊系统</h3>
-                <p>先进的反作弊措施和24小时监控，保障公平游戏环境。</p>
-            </div>
+  <!-- Page Header -->
+  <section class="page-hero">
+    <div class="page-hero-bg"></div>
+    <div class="page-hero-content">
+      <h1>
+        <span class="line1">探索我们的</span>
+        <span class="line2">特色系统</span>
+      </h1>
+      <p>从丰富的职业体系到海量车辆收藏，每一个细节都为你的角色扮演体验精心打造</p>
+      <div class="badge-row">
+        <span class="tag tag-gold">30+ 职业</span>
+        <span class="tag tag-gold">410+ 车辆</span>
+        <span class="tag tag-gold">轻 RP</span>
+        <span class="tag tag-gold">中文社区</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 统计条 -->
+  <div class="feat-stats">
+    <div class="feat-stats-grid">
+      <div class="feat-stat reveal">
+        <div class="feat-stat-num">30+</div>
+        <div class="feat-stat-label">可选职业</div>
+      </div>
+      <div class="feat-stat reveal reveal-delay-1">
+        <div class="feat-stat-num">410+</div>
+        <div class="feat-stat-label">车辆收藏</div>
+      </div>
+      <div class="feat-stat reveal reveal-delay-2">
+        <div class="feat-stat-num">64</div>
+        <div class="feat-stat-label">最大容量</div>
+      </div>
+      <div class="feat-stat reveal reveal-delay-3">
+        <div class="feat-stat-num">24/7</div>
+        <div class="feat-stat-label">运营时间</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 核心特色 -->
+  <section class="core-features">
+    <div class="section-header" style="padding-top:0;padding-bottom:2.5rem">
+      <h1>为什么选择<span class="art-text">凌云城</span></h1>
+      <p>不只是一个服务器，更是一个有灵魂的社区</p>
+    </div>
+    <div class="core-grid">
+      <div class="card reveal">
+        <div class="card-icon">🏢</div>
+        <h3>30+ 职业体系</h3>
+        <p>警察、医生、律师、商人、机械师、艺术家……每条路线都有专属剧情、装备和成长系统。选择你的命运，书写独一无二的角色故事。</p>
+        <span class="detail-tag">深度定制</span>
+      </div>
+      <div class="card reveal reveal-delay-1">
+        <div class="card-icon">🚗</div>
+        <h3>500+ 车辆</h3>
+        <p>从日常代步到超级跑车，改装、竞速、收藏，总有一辆属于你。</p>
+        <span class="detail-tag">持续更新</span>
+      </div>
+      <div class="card reveal reveal-delay-2">
+        <div class="card-icon">🏠</div>
+        <h3>房产与生意</h3>
+        <p>买豪宅、开店、搞投资，打造你的商业帝国。</p>
+      </div>
+      <div class="card reveal reveal-delay-3">
+        <div class="card-icon">🎭</div>
+        <h3>轻松 RP 体验</h3>
+        <p>宽松的角色扮演规则，不强制不约束，享受游戏本身。这里是你的舞台，按你的方式演绎故事。</p>
+        <span class="detail-tag">零门槛</span>
+      </div>
+      <div class="card reveal reveal-delay-4">
+        <div class="card-icon">💬</div>
+        <h3>中文社区</h3>
+        <p>专为中文玩家打造，流畅的语音和中文界面，沟通零障碍。</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">🛡️</div>
+        <h3>公平竞技</h3>
+        <p>先进的反作弊系统，24小时守护，让每一场对决都公平公正。</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- 职业体系 -->
+  <section class="jobs-section">
+    <div class="section-header" style="padding-bottom:2.5rem">
+      <h1>职业<span class="art-text">体系</span></h1>
+      <p>选择你的身份，在凌云城开启一段全新的角色扮演之旅</p>
+    </div>
+    <div class="jobs-container">
+      <div class="jobs-grid">
+        <div class="job-card reveal">
+          <div class="job-icon">👮</div>
+          <div>
+            <h4>警察局 (LSPD)</h4>
+            <p>维护城市秩序，打击犯罪，守护市民安全</p>
+            <span class="job-tag tag-law">执法</span>
+          </div>
         </div>
-    </section>
-
-    <section class="jobs-section">
-        <h2>职业体系</h2>
-        <div class="jobs-grid">
-            <div class="job-item">
-                <span class="job-icon">👮</span>
-                <div><h4>警察局 (LSPD)</h4><p>维护城市秩序，打击犯罪</p></div>
-            </div>
-            <div class="job-item">
-                <span class="job-icon">🚑</span>
-                <div><h4>急救医疗 (EMS)</h4><p>拯救生命，救治伤员</p></div>
-            </div>
-            <div class="job-item">
-                <span class="job-icon">⚖️</span>
-                <div><h4>法院系统</h4><p>法官、律师，维护司法公正</p></div>
-            </div>
-            <div class="job-item">
-                <span class="job-icon">🔧</span>
-                <div><h4>机械师</h4><p>修车、改装，专业技师</p></div>
-            </div>
-            <div class="job-item">
-                <span class="job-icon">🏪</span>
-                <div><h4>商贩与企业家</h4><p>开店经营，积累财富</p></div>
-            </div>
-            <div class="job-item">
-                <span class="job-icon">🎨</span>
-                <div><h4>艺术家与创作者</h4><p>画家、音乐家，表达自我</p></div>
-            </div>
+        <div class="job-card reveal reveal-delay-1">
+          <div class="job-icon">🚑</div>
+          <div>
+            <h4>急救医疗 (EMS)</h4>
+            <p>拯救生命，救治伤员，守护每一个心跳</p>
+            <span class="job-tag tag-med">医疗</span>
+          </div>
         </div>
-    </section>
-
-    <section class="vehicles-section">
-        <h2>车辆收藏</h2>
-        <p>超过500辆正版授权车辆</p>
-        <div class="vehicle-grid">
-            <div class="vehicle-cat">
-                <div class="cat-icon">🏎️</div>
-                <h4>跑车</h4>
-                <span>120+</span>
-            </div>
-            <div class="vehicle-cat">
-                <div class="cat-icon">🚙</div>
-                <h4>SUV</h4>
-                <span>80+</span>
-            </div>
-            <div class="vehicle-cat">
-                <div class="cat-icon">🚗</div>
-                <h4>轿车</h4>
-                <span>150+</span>
-            </div>
-            <div class="vehicle-cat">
-                <div class="cat-icon">🏍️</div>
-                <h4>摩托</h4>
-                <span>60+</span>
-            </div>
+        <div class="job-card reveal reveal-delay-2">
+          <div class="job-icon">⚖️</div>
+          <div>
+            <h4>法院系统</h4>
+            <p>法官、律师，维护司法公正与正义</p>
+            <span class="job-tag tag-justice">司法</span>
+          </div>
         </div>
-    </section>
-
-    <footer>
-        <div class="footer-inner">
-            <span class="logo">凌云城</span>
-            <div class="footer-links">
-                <a href="index.html">首页</a>
-                <a href="features.html">特色</a>
-                <a href="rules.html">规则</a>
-                <a href="connect.html">加入</a>
-            </div>
+        <div class="job-card reveal reveal-delay-3">
+          <div class="job-icon">🔧</div>
+          <div>
+            <h4>机械师</h4>
+            <p>修车、改装、调校，专业技师为你服务</p>
+            <span class="job-tag tag-tech">技术</span>
+          </div>
         </div>
-        <div class="footer-copy">&copy; 2026 凌云城-轻RP 4.0. All rights reserved.</div>
-    </footer>
+        <div class="job-card reveal reveal-delay-4">
+          <div class="job-icon">🏪</div>
+          <div>
+            <h4>商贩与企业家</h4>
+            <p>开店经营，积累财富，建立商业帝国</p>
+            <span class="job-tag tag-biz">商业</span>
+          </div>
+        </div>
+        <div class="job-card reveal">
+          <div class="job-icon">🎨</div>
+          <div>
+            <h4>艺术家与创作者</h4>
+            <p>画家、音乐家，用艺术表达自我</p>
+            <span class="job-tag tag-art">创意</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <script src="supabase.min.js"></script>
-    <script src="utils.js"></script>
-    <script>
-        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const DEFAULT_AVATAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
-        supabaseClient.auth.getSession().then(async ({ data: { session } }) => {
-            const navAuth = document.getElementById('navAuth');
-            if (session) {
-                let avatarUrl = '';
-                const { data: profile } = await supabaseClient.from('profiles').select('avatar_url').eq('id', session.user.id).single();
-                if (profile) avatarUrl = profile.avatar_url || '';
-                let avatarHTML = avatarUrl ? '<div class="avatar"><img src="' + avatarUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:6px"></div>' : '<div class="avatar">' + DEFAULT_AVATAR + '</div>';
-                navAuth.innerHTML = '<a href="dashboard.html" class="user-badge">' + avatarHTML + '<span>个人中心</span></a><a href="#" class="nav-btn outline" onclick="handleLogout(event)">退出</a>';
-            }
-        });
-        async function handleLogout(e) { e.preventDefault(); await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
-    </script>
-    <script src="modal.js"></script>
-    <script src="chat-widget.js"></script>
-    <script src="notifications-bell.js"></script>
-    <script src="footer.js"></script>
-    <script src="mobile-menu.js"></script>
+  <div class="divider"></div>
+
+  <!-- 车辆系统 -->
+  <section class="vehicles-section">
+    <div class="section-header" style="padding-bottom:1rem">
+      <h1>车辆<span class="art-text">收藏</span></h1>
+      <p>超过 410 辆精心挑选的车辆，覆盖每一种驾驶风格</p>
+    </div>
+    <div class="vehicle-showcase">
+      <div class="vehicle-block reveal">
+        <span class="v-icon">🏎️</span>
+        <div class="v-count">120+</div>
+        <div class="v-label">跑车</div>
+        <div class="v-sub">超级跑车 · 赛道利器</div>
+      </div>
+      <div class="vehicle-block reveal reveal-delay-1">
+        <span class="v-icon">🚙</span>
+        <div class="v-count">80+</div>
+        <div class="v-label">SUV</div>
+        <div class="v-sub">越野硬派 · 家用全能</div>
+      </div>
+      <div class="vehicle-block reveal reveal-delay-2">
+        <span class="v-icon">🚗</span>
+        <div class="v-count">150+</div>
+        <div class="v-label">轿车</div>
+        <div class="v-sub">日常代步 · 商务出行</div>
+      </div>
+      <div class="vehicle-block reveal reveal-delay-3">
+        <span class="v-icon">🏍️</span>
+        <div class="v-count">60+</div>
+        <div class="v-label">摩托</div>
+        <div class="v-sub">街车巡航 · 极速飞驰</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="feat-cta">
+    <h2>准备好<span class="glow-text">探索</span>了吗？</h2>
+    <p>加入凌云城，体验最纯粹的角色扮演乐趣</p>
+    <div class="btn-row">
+      <a href="connect.html" class="btn btn-gold">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        立即加入
+      </a>
+      <a href="rules.html" class="btn btn-ghost">查看规则</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo">凌云城</span>
+        <p>优质的中文 FiveM 轻 RP 服务器，为你提供轻松愉快的角色扮演体验。</p>
+      </div>
+      <div class="footer-col">
+        <h4>导航</h4>
+        <ul>
+          <li><a href="features.html">服务器特色</a></li>
+          <li><a href="rules.html">服务器规则</a></li>
+          <li><a href="connect.html">如何加入</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>社区</h4>
+        <ul>
+          <li><a href="https://kook.vip/71Hw5z" target="_blank">Kook</a></li>
+          <li><a href="https://qm.qq.com/q/zzUzFa6ytw" target="_blank">QQ 群</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 凌云城-轻RP 4.0</span>
+      <span>本站与 Rockstar Games 无任何关联</span>
+    </div>
+  </footer>
+
+  <script src="supabase.min.js"></script>
+  <script src="utils.js"></script>
+  <script>
+    const SUPABASE_URL="https://mxajreukeniayoqyvybe.supabase.co";
+    const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
+    const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+    // 粒子系统
+    (function(){
+      const c=document.getElementById('particles-canvas');
+      const ctx=c.getContext('2d');
+      let w,h,particles=[];
+      function resize(){w=c.width=window.innerWidth;h=c.height=window.innerHeight}
+      window.addEventListener('resize',resize);resize();
+      class Particle{
+        constructor(){this.reset()}
+        reset(){
+          this.x=Math.random()*w;this.y=Math.random()*h;
+          this.size=Math.random()*1.5+.5;
+          this.speedX=(Math.random()-.5)*.3;this.speedY=(Math.random()-.5)*.3;
+          this.opacity=Math.random()*.4+.1;
+          this.color=Math.random()>.7?'212,168,83':'255,255,255';
+        }
+        update(){this.x+=this.speedX;this.y+=this.speedY;if(this.x<0||this.x>w||this.y<0||this.y>h)this.reset()}
+        draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fillStyle=`rgba(${this.color},${this.opacity})`;ctx.fill()}
+      }
+      for(let i=0;i<60;i++)particles.push(new Particle());
+      function animate(){ctx.clearRect(0,0,w,h);particles.forEach(p=>{p.update();p.draw()});requestAnimationFrame(animate)}
+      animate();
+    })();
+
+    // 导航滚动
+    window.addEventListener('scroll',()=>{
+      document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>50);
+    });
+    function toggleNav(){
+      document.getElementById('navLinks').classList.toggle('open');
+      document.getElementById('navToggle').classList.toggle('open');
+    }
+
+    // 滚动动画
+    const observer=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}});
+    },{threshold:0.1});
+    document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+    // 登录状态
+    supabaseClient.auth.getSession().then(async({data:{session}})=>{
+      const navAuth=document.getElementById('navAuth');
+      if(session){
+        const{data:p}=await supabaseClient.from('profiles').select('avatar_url,username').eq('id',session.user.id).single();
+        const name=(p&&p.username)||'玩家';
+        const avatar=p&&p.avatar_url?`<img src="${p.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">`:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+        navAuth.innerHTML=`
+          <a href="dashboard.html" class="user-badge"><div class="avatar">${avatar}</div><span>${name}</span></a>
+          <a href="#" class="nav-btn outline" onclick="logout(event)">退出</a>`;
+      }
+    });
+    async function logout(e){e.preventDefault();await supabaseClient.auth.signOut();location.reload()}
+  </script>
+  <script src="modal.js"></script>
+  <script src="mobile-menu.js"></script>
 </body>
 </html>

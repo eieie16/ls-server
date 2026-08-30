@@ -3,443 +3,1134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户面板 - 凌云城</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>凌云城 - 个人中心</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Inter', 'Noto Sans SC', sans-serif;
-            background: #f0f2f5; color: #1a1a1a; min-height: 100vh;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
         }
 
-        nav {
-            position: fixed; top: 0; width: 100%; z-index: 100;
-            padding: 0 3rem; height: 64px;
-            display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-            background: #fff; border-bottom: 1px solid #e5e7eb;
+        /* Navigation */
+        .navbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
-        .logo { font-size: 1.05rem; font-weight: 700; color: #6366f1; letter-spacing: 0.05em; }
-        .nav-center { display: flex; gap: 2rem; list-style: none; justify-self: center; }
-        .nav-center a { font-size: 0.88rem; color: #666; text-decoration: none; transition: color 0.15s; font-weight: 500; }
-        .nav-center a:hover { color: #1a1a1a; }
-        .nav-right { display: flex; align-items: center; gap: 0.75rem; justify-self: end; }
-        .nav-btn { padding: 0.5rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none; text-decoration: none; }
-        .nav-btn.outline { background: #fff; color: #333; border: 1px solid #d1d5db; }
-        .nav-btn.outline:hover { background: #f9fafb; border-color: #999; }
-        .nav-btn.filled { background: #6366f1; color: #fff; }
-        .nav-btn.filled:hover { background: #5558e6; }
-        .user-badge { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.85rem 0.4rem 0.4rem; background: #f3f4f6; border-radius: 8px; text-decoration: none; color: #333; font-size: 0.85rem; font-weight: 500; transition: background 0.15s; }
-        .user-badge:hover { background: #e5e7eb; }
-        .user-badge .avatar { width: 30px; height: 30px; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .user-badge .avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-        .container { max-width: 800px; margin: 0 auto; padding: 6rem 1.5rem 3rem; }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+        }
 
+        .nav-logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--accent-color);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-tertiary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .user-badge img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 0.4rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: var(--accent-color);
+            color: var(--bg-primary);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 4px;
+        }
+
+        .hamburger span {
+            width: 24px;
+            height: 2px;
+            background: var(--text-primary);
+        }
+
+        /* Main Content */
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+
+        /* Profile Card */
         .profile-card {
-            background: #fff; border-radius: 16px; padding: 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-            display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
         }
-        .avatar-wrapper { position: relative; cursor: pointer; flex-shrink: 0; }
-        .avatar-lg {
-            width: 72px; height: 72px; border-radius: 18px; overflow: hidden;
-            display: flex; align-items: center; justify-content: center;
-            background: #e5e7eb; transition: opacity 0.15s;
+
+        .avatar-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1.5rem;
         }
-        .avatar-lg img { width: 100%; height: 100%; object-fit: cover; }
-        .avatar-lg svg { width: 40px; height: 40px; color: #9ca3af; }
-        .avatar-wrapper:hover .avatar-lg { opacity: 0.85; }
-        .avatar-edit-hint {
-            position: absolute; bottom: -4px; right: -4px;
-            width: 24px; height: 24px; border-radius: 50%;
-            background: #6366f1; color: #fff; font-size: 0.7rem;
-            display: flex; align-items: center; justify-content: center;
-            border: 2px solid #fff;
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid var(--accent-color);
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s;
         }
-        .profile-info h2 { font-size: 1.3rem; font-weight: 600; margin-bottom: 0.2rem; }
-        .profile-info .email { font-size: 0.88rem; color: #888; margin-bottom: 0.5rem; }
-        .role-badge { display: inline-block; padding: 0.2rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 500; }
-        .role-badge.admin { background: #fef2f2; color: #ef4444; }
-        .role-badge.user { background: #f0f0f0; color: #666; }
 
-        .section-card { background: #fff; border-radius: 16px; padding: 1.75rem 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 1.5rem; }
-        .section-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-
-        .action-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-        .action-item { display: flex; align-items: center; gap: 1rem; padding: 0.85rem 1rem; background: #f8f9fa; border-radius: 10px; text-decoration: none; color: inherit; transition: all 0.15s; }
-        .action-item:hover { background: #f0f0f0; }
-        .action-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
-        .action-icon.purple { background: #ede9fe; }
-        .action-icon.green { background: #dcfce7; }
-        .action-icon.blue { background: #dbeafe; }
-        .action-icon.orange { background: #ffedd5; }
-        .action-item h4 { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.1rem; }
-        .action-item p { font-size: 0.76rem; color: #999; }
-
-        .admin-link { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #ef4444; font-size: 0.85rem; font-weight: 500; text-decoration: none; margin-top: 1rem; transition: all 0.15s; }
-        .admin-link:hover { background: #fee2e2; }
-
-        .edit-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
-        .edit-row input {
-            padding: 0.35rem 0.6rem; border: 1px solid #d1d5db; border-radius: 6px;
-            font-size: 0.85rem; width: 160px;
+        .avatar:hover {
+            transform: scale(1.05);
         }
-        .edit-row input:focus { outline: none; border-color: #6366f1; }
-        .edit-row button {
-            padding: 0.35rem 0.7rem; background: #6366f1; color: #fff; border: none;
-            border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: background 0.15s;
+
+        .avatar-edit-overlay {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: var(--accent-color);
+            color: var(--bg-primary);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.9rem;
         }
-        .edit-row button:hover { background: #5558e6; }
-        .edit-row .ok { background: #22c55e; }
 
-        /* Avatar Picker Modal */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.2s; }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal { background: #fff; border-radius: 16px; padding: 2rem; width: 90%; max-width: 420px; transform: translateY(10px); transition: transform 0.2s; }
-        .modal-overlay.active .modal { transform: translateY(0); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .modal-title { font-size: 1.05rem; font-weight: 600; }
-        .modal-close { width: 30px; height: 30px; border-radius: 6px; border: 1px solid #e5e7eb; background: #fff; color: #888; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
-        .modal-close:hover { border-color: #ef4444; color: #ef4444; }
-
-        .avatar-grid { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
-        .avatar-input-group { display: flex; gap: 0.5rem; }
-        .avatar-input {
-            flex: 1; padding: 0.65rem 0.85rem; background: #f9fafb;
-            border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.88rem; color: #333;
+        .profile-name {
+            font-size: 1.4rem;
+            margin-bottom: 0.3rem;
         }
-        .avatar-input:focus { outline: none; border-color: #6366f1; }
-        .btn-use { padding: 0.65rem 1rem; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-        .btn-use:hover { background: #e5e7eb; }
-        .avatar-preview { width: 120px; height: 120px; margin: 0 auto; border-radius: 12px; border: 2px dashed #d1d5db; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f9fafb; }
-        .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .avatar-preview svg { width: 36px; height: 36px; color: #9ca3af; }
-        .avatar-hint { font-size: 0.78rem; color: #999; margin-top: 0.25rem; }
 
-        .btn-save { width: 100%; padding: 0.55rem; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.15s; }
-        .btn-save:hover { background: #5558e6; }
-        .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-remove { padding: 0.55rem 0.8rem; background: #fff; color: #666; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-        .btn-remove:hover { border-color: #ef4444; color: #ef4444; }
-        .modal-footer { display: flex; gap: 0.5rem; }
+        .profile-email {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+        }
 
-        .loading { text-align: center; padding: 4rem; color: #999; }
+        .role-badge {
+            display: inline-block;
+            padding: 0.25rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
 
-        @media (max-width: 640px) {
-            nav { padding: 0 1.5rem; }
-            .nav-center { display: none; }
-            .action-list { grid-template-columns: 1fr; }
-            .profile-card { flex-direction: column; text-align: center; }
-            .avatar-grid { grid-template-columns: repeat(4, 1fr); }
+        .role-badge.admin {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            color: white;
+        }
+
+        .role-badge.user {
+            background: linear-gradient(135deg, var(--accent-color), #f0c27f);
+            color: var(--bg-primary);
+        }
+
+        /* Username Edit */
+        .username-edit {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .username-edit input {
+            flex: 1;
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .username-edit input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .username-edit button {
+            padding: 0.5rem 1rem;
+            background: var(--accent-color);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.3s;
+        }
+
+        .username-edit button:hover {
+            opacity: 0.85;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            margin-top: 2rem;
+        }
+
+        .quick-actions h3 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .action-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .action-link {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.7rem 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .action-link:hover {
+            background: var(--accent-color);
+            color: var(--bg-primary);
+        }
+
+        .action-link .icon {
+            font-size: 1.1rem;
+        }
+
+        .action-link.admin-link {
+            border: 1px solid #ff6b6b;
+        }
+
+        /* Level Section */
+        .level-section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .level-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .level-badge {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .level-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent-color), #f0c27f);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--bg-primary);
+        }
+
+        .level-info h2 {
+            font-size: 1.3rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .level-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .points-display {
+            text-align: right;
+        }
+
+        .points-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .points-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .progress-section {
+            margin-top: 1.5rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), #f0c27f);
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+
+        /* Checkin Section */
+        .checkin-section {
+            margin-top: 2rem;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .checkin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .streak-info {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .streak-item {
+            text-align: center;
+        }
+
+        .streak-item .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .streak-item .label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .checkin-btn {
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, var(--accent-color), #f0c27f);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .checkin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .checkin-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .checkin-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .checkin-day {
+            padding: 0.5rem;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        .checkin-day.checked {
+            background: var(--accent-color);
+            color: var(--bg-primary);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-card .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .stat-card .label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal h3 {
+            margin-bottom: 1.5rem;
+            color: var(--accent-color);
+        }
+
+        .modal-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            object-fit: cover;
+            border: 3px solid var(--accent-color);
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 0.7rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.3s;
+        }
+
+        .modal-btn:hover {
+            opacity: 0.85;
+        }
+
+        .modal-btn.primary {
+            background: var(--accent-color);
+            color: var(--bg-primary);
+        }
+
+        .modal-btn.secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .modal-btn.danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            z-index: 3000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #dc3545, #ff6b6b);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .checkin-days {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .level-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .points-display {
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <nav>
-        <div class="logo">凌云城</div>
-        <ul class="nav-center">
-            <li><a href="index.html">首页</a></li>
-            <li><a href="features.html">特色</a></li>
-            <li><a href="rules.html">规则</a></li>
-            <li><a href="connect.html">加入</a></li>
-            <li><a href="redeem.html">兑换</a></li>
-            <li><a href="forum.html">论坛</a></li>
-        </ul>
-        <div class="nav-right" id="navRight">
-            <a href="dashboard.html" class="user-badge" id="userBadge" style="display:none">
-                <div class="avatar" id="navAvatar"></div>
-                <span id="navName">加载中</span>
-            </a>
-            <a href="login.html" class="nav-btn outline" id="btnLogin">登录</a>
-            <a href="login.html" class="nav-btn filled" id="btnRegister">注册</a>
-            <button class="nav-btn outline" id="btnLogout" style="display:none" onclick="handleLogout()">退出</button>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">凌云城</a>
+            <ul class="nav-links">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="features.html">特色</a></li>
+                <li><a href="rules.html">规则</a></li>
+                <li><a href="join.html">加入</a></li>
+                <li><a href="redeem.html">兑换</a></li>
+                <li><a href="forum.html">论坛</a></li>
+            </ul>
+            <div class="nav-right">
+                <div class="user-badge">
+                    <img id="navAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" alt="头像">
+                    <span id="navUsername">加载中...</span>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()">退出</button>
+            </div>
+            <div class="hamburger" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </div>
     </nav>
 
-    <div class="container">
-        <div id="mainContent"><div class="loading">加载中...</div></div>
-    </div>
+    <!-- Main Dashboard -->
+    <main class="dashboard">
+        <div class="dashboard-grid">
+            <!-- Left Column - Profile -->
+            <div class="profile-card">
+                <div class="avatar-container">
+                    <img id="profileAvatar" class="avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" alt="头像" onclick="openAvatarModal()">
+                    <div class="avatar-edit-overlay" onclick="openAvatarModal()">✎</div>
+                </div>
+                <h2 id="profileName" class="profile-name">加载中...</h2>
+                <p id="profileEmail" class="profile-email">加载中...</p>
+                <span id="roleBadge" class="role-badge user">用户</span>
 
-    <!-- Avatar Picker Modal -->
+                <div class="username-edit">
+                    <input type="text" id="usernameInput" placeholder="输入新用户名">
+                    <button onclick="updateUsername()">保存</button>
+                </div>
+
+                <div class="quick-actions">
+                    <h3>快捷操作</h3>
+                    <div class="action-links">
+                        <a href="index.html" class="action-link"><span class="icon">🏠</span> 返回首页</a>
+                        <a href="steam://connect/your-server-ip" class="action-link"><span class="icon">🎮</span> 开始游戏</a>
+                        <a href="https://kook.chat/your-server" class="action-link" target="_blank"><span class="icon">💬</span> Kook社区</a>
+                        <a href="redeem.html" class="action-link"><span class="icon">🎁</span> 兑换码</a>
+                        <a href="forum.html" class="action-link"><span class="icon">📝</span> 论坛</a>
+                        <a href="https://qm.qq.com/your-group" class="action-link" target="_blank"><span class="icon">👥</span> QQ群</a>
+                        <button class="action-link" onclick="handleCheckin()" id="checkinActionBtn"><span class="icon">📅</span> 每日签到</button>
+                    </div>
+                    <div id="adminLink" style="display:none; margin-top:0.6rem;">
+                        <a href="admin.html" class="action-link admin-link"><span class="icon">⚙️</span> 管理后台</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Stats & Level -->
+            <div>
+                <!-- Level Section -->
+                <div class="level-section">
+                    <div class="level-header">
+                        <div class="level-badge">
+                            <div class="level-icon" id="levelIcon">1</div>
+                            <div class="level-info">
+                                <h2 id="levelName">新手玩家</h2>
+                                <p>等级 <span id="levelNumber">1</span></p>
+                            </div>
+                        </div>
+                        <div class="points-display">
+                            <div class="points-value" id="totalPoints">0</div>
+                            <div class="points-label">积分</div>
+                        </div>
+                    </div>
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <span>升级进度</span>
+                            <span id="progressText">0 / 50</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Checkin Section -->
+                <div class="checkin-section">
+                    <div class="checkin-header">
+                        <h3>每日签到</h3>
+                        <div class="streak-info">
+                            <div class="streak-item">
+                                <div class="value" id="checkinStreak">0</div>
+                                <div class="label">连续签到</div>
+                            </div>
+                            <div class="streak-item">
+                                <div class="value" id="totalCheckins">0</div>
+                                <div class="label">累计签到</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="checkin-btn" id="checkinBtn" onclick="handleCheckin()">立即签到 +10积分</button>
+                    <div class="checkin-days" id="checkinDays"></div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="icon">🎯</div>
+                        <div class="value" id="statPlayTime">0</div>
+                        <div class="label">游戏时长(小时)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon">💰</div>
+                        <div class="value" id="statEarned">0</div>
+                        <div class="label">累计获得积分</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon">🏆</div>
+                        <div class="value" id="statRank">#--</div>
+                        <div class="label">排名</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Avatar Modal -->
     <div class="modal-overlay" id="avatarModal">
         <div class="modal">
-            <div class="modal-header">
-                <span class="modal-title">自定义头像</span>
-                <button class="modal-close" onclick="closeAvatarModal()">&times;</button>
+            <h3>修改头像</h3>
+            <img id="modalPreview" class="modal-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" alt="预览">
+            <input type="text" id="avatarUrlInput" class="modal-input" placeholder="输入头像URL地址">
+            <div class="modal-buttons">
+                <button class="modal-btn primary" onclick="saveAvatar()">保存头像</button>
+                <button class="modal-btn danger" onclick="removeAvatar()">移除头像</button>
             </div>
-            <div class="avatar-grid">
-                <div class="avatar-preview" id="avatarPreview">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                </div>
-                <div class="avatar-input-group">
-                    <input type="url" class="avatar-input" id="avatarUrlInput" placeholder="粘贴图片链接 (URL)" oninput="previewAvatar(this.value)">
-                    <button class="btn-use" onclick="previewAvatar(document.getElementById('avatarUrlInput').value)">预览</button>
-                </div>
-                <div class="avatar-hint">支持 JPG、PNG 等图片链接，建议正方形图片</div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-save" style="flex:1" onclick="saveAvatar()">保存头像</button>
-                <button class="btn-remove" onclick="removeAvatar()">移除</button>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeAvatarModal()">取消</button>
             </div>
         </div>
     </div>
 
-    <script src="supabase.min.js"></script>
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="utils.js"></script>
+    <script src="modal.js"></script>
+    <script src="mobile-menu.js"></script>
     <script>
-        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const SUPABASE_URL = 'https://mxajreukeniayoqyvybe.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4';
 
-        const DEFAULT_AVATAR_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let currentProfile = null;
+        const LEVELS = [0, 50, 150, 300, 500, 800, 1200, 1800, 2500, 3500, 5000];
+        const LEVEL_NAMES = ['新手玩家', '初级玩家', '进阶玩家', '资深玩家', '精英玩家', '社区达人', '论坛元老', '凌云精英', '凌云大师', '凌云传奇', '凌云之巅'];
 
-        async function init() {
+        let currentUser = null;
+        let userData = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+        });
+
+        async function checkAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+            currentUser = session.user;
+            await loadUserData();
+        }
+
+        async function loadUserData() {
             try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (!session) { window.location.href = 'login.html'; return; }
+                const { data, error } = await supabase
+                    .from('user_stats')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .single();
 
-                const { data: profile } = await supabaseClient
-                    .from('profiles').select('*').eq('id', session.user.id).single();
+                if (error && error.code === 'PGRST116') {
+                    const { error: insertError } = await supabase
+                        .from('user_stats')
+                        .insert({
+                            user_id: currentUser.id,
+                            username: currentUser.email.split('@')[0],
+                            points: 0,
+                            level: 1,
+                            checkin_streak: 0,
+                            total_checkins: 0,
+                            role: 'user'
+                        });
 
-                currentProfile = profile || { username: session.user.email, role: 'user', avatar_url: '', created_at: new Date().toISOString() };
+                    if (insertError) throw insertError;
+                    return loadUserData();
+                }
 
-                updateNav(session.user, currentProfile);
-                renderDashboard(session.user, currentProfile);
-                loadUserStats();
+                if (error) throw error;
+                userData = data;
+                updateUI();
             } catch (err) {
-                console.error('init error:', err);
-                showToast('加载失败，请刷新重试', 'error');
+                showToast('加载用户数据失败', 'error');
+                console.error(err);
             }
         }
 
-        function getAvatarHTML(avatarUrl, size) {
-            if (avatarUrl) {
-                return `<img src="${avatarUrl}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`;
+        function updateUI() {
+            if (!userData) return;
+
+            const avatar = userData.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.id}`;
+            document.getElementById('profileAvatar').src = avatar;
+            document.getElementById('navAvatar').src = avatar;
+            document.getElementById('modalPreview').src = avatar;
+
+            document.getElementById('profileName').textContent = userData.username;
+            document.getElementById('navUsername').textContent = userData.username;
+            document.getElementById('profileEmail').textContent = currentUser.email;
+            document.getElementById('usernameInput').value = userData.username;
+
+            const roleBadge = document.getElementById('roleBadge');
+            roleBadge.textContent = userData.role === 'admin' ? '管理员' : '用户';
+            roleBadge.className = `role-badge ${userData.role}`;
+
+            if (userData.role === 'admin') {
+                document.getElementById('adminLink').style.display = 'block';
             }
-            return `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;background:#e5e7eb;border-radius:50%">${DEFAULT_AVATAR_SVG}</div>`;
+
+            updateLevelInfo(userData.points);
+            updateCheckinUI();
+            updateStats();
         }
 
-        function updateNav(user, data) {
-            const navAvatar = document.getElementById('navAvatar');
-            navAvatar.innerHTML = '';
-            navAvatar.style.background = '#e5e7eb';
-            if (data.avatar_url) {
-                navAvatar.innerHTML = `<img src="${data.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
-            } else {
-                navAvatar.innerHTML = DEFAULT_AVATAR_SVG;
+        function updateLevelInfo(points) {
+            let level = 0;
+            for (let i = LEVELS.length - 1; i >= 0; i--) {
+                if (points >= LEVELS[i]) {
+                    level = i;
+                    break;
+                }
             }
-            document.getElementById('navName').textContent = data.username || user.email;
-            document.getElementById('userBadge').style.display = 'flex';
-            document.getElementById('btnLogin').style.display = 'none';
-            document.getElementById('btnRegister').style.display = 'none';
-            document.getElementById('btnLogout').style.display = 'inline-block';
+
+            const nextLevel = level < LEVELS.length - 1 ? LEVELS[level + 1] : LEVELS[level];
+            const currentLevelPoints = LEVELS[level];
+            const progress = level < LEVELS.length - 1
+                ? ((points - currentLevelPoints) / (nextLevel - currentLevelPoints)) * 100
+                : 100;
+
+            document.getElementById('levelIcon').textContent = level + 1;
+            document.getElementById('levelName').textContent = LEVEL_NAMES[level];
+            document.getElementById('levelNumber').textContent = level + 1;
+            document.getElementById('totalPoints').textContent = points;
+            document.getElementById('progressText').textContent = `${points} / ${nextLevel}`;
+            document.getElementById('progressFill').style.width = `${progress}%`;
         }
 
-        function renderDashboard(user, data) {
-            const isAdmin = data.role === 'admin';
+        async function updateCheckinUI() {
+            const today = new Date().toISOString().split('T')[0];
+            const { data } = await supabase
+                .from('checkin_logs')
+                .select('checkin_date')
+                .eq('user_id', currentUser.id)
+                .gte('checkin_date', getWeekStart())
+                .order('checkin_date', { ascending: true });
 
-            document.getElementById('mainContent').innerHTML = `
-                <div class="profile-card">
-                    <div class="avatar-wrapper" onclick="openAvatarModal()">
-                        <div class="avatar-lg" id="profileAvatar"></div>
-                        <div class="avatar-edit-hint">✏</div>
-                    </div>
-                    <div class="profile-info">
-                        <h2 id="displayName">${data.username || '玩家'}</h2>
-                        <div class="email">${user.email}</div>
-                        <span class="role-badge ${isAdmin ? 'admin' : 'user'}">${isAdmin ? '管理员' : '普通用户'}</span>
-                        <div class="edit-row">
-                            <input type="text" id="newUsername" value="${data.username || ''}" placeholder="输入新用户名">
-                            <button onclick="updateUsername()">修改</button>
-                        </div>
-                    </div>
-                </div>
+            const checkedDays = (data || []).map(d => d.checkin_date);
+            const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
+            const container = document.getElementById('checkinDays');
+            container.innerHTML = '';
 
-                <div class="section-card">
-                    <h3>快捷入口</h3>
-                    <div class="action-list">
-                        <a href="index.html" class="action-item"><div class="action-icon purple">🏠</div><div><h4>返回首页</h4><p>查看服务器信息</p></div></a>
-                        <a href="connect.html" class="action-item"><div class="action-icon green">🎮</div><div><h4>开始游戏</h4><p>连接服务器</p></div></a>
-                        <a href="https://kook.vip/71Hw5z" target="_blank" class="action-item"><div class="action-icon blue">💬</div><div><h4>Kook 社区</h4><p>加入讨论</p></div></a>
-                        <a href="redeem.html" class="action-item"><div class="action-icon orange">🎁</div><div><h4>兑换码</h4><p>兑换奖励</p></div></a>
-                        <a href="forum.html" class="action-item"><div class="action-icon purple">📝</div><div><h4>论坛</h4><p>参与讨论</p></div></a>
-                        <a href="https://qm.qq.com/q/zzUzFa6ytw" target="_blank" class="action-item"><div class="action-icon orange">📱</div><div><h4>QQ 群</h4><p>交流互动</p></div></a>
-                        <a href="javascript:void(0)" onclick="handleCheckin()" class="action-item" id="checkinBtn">
-                            <div class="action-icon orange">📅</div>
-                            <div><h4>每日签到</h4><p id="checkinText">签到领积分</p></div>
-                        </a>
-                    </div>
-                    ${isAdmin ? '<a href="admin.html" class="admin-link">🔐 进入管理后台</a>' : ''}
-                </div>
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(getWeekStart());
+                date.setDate(date.getDate() + i);
+                const dateStr = date.toISOString().split('T')[0];
+                const isChecked = checkedDays.includes(dateStr);
 
-                <div class="section-card" id="statsCard">
-                    <h3>我的等级</h3>
-                    <div style="display:flex;align-items:center;gap:1rem;margin-top:0.75rem">
-                        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;font-weight:700" id="levelBadge">1</div>
-                        <div>
-                            <div style="font-size:0.9rem;font-weight:600" id="levelText">等级 1</div>
-                            <div style="font-size:0.78rem;color:#999" id="pointsText">0 积分</div>
-                            <div style="width:150px;height:6px;background:#e5e7eb;border-radius:3px;margin-top:0.3rem;overflow:hidden">
-                                <div style="height:100%;background:#6366f1;border-radius:3px;transition:width 0.3s" id="levelProgress"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+                const dayEl = document.createElement('div');
+                dayEl.className = `checkin-day ${isChecked ? 'checked' : ''}`;
+                dayEl.innerHTML = `周${dayNames[i]}<br>${date.getDate()}日`;
+                container.appendChild(dayEl);
+            }
 
-            const avatarEl = document.getElementById('profileAvatar');
-            if (data.avatar_url) {
-                avatarEl.innerHTML = `<img src="${data.avatar_url}" style="width:100%;height:100%;object-fit:cover">`;
-            } else {
-                avatarEl.innerHTML = DEFAULT_AVATAR_SVG;
+            document.getElementById('checkinStreak').textContent = userData?.checkin_streak || 0;
+            document.getElementById('totalCheckins').textContent = userData?.total_checkins || 0;
+
+            const hasCheckedToday = checkedDays.includes(today);
+            const checkinBtn = document.getElementById('checkinBtn');
+            if (hasCheckedToday) {
+                checkinBtn.disabled = true;
+                checkinBtn.textContent = '今日已签到';
+            }
+        }
+
+        function getWeekStart() {
+            const now = new Date();
+            const day = now.getDay();
+            const diff = now.getDate() - day;
+            const weekStart = new Date(now.setDate(diff));
+            weekStart.setHours(0, 0, 0, 0);
+            return weekStart.toISOString().split('T')[0];
+        }
+
+        function updateStats() {
+            document.getElementById('statPlayTime').textContent = userData?.play_time || 0;
+            document.getElementById('statEarned').textContent = userData?.points || 0;
+            document.getElementById('statRank').textContent = userData?.rank || '--';
+        }
+
+        async function handleCheckin() {
+            const today = new Date().toISOString().split('T')[0];
+
+            const { data: existing } = await supabase
+                .from('checkin_logs')
+                .select('id')
+                .eq('user_id', currentUser.id)
+                .eq('checkin_date', today)
+                .single();
+
+            if (existing) {
+                showToast('今日已签到', 'error');
+                return;
+            }
+
+            try {
+                const { error: logError } = await supabase
+                    .from('checkin_logs')
+                    .insert({
+                        user_id: currentUser.id,
+                        checkin_date: today
+                    });
+
+                if (logError) throw logError;
+
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+                const { data: yesterdayCheckin } = await supabase
+                    .from('checkin_logs')
+                    .select('id')
+                    .eq('user_id', currentUser.id)
+                    .eq('checkin_date', yesterdayStr)
+                    .single();
+
+                const newStreak = yesterdayCheckin ? (userData.checkin_streak || 0) + 1 : 1;
+
+                const { error: statsError } = await supabase
+                    .from('user_stats')
+                    .update({
+                        points: userData.points + 10,
+                        checkin_streak: newStreak,
+                        total_checkins: (userData.total_checkins || 0) + 1
+                    })
+                    .eq('user_id', currentUser.id);
+
+                if (statsError) throw statsError;
+
+                userData.points += 10;
+                userData.checkin_streak = newStreak;
+                userData.total_checkins = (userData.total_checkins || 0) + 1;
+
+                updateLevelInfo(userData.points);
+                updateCheckinUI();
+                updateStats();
+                showToast('签到成功！获得10积分', 'success');
+            } catch (err) {
+                showToast('签到失败，请重试', 'error');
+                console.error(err);
+            }
+        }
+
+        async function updateUsername() {
+            const newUsername = document.getElementById('usernameInput').value.trim();
+            if (!newUsername) {
+                showToast('用户名不能为空', 'error');
+                return;
+            }
+
+            if (newUsername.length < 2 || newUsername.length > 20) {
+                showToast('用户名长度需在2-20个字符之间', 'error');
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('user_stats')
+                    .update({ username: newUsername })
+                    .eq('user_id', currentUser.id);
+
+                if (error) throw error;
+
+                userData.username = newUsername;
+                document.getElementById('profileName').textContent = newUsername;
+                document.getElementById('navUsername').textContent = newUsername;
+                showToast('用户名更新成功', 'success');
+            } catch (err) {
+                showToast('更新失败，请重试', 'error');
+                console.error(err);
             }
         }
 
         function openAvatarModal() {
-            document.getElementById('avatarUrlInput').value = currentProfile.avatar_url || '';
-            previewAvatar(currentProfile.avatar_url || '');
             document.getElementById('avatarModal').classList.add('active');
+            document.getElementById('avatarUrlInput').value = userData?.avatar_url || '';
+            document.getElementById('modalPreview').src = userData?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.id}`;
         }
 
         function closeAvatarModal() {
             document.getElementById('avatarModal').classList.remove('active');
         }
 
-        function previewAvatar(url) {
-            const preview = document.getElementById('avatarPreview');
+        document.getElementById('avatarUrlInput').addEventListener('input', function () {
+            const url = this.value.trim();
             if (url) {
-                preview.innerHTML = `<img src="${url}" onerror="this.parentElement.innerHTML='<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1.5\\'><path d=\\'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\\'/><circle cx=\\'12\\' cy=\\'7\\' r=\\'4\\'/></svg>'">`;
+                document.getElementById('modalPreview').src = url;
             } else {
-                preview.innerHTML = DEFAULT_AVATAR_SVG;
+                document.getElementById('modalPreview').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.id}`;
             }
-        }
+        });
 
         async function saveAvatar() {
+            const url = document.getElementById('avatarUrlInput').value.trim();
+
             try {
-                const url = document.getElementById('avatarUrlInput').value.trim();
-                if (!currentProfile) return;
+                const { error } = await supabase
+                    .from('user_stats')
+                    .update({ avatar_url: url || null })
+                    .eq('user_id', currentUser.id);
 
-                await supabaseClient.from('profiles').update({ avatar_url: url }).eq('id', currentProfile.id);
-                currentProfile.avatar_url = url;
+                if (error) throw error;
 
-                updateNav({ email: currentProfile.email }, currentProfile);
-                renderDashboard({ email: currentProfile.email }, currentProfile);
+                userData.avatar_url = url;
+                const avatar = url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.id}`;
+                document.getElementById('profileAvatar').src = avatar;
+                document.getElementById('navAvatar').src = avatar;
                 closeAvatarModal();
+                showToast('头像更新成功', 'success');
             } catch (err) {
-                showToast('加载失败', 'error');
+                showToast('更新头像失败', 'error');
+                console.error(err);
             }
         }
 
         async function removeAvatar() {
             try {
-                if (!currentProfile) return;
-                await supabaseClient.from('profiles').update({ avatar_url: '' }).eq('id', currentProfile.id);
-                currentProfile.avatar_url = '';
-                updateNav({ email: currentProfile.email }, currentProfile);
-                renderDashboard({ email: currentProfile.email }, currentProfile);
+                const { error } = await supabase
+                    .from('user_stats')
+                    .update({ avatar_url: null })
+                    .eq('user_id', currentUser.id);
+
+                if (error) throw error;
+
+                userData.avatar_url = null;
+                const defaultAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.id}`;
+                document.getElementById('profileAvatar').src = defaultAvatar;
+                document.getElementById('navAvatar').src = defaultAvatar;
+                document.getElementById('modalPreview').src = defaultAvatar;
+                document.getElementById('avatarUrlInput').value = '';
                 closeAvatarModal();
+                showToast('头像已移除', 'success');
             } catch (err) {
-                showToast('加载失败', 'error');
-            }
-        }
-
-        async function updateUsername() {
-            try {
-                const newName = document.getElementById('newUsername').value.trim();
-                if (!newName || !currentProfile) return;
-                await supabaseClient.from('profiles').update({ username: newName }).eq('id', currentProfile.id);
-                currentProfile.username = newName;
-                document.getElementById('displayName').textContent = newName;
-                updateNav({ email: currentProfile.email }, currentProfile);
-            } catch (err) {
-                showToast('加载失败', 'error');
-            }
-        }
-
-        async function handleCheckin() {
-            if (!currentUser) return;
-            const today = new Date().toISOString().split('T')[0];
-            const { data: existing } = await supabaseClient.from('checkin_logs')
-                .select('id').eq('user_id', currentUser.user.id)
-                .gte('created_at', today + 'T00:00:00').single();
-            if (existing) { showToast('今天已经签到过了', 'error'); return; }
-
-            await supabaseClient.from('checkin_logs').insert([{
-                user_id: currentUser.user.id, points_earned: 10
-            }]);
-
-            const { data: stats } = await supabaseClient.from('user_stats').select('*').eq('user_id', currentUser.user.id).single();
-            if (stats) {
-                const newStreak = stats.last_checkin === new Date(Date.now() - 86400000).toISOString().split('T')[0] ? stats.checkin_streak + 1 : 1;
-                await supabaseClient.from('user_stats').update({
-                    points: stats.points + 10,
-                    checkin_streak: newStreak,
-                    last_checkin: today
-                }).eq('user_id', currentUser.user.id);
-            } else {
-                await supabaseClient.from('user_stats').insert([{
-                    user_id: currentUser.user.id, points: 10, checkin_streak: 1, last_checkin: today
-                }]);
-            }
-            showToast('签到成功！+10 积分', 'success');
-            loadUserStats();
-        }
-
-        function getLevel(points) {
-            const levels = [0, 50, 150, 300, 500, 800, 1200, 1800, 2500, 3500, 5000];
-            let level = 1;
-            for (let i = 1; i < levels.length; i++) {
-                if (points >= levels[i]) level = i + 1;
-            }
-            return level;
-        }
-
-        function getLevelName(level) {
-            const names = ['新手玩家','初级玩家','进阶玩家','资深玩家','精英玩家','社区达人','论坛元老','凌云精英','凌云大师','凌云传奇','凌云之巅'];
-            return names[Math.min(level - 1, names.length - 1)];
-        }
-
-        function getNextLevelPoints(level) {
-            const levels = [0, 50, 150, 300, 500, 800, 1200, 1800, 2500, 3500, 5000];
-            return levels[Math.min(level, levels.length - 1)] || 99999;
-        }
-
-        async function loadUserStats() {
-            if (!currentUser) return;
-            const { data: stats } = await supabaseClient.from('user_stats').select('*').eq('user_id', currentUser.user.id).single();
-            if (!stats) return;
-            const level = getLevel(stats.points);
-            const nextPoints = getNextLevelPoints(level);
-            const prevPoints = getNextLevelPoints(level - 1);
-            const progress = nextPoints > prevPoints ? ((stats.points - prevPoints) / (nextPoints - prevPoints)) * 100 : 100;
-
-            document.getElementById('levelBadge').textContent = level;
-            document.getElementById('levelText').textContent = 'Lv.' + level + ' ' + getLevelName(level);
-            document.getElementById('pointsText').textContent = stats.points + ' 积分 · 连续签到 ' + stats.checkin_streak + ' 天';
-            document.getElementById('levelProgress').style.width = Math.min(progress, 100) + '%';
-
-            const today = new Date().toISOString().split('T')[0];
-            if (stats.last_checkin === today) {
-                document.getElementById('checkinText').textContent = '今日已签到 ✓';
+                showToast('移除头像失败', 'error');
+                console.error(err);
             }
         }
 
         async function handleLogout() {
-            await supabaseClient.auth.signOut();
-            window.location.href = 'index.html';
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                showToast('退出失败', 'error');
+            } else {
+                window.location.href = 'login.html';
+            }
         }
 
-        init();
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
     </script>
-    <script src="modal.js"></script>
-    <script src="chat-widget.js"></script>
-    <script src="notifications-bell.js"></script>
-    <script src="footer.js"></script>
-    <script src="mobile-menu.js"></script>
 </body>
 </html>

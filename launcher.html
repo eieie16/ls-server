@@ -1,748 +1,168 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>804 轻RP 3.0 - FiveM Launcher</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        :root {
-            --bg-primary: #1a1a1a;
-            --bg-secondary: #242424;
-            --bg-sidebar: #1e1e1e;
-            --accent: #d4a574;
-            --accent-hover: #e8b88a;
-            --accent-gold: #f5c842;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            --text-muted: #666666;
-            --border: #333333;
-            --success: #4caf50;
-            --warning: #ff9800;
-            --error: #ef5350;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --card-border: rgba(255, 255, 255, 0.1);
-        }
-
-        html, body {
-            height: 100%;
-            overflow: hidden;
-        }
-
-        body {
-            font-family: 'Inter', 'Noto Sans SC', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            display: flex;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 200px;
-            min-width: 200px;
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            position: relative;
-            z-index: 10;
-        }
-
-        .sidebar-header {
-            padding: 20px 16px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .server-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .server-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-gold));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 14px;
-            color: #1a1a1a;
-            flex-shrink: 0;
-        }
-
-        .server-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .server-subtitle {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-top: 2px;
-        }
-
-        /* KOOK Banner */
-        .kook-banner {
-            margin: 16px;
-            padding: 12px;
-            background: linear-gradient(135deg, #2a2a2a, #333);
-            border-radius: 12px;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .kook-banner:hover {
-            transform: scale(1.02);
-        }
-
-        .kook-banner::before {
-            content: 'KOOK';
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--accent-gold);
-            background: rgba(0,0,0,0.5);
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-
-        .kook-banner-text {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-top: 20px;
-        }
-
-        .kook-banner-subtitle {
-            font-size: 9px;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        /* Navigation */
-        .nav-menu {
-            flex: 1;
-            padding: 12px 0;
-            overflow-y: auto;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 20px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            font-size: 13px;
-        }
-
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
-        }
-
-        .nav-item.active {
-            background: rgba(212, 165, 116, 0.15);
-            color: var(--accent);
-        }
-
-        .nav-item.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 24px;
-            background: var(--accent);
-            border-radius: 0 2px 2px 0;
-        }
-
-        .nav-icon {
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-
-        .nav-badge {
-            margin-left: auto;
-            background: var(--accent);
-            color: #1a1a1a;
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 10px;
-            min-width: 18px;
-            text-align: center;
-        }
-
-        .sidebar-footer {
-            padding: 16px 20px;
-            border-top: 1px solid var(--border);
-        }
-
-        .version-info {
-            font-size: 10px;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .version-tag {
-            background: var(--error);
-            color: white;
-            font-size: 9px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 600;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* Background Image */
-        .background-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('https://images.unsplash.com/photo-1549317661-bd32c8ce0aff?w=1920&q=80') center/cover;
-            opacity: 0.3;
-            z-index: 0;
-        }
-
-        .background-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(180deg, rgba(26,26,26,0.7) 0%, rgba(26,26,26,0.9) 100%);
-            z-index: 1;
-        }
-
-        /* Content */
-        .content {
-            position: relative;
-            z-index: 2;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            overflow-y: auto;
-        }
-
-        /* Server Logo */
-        .server-logo {
-            width: 80px;
-            height: 80px;
-            border-radius: 20px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-gold));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(212, 165, 116, 0.3);
-        }
-
-        .server-logo-inner {
-            font-size: 24px;
-            font-weight: 800;
-            color: #1a1a1a;
-        }
-
-        .server-subtitle-main {
-            font-size: 11px;
-            letter-spacing: 3px;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .server-title {
-            font-size: 48px;
-            font-weight: 900;
-            color: var(--text-primary);
-            margin-bottom: 12px;
-            text-shadow: 0 4px 20px rgba(0,0,0,0.5);
-        }
-
-        .server-description {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 32px;
-            letter-spacing: 1px;
-        }
-
-        /* Status Cards */
-        .status-cards {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .status-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 16px 24px;
-            min-width: 140px;
-            text-align: center;
-        }
-
-        .status-label {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-        }
-
-        .status-value {
-            font-size: 14px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
-
-        .status-dot.online {
-            background: var(--success);
-            box-shadow: 0 0 8px var(--success);
-        }
-
-        .status-dot.offline {
-            background: var(--error);
-            box-shadow: 0 0 8px var(--error);
-        }
-
-        .status-dot.warning {
-            background: var(--warning);
-            box-shadow: 0 0 8px var(--warning);
-        }
-
-        /* Launch Button */
-        .launch-btn {
-            background: linear-gradient(135deg, #c9a87c, #b8956a);
-            border: none;
-            color: #1a1a1a;
-            font-size: 16px;
-            font-weight: 700;
-            padding: 16px 60px;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 8px 32px rgba(201, 168, 124, 0.3);
-            margin-bottom: 16px;
-        }
-
-        .launch-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(201, 168, 124, 0.4);
-            background: linear-gradient(135deg, var(--accent-hover), var(--accent));
-        }
-
-        .launch-btn:active {
-            transform: translateY(0);
-        }
-
-        .launch-btn.error {
-            background: linear-gradient(135deg, #8b5a5a, #7a4a4a);
-            color: #fff;
-        }
-
-        .launch-btn .play-icon {
-            width: 0;
-            height: 0;
-            border-left: 12px solid currentColor;
-            border-top: 7px solid transparent;
-            border-bottom: 7px solid transparent;
-        }
-
-        .launch-error {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 32px;
-            text-align: center;
-            max-width: 500px;
-        }
-
-        /* Social Links */
-        .social-links {
-            display: flex;
-            gap: 12px;
-        }
-
-        .social-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            color: var(--text-secondary);
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .social-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--accent);
-            color: var(--text-primary);
-        }
-
-        .social-btn .icon {
-            font-size: 14px;
-        }
-
-        /* Notification Toast */
-        .notification {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            max-width: 320px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            z-index: 100;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .notification-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 8px;
-        }
-
-        .notification-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-gold));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: 700;
-            color: #1a1a1a;
-        }
-
-        .notification-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .notification-text {
-            font-size: 11px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            margin-bottom: 16px;
-        }
-
-        .notification-btn {
-            width: 100%;
-            background: var(--accent);
-            border: none;
-            color: #1a1a1a;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .notification-btn:hover {
-            background: var(--accent-hover);
-        }
-
-        .notification-close {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            width: 20px;
-            height: 20px;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .notification-close:hover {
-            color: var(--text-primary);
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-muted);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>启动游戏 — 凌云城</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏯</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .launcher-wrap{
+      min-height:100vh;display:flex;flex-direction:column;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 30%,rgba(212,168,83,0.05) 0%,transparent 70%),
+        var(--bg);
+    }
+    .launcher-main{flex:1;display:flex;align-items:center;justify-content:center;padding:6rem 1.5rem 4rem}
+    .launcher-box{text-align:center;max-width:480px;width:100%}
+    .launcher-logo{
+      font-family:var(--font-display);
+      font-size:clamp(2rem,5vw,2.8rem);
+      margin-bottom:2.5rem;
+    }
+    .launcher-status{
+      display:flex;align-items:center;justify-content:center;gap:.8rem;
+      margin-bottom:1.5rem;
+    }
+    .spinner{
+      width:20px;height:20px;border:2px solid var(--border2);
+      border-top-color:var(--gold);border-radius:50%;
+      animation:spin .8s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .launcher-status span{color:var(--text2);font-size:.95rem}
+    .ip-display{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:1.5rem;margin-bottom:1.2rem;
+    }
+    .ip-display label{display:block;font-size:.75rem;color:var(--text3);margin-bottom:.5rem;letter-spacing:.06em}
+    .ip-display code{
+      font-size:1.1rem;color:var(--gold);
+      font-family:'SF Mono',Consolas,monospace;letter-spacing:.04em;
+    }
+    .launcher-note{font-size:.82rem;color:var(--text3);margin-bottom:1.5rem;line-height:1.6}
+    .launcher-actions{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+    #copyBtn{
+      padding:.75rem 1.8rem;border-radius:8px;font-size:.88rem;font-weight:600;
+      cursor:pointer;transition:all .25s;border:none;font-family:var(--font-body);
+      background:var(--surface2);color:var(--text);
+      border:1px solid var(--border2);
+    }
+    #copyBtn:hover{border-color:var(--gold);color:var(--gold)}
+    #copyBtn.copied{border-color:#34d399;color:#34d399}
+    .back-link{
+      display:inline-flex;align-items:center;gap:.4rem;
+      font-size:.85rem;color:var(--text3);transition:color .2s;
+    }
+    .back-link:hover{color:var(--gold)}
+  </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="server-info">
-                <div class="server-avatar">804</div>
-                <div>
-                    <div class="server-name">804</div>
-                    <div class="server-subtitle">轻RP · 3.0</div>
-                </div>
-            </div>
+  <div class="launcher-wrap">
+    <nav class="nav" id="mainNav">
+      <a href="index.html" class="nav-logo">凌云城</a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="features.html">特色</a></li>
+        <li><a href="rules.html">规则</a></li>
+        <li><a href="connect.html">加入</a></li>
+        <li><a href="redeem.html">兑换</a></li>
+        <li><a href="forum.html">论坛</a></li>
+      </ul>
+      <div class="nav-right">
+        <a href="login.html" class="nav-btn outline">登录</a>
+        <a href="login.html" class="nav-btn filled">注册</a>
+      </div>
+      <button class="nav-toggle" id="navToggle" onclick="toggleNav()">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+
+    <div class="launcher-main">
+      <div class="launcher-box">
+        <div class="launcher-logo art-text">凌云城</div>
+        <div class="launcher-status">
+          <div class="spinner"></div>
+          <span>正在启动游戏...</span>
         </div>
-
-        <div class="kook-banner">
-            <div class="kook-banner-text">那天立下鸿图志，誓死！加入社区</div>
-            <div class="kook-banner-subtitle">点击加入 KOOK 社区</div>
+        <div class="ip-display">
+          <label>服务器地址</label>
+          <code>connect oaa5897</code>
         </div>
-
-        <nav class="nav-menu">
-            <div class="nav-item active" data-page="home">
-                <span class="nav-icon">⌂</span>
-                <span>首页</span>
-            </div>
-            <div class="nav-item" data-page="players">
-                <span class="nav-icon">☺</span>
-                <span>在线玩家</span>
-            </div>
-            <div class="nav-item" data-page="announcements">
-                <span class="nav-icon"> bell</span>
-                <span>公告</span>
-                <span class="nav-badge">3</span>
-            </div>
-            <div class="nav-item" data-page="rules">
-                <span class="nav-icon">☰</span>
-                <span>规则</span>
-            </div>
-            <div class="nav-item" data-page="changelog">
-                <span class="nav-icon">☺</span>
-                <span>更新日志</span>
-                <span class="nav-badge">6</span>
-            </div>
-        </nav>
-
-        <div class="sidebar-footer">
-            <div class="nav-item" data-page="agreement">
-                <span class="nav-icon">☐</span>
-                <span>用户协议</span>
-            </div>
-            <div class="version-info">
-                v1.2.46
-                <span class="version-tag">更新较差</span>
-            </div>
+        <p class="launcher-note">如果游戏未启动，请手动复制地址</p>
+        <div class="launcher-actions">
+          <button id="copyBtn" onclick="copyIp()">复制连接地址</button>
+          <a href="index.html" class="back-link">← 回到首页</a>
         </div>
-    </aside>
+      </div>
+    </div>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <div class="background-image"></div>
-        <div class="background-overlay"></div>
-
-        <div class="content">
-            <div class="server-logo">
-                <span class="server-logo-inner">BFA</span>
-            </div>
-
-            <div class="server-subtitle-main">FIVEM ROLEPLAY</div>
-            <h1 class="server-title">804 轻RP 3.0</h1>
-            <p class="server-description">沉浸城市生活 · 多样职业选择 · 开放角色故事</p>
-
-            <div class="status-cards">
-                <div class="status-card">
-                    <div class="status-label">服务器</div>
-                    <div class="status-value">
-                        <span class="status-dot online"></span>
-                        缓存 · 90
-                        <span style="margin-left: 8px; color: var(--text-secondary); font-size: 12px;">90 人</span>
-                    </div>
-                </div>
-                <div class="status-card">
-                    <div class="status-label">登录器更新</div>
-                    <div class="status-value">
-                        <span class="status-dot offline"></span>
-                        状态未知
-                    </div>
-                </div>
-                <div class="status-card">
-                    <div class="status-label">启动连接</div>
-                    <div class="status-value">
-                        <span class="status-dot warning"></span>
-                        准备就绪
-                    </div>
-                </div>
-                <div class="status-card">
-                    <div class="status-label">公平游戏保护</div>
-                    <div class="status-value">
-                        <span class="status-dot online"></span>
-                        保护中
-                    </div>
-                </div>
-            </div>
-
-            <button class="launch-btn error" id="launchBtn">
-                <span class="play-icon"></span>
-                <span>启动失败 · 重试</span>
-            </button>
-
-            <p class="launch-error">
-                无法确认是否存在强制更新: Could not fetch a valid release JSON from the remote
-            </p>
-
-            <div class="social-links">
-                <a href="#" class="social-btn">
-                    <span class="icon">⊙</span>
-                    官网
-                </a>
-                <a href="#" class="social-btn">
-                    <span class="icon">☺</span>
-                    QQ群
-                </a>
-                <a href="#" class="social-btn">
-                    <span class="icon">☺</span>
-                    KOOK
-                </a>
-            </div>
+    <footer class="footer" style="margin-top:auto">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <span class="logo">凌云城</span>
+          <p>优质的中文 FiveM 轻 RP 服务器，为你提供轻松愉快的角色扮演体验。</p>
         </div>
-
-        <!-- Notification Toast -->
-        <div class="notification" id="notification">
-            <button class="notification-close" onclick="closeNotification()">×</button>
-            <div class="notification-header">
-                <div class="notification-avatar">804</div>
-                <div class="notification-title">无法确认更新状态</div>
-            </div>
-            <div class="notification-text">
-                无法确认是否存在强制更新: Could not fetch a valid release JSON from the remote
-            </div>
-            <button class="notification-btn" onclick="retryCheck()">重新检查</button>
+        <div class="footer-col">
+          <h4>导航</h4>
+          <ul>
+            <li><a href="features.html">服务器特色</a></li>
+            <li><a href="rules.html">服务器规则</a></li>
+            <li><a href="connect.html">如何加入</a></li>
+          </ul>
         </div>
-    </main>
+        <div class="footer-col">
+          <h4>社区</h4>
+          <ul>
+            <li><a href="https://kook.vip/71Hw5z" target="_blank">Kook</a></li>
+            <li><a href="https://qm.qq.com/q/zzUzFa6ytw" target="_blank">QQ 群</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 凌云城-轻RP 4.0</span>
+        <span>本站与 Rockstar Games 无任何关联</span>
+      </div>
+    </footer>
+  </div>
 
-    <script>
-        // Navigation
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                navItems.forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-            });
-        });
+  <script>
+    var connectUrl = 'fivem://connect/oaa5897';
 
-        // Launch button
-        const launchBtn = document.getElementById('launchBtn');
-        launchBtn.addEventListener('click', () => {
-            launchBtn.innerHTML = '<span class="play-icon"></span><span>正在连接...</span>';
-            launchBtn.classList.remove('error');
-            
-            setTimeout(() => {
-                launchBtn.innerHTML = '<span class="play-icon"></span><span>启动失败 · 重试</span>';
-                launchBtn.classList.add('error');
-            }, 3000);
-        });
+    function copyIp() {
+      navigator.clipboard.writeText('connect oaa5897');
+      var btn = document.getElementById('copyBtn');
+      btn.textContent = '已复制';
+      btn.classList.add('copied');
+      setTimeout(function () {
+        btn.textContent = '复制连接地址';
+        btn.classList.remove('copied');
+      }, 2000);
+    }
 
-        // Close notification
-        function closeNotification() {
-            document.getElementById('notification').style.display = 'none';
-        }
+    function toggleNav() {
+      document.getElementById('navLinks').classList.toggle('open');
+      document.getElementById('navToggle').classList.toggle('open');
+    }
 
-        // Retry check
-        function retryCheck() {
-            const notification = document.getElementById('notification');
-            notification.querySelector('.notification-text').textContent = '正在检查更新...';
-            
-            setTimeout(() => {
-                notification.querySelector('.notification-text').textContent = 
-                    '无法确认是否存在强制更新: Could not fetch a valid release JSON from the remote';
-            }, 2000);
-        }
+    window.addEventListener('scroll', function () {
+      document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 50);
+    });
 
-        // Auto-hide notification after 10 seconds
-        setTimeout(() => {
-            const notification = document.getElementById('notification');
-            if (notification.style.display !== 'none') {
-                notification.style.opacity = '0';
-                notification.style.transform = 'translateX(20px)';
-                notification.style.transition = 'all 0.3s';
-            }
-        }, 10000);
-    </script>
+    (function () {
+      var frame = document.createElement('iframe');
+      frame.style.display = 'none';
+      frame.src = connectUrl;
+      document.body.appendChild(frame);
+
+      setTimeout(function () {
+        try { document.body.removeChild(frame); } catch (e) {}
+      }, 3000);
+
+      setTimeout(function () {
+        window.location.href = connectUrl;
+      }, 500);
+    })();
+  </script>
 </body>
 </html>

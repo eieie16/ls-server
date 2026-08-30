@@ -3,808 +3,1315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理员后台 - 凌云城</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>凌云城 - 管理后台</title>
+    <link rel="stylesheet" href="style.css">
     <style>
+        :root {
+            --bg-dark: #0f1117;
+            --bg-sidebar: #161822;
+            --bg-card: #1c1f2e;
+            --bg-input: #242838;
+            --border-color: #2a2e3f;
+            --text-primary: #e8e8f0;
+            --text-secondary: #8b8fa3;
+            --accent-gold: #d4a843;
+            --accent-gold-hover: #e6bc5a;
+            --accent-red: #e74c3c;
+            --accent-green: #2ecc71;
+            --accent-blue: #3498db;
+            --accent-purple: #9b59b6;
+            --accent-orange: #e67e22;
+            --shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: #f0f2f5; color: #1a1a1a; }
 
-        .layout { display: flex; min-height: 100vh; }
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+        }
 
+        /* Sidebar */
         .sidebar {
-            width: 250px; background: #fff; border-right: 1px solid #e5e7eb;
-            padding: 1.5rem 1rem; position: fixed; height: 100vh; overflow-y: auto;
+            width: 250px;
+            min-height: 100vh;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
         }
-        .sidebar-logo {
-            font-size: 1.1rem; font-weight: 700; color: #6366f1;
-            padding: 0.5rem 0.75rem; margin-bottom: 2rem;
-        }
-        .nav-section { margin-bottom: 1.5rem; }
-        .nav-section-title {
-            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
-            color: #999; margin-bottom: 0.5rem; padding-left: 0.75rem;
-        }
-        .nav-item {
-            display: flex; align-items: center; gap: 0.75rem;
-            padding: 0.65rem 0.75rem; border-radius: 8px; cursor: pointer;
-            color: #666; transition: all 0.15s; font-size: 0.88rem;
-        }
-        .nav-item:hover { background: #f3f4f6; color: #1a1a1a; }
-        .nav-item.active { background: #ede9fe; color: #6366f1; font-weight: 500; }
-        .nav-item .icon { font-size: 1rem; width: 20px; text-align: center; }
-        .nav-divider { height: 1px; background: #e5e7eb; margin: 1rem 0; }
 
-        .main { flex: 1; margin-left: 250px; padding: 1.5rem 2rem; }
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
 
-        .header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 1.5rem;
+        .sidebar-header h1 {
+            font-size: 20px;
+            color: var(--accent-gold);
+            margin-bottom: 4px;
         }
-        .header h1 { font-size: 1.3rem; font-weight: 600; }
-        .header-right { display: flex; align-items: center; gap: 1rem; }
-        .admin-name { font-size: 0.85rem; color: #888; }
-        .btn {
-            padding: 0.55rem 1.1rem; border-radius: 8px; font-size: 0.85rem;
-            font-weight: 500; cursor: pointer; transition: all 0.15s; border: none;
-        }
-        .btn-primary { background: #6366f1; color: #fff; }
-        .btn-primary:hover { background: #5558e6; }
-        .btn-secondary { background: #fff; color: #333; border: 1px solid #d1d5db; }
-        .btn-secondary:hover { background: #f9fafb; }
-        .btn-back {
-            padding: 0.55rem 1.1rem; background: #fff; border: 1px solid #d1d5db;
-            border-radius: 8px; color: #666; font-size: 0.85rem; cursor: pointer;
-            text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;
-            transition: all 0.15s;
-        }
-        .btn-back:hover { background: #f9fafb; }
 
-        .stats-row {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;
+        .sidebar-header p {
+            font-size: 12px;
+            color: var(--text-secondary);
         }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 12px 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-nav a:hover {
+            color: var(--text-primary);
+            background: rgba(212,168,67,0.08);
+        }
+
+        .sidebar-nav a.active {
+            color: var(--accent-gold);
+            background: rgba(212,168,67,0.12);
+            border-left-color: var(--accent-gold);
+        }
+
+        .sidebar-nav a .icon {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 8px 20px;
+        }
+
+        .sidebar-footer {
+            padding: 12px 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .sidebar-footer a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+
+        .sidebar-footer a:hover { color: var(--accent-red); }
+
+        /* Main */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-header h2 {
+            font-size: 22px;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .page-header p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Stats cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
         .stat-card {
-            background: #fff; border-radius: 12px; padding: 1.25rem 1rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
         }
-        .stat-card .value { font-size: 1.5rem; font-weight: 700; color: #1a1a1a; }
-        .stat-card .label { font-size: 0.78rem; color: #999; margin-top: 0.2rem; }
 
-        .table-card {
-            background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden;
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
         }
-        .table-top {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 1rem 1.25rem; border-bottom: 1px solid #f0f0f0;
-        }
-        .table-top .title { font-size: 0.95rem; font-weight: 600; }
-        .search-input {
-            padding: 0.5rem 0.85rem; background: #f9fafb; border: 1px solid #e5e7eb;
-            border-radius: 8px; font-size: 0.85rem; width: 220px; color: #333;
-        }
-        .search-input:focus { outline: none; border-color: #6366f1; }
 
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.85rem 1.25rem; text-align: left; }
+        .stat-card .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        .stat-card .stat-sub {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Table */
+        .table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .table-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .table-toolbar input,
+        .table-toolbar select {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .table-toolbar input:focus,
+        .table-toolbar select:focus {
+            border-color: var(--accent-gold);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
         th {
-            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
-            color: #999; font-weight: 500; background: #fafafa; border-bottom: 1px solid #f0f0f0;
+            background: rgba(212,168,67,0.06);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        td { border-bottom: 1px solid #f5f5f5; font-size: 0.88rem; }
-        tr:hover td { background: #fafafa; }
 
-        .user-cell { display: flex; align-items: center; gap: 0.6rem; }
-        .user-avatar {
-            width: 34px; height: 34px; border-radius: 8px;
-            background: #ede9fe; color: #6366f1; display: flex; align-items: center;
-            justify-content: center; font-weight: 600; font-size: 0.8rem; flex-shrink: 0;
-        }
-        .user-meta .name { font-weight: 500; }
-        .user-meta .email { font-size: 0.78rem; color: #999; }
+        tr:last-child td { border-bottom: none; }
 
+        tr:hover td { background: rgba(255,255,255,0.02); }
+
+        /* Badges */
         .badge {
-            padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 500;
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
         }
-        .badge-admin { background: #fef2f2; color: #ef4444; }
-        .badge-user { background: #f3f4f6; color: #666; }
-        .badge-banned { background: #fef2f2; color: #ef4444; }
-        .badge-ok { background: #f0fdf4; color: #22c55e; }
 
-        .actions { display: flex; gap: 0.4rem; }
-        .btn-icon {
-            width: 30px; height: 30px; border-radius: 6px; border: 1px solid #e5e7eb;
-            background: #fff; color: #888; cursor: pointer; display: flex;
-            align-items: center; justify-content: center; transition: all 0.15s; font-size: 0.8rem;
+        .badge-admin { background: rgba(212,168,67,0.15); color: var(--accent-gold); }
+        .badge-mod { background: rgba(155,89,182,0.15); color: var(--accent-purple); }
+        .badge-user { background: rgba(52,152,219,0.15); color: var(--accent-blue); }
+        .badge-banned { background: rgba(231,76,60,0.15); color: var(--accent-red); }
+        .badge-active { background: rgba(46,204,113,0.15); color: var(--accent-green); }
+        .badge-pinned { background: rgba(230,126,34,0.15); color: var(--accent-orange); }
+        .badge-featured { background: rgba(212,168,67,0.15); color: var(--accent-gold); }
+
+        /* Buttons */
+        .btn {
+            padding: 7px 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-family: inherit;
         }
-        .btn-icon:hover { border-color: #6366f1; color: #6366f1; }
-        .btn-icon.danger:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
 
+        .btn-gold { background: var(--accent-gold); color: #111; }
+        .btn-gold:hover { background: var(--accent-gold-hover); }
+        .btn-red { background: var(--accent-red); color: #fff; }
+        .btn-red:hover { opacity: 0.85; }
+        .btn-green { background: var(--accent-green); color: #fff; }
+        .btn-green:hover { opacity: 0.85; }
+        .btn-blue { background: var(--accent-blue); color: #fff; }
+        .btn-blue:hover { opacity: 0.85; }
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+        .btn-ghost:hover { color: var(--text-primary); border-color: var(--text-secondary); }
+        .btn-sm { padding: 4px 10px; font-size: 11px; }
+
+        .btn-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* Tabs */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* User cell */
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--accent-gold);
+            color: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .user-info .user-name {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .user-info .user-email {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* Modal */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.2s;
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
         }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal-overlay.show { display: flex; }
+
         .modal {
-            background: #fff; border-radius: 16px; padding: 2rem;
-            width: 90%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-            transform: translateY(10px); transition: transform 0.2s;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: var(--shadow);
         }
-        .modal-overlay.active .modal { transform: translateY(0); }
-        .modal-header {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;
+
+        .modal h3 {
+            margin-bottom: 16px;
+            color: var(--accent-gold);
+            font-size: 17px;
         }
-        .modal-title { font-size: 1.05rem; font-weight: 600; }
-        .modal-close {
-            width: 30px; height: 30px; border-radius: 6px; border: 1px solid #e5e7eb;
-            background: #fff; color: #888; cursor: pointer; font-size: 1.1rem;
-            display: flex; align-items: center; justify-content: center;
+
+        .form-group {
+            margin-bottom: 14px;
         }
-        .modal-close:hover { border-color: #ef4444; color: #ef4444; }
 
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; font-size: 0.82rem; color: #666; margin-bottom: 0.35rem; font-weight: 500; }
-        .form-group input, .form-group select {
-            width: 100%; padding: 0.65rem 0.85rem; background: #f9fafb;
-            border: 1px solid #e5e7eb; border-radius: 8px; color: #333; font-size: 0.88rem;
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
         }
-        .form-group input:focus, .form-group select:focus { outline: none; border-color: #6366f1; }
 
-        .modal-footer { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 9px 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+        }
 
-        .loading { text-align: center; padding: 3rem; color: #999; font-size: 0.9rem; }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus { border-color: var(--accent-gold); }
 
-        @media (max-width: 1024px) {
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
             .sidebar { display: none; }
-            .main { margin-left: 0; }
-            .stats-row { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 640px) {
-            .stats-row { grid-template-columns: 1fr; }
-            .main { padding: 1rem; }
+            .main-content { margin-left: 0; }
         }
     </style>
 </head>
 <body>
-    <div class="layout">
-        <aside class="sidebar">
-            <div class="sidebar-logo">凌云城 管理</div>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1>凌云城</h1>
+            <p>管理后台</p>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="active" data-tab="dashboard" onclick="switchTab('dashboard', this)">
+                <span class="icon">&#9632;</span> 仪表盘
+            </a>
+            <a href="#" data-tab="users" onclick="switchTab('users', this)">
+                <span class="icon">&#9786;</span> 用户管理
+            </a>
+            <a href="#" data-tab="codes" onclick="switchTab('codes', this)">
+                <span class="icon">&#9733;</span> 兑换码管理
+            </a>
+            <a href="#" data-tab="forum" onclick="switchTab('forum', this)">
+                <span class="icon">&#9998;</span> 论坛管理
+            </a>
+            <a href="#" data-tab="announcements" onclick="switchTab('announcements', this)">
+                <span class="icon">&#9888;</span> 公告管理
+            </a>
+            <a href="#" data-tab="levels" onclick="switchTab('levels', this)">
+                <span class="icon">&#9883;</span> 等级管理
+            </a>
+            <a href="#" data-tab="reports" onclick="switchTab('reports', this)">
+                <span class="icon">&#9873;</span> 举报处理
+            </a>
+        </nav>
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-footer">
+            <a href="forum.html">&#128196; 前往论坛</a>
+            <a href="dashboard.html">&#127968; 前往仪表盘</a>
+            <a href="#" onclick="logout()">&#9211; 退出登录</a>
+        </div>
+    </aside>
 
-            <div class="nav-section">
-                <div class="nav-section-title">主菜单</div>
-                <div class="nav-item active" onclick="switchTab(this, 'dashboard')">
-                    <span class="icon">📊</span> 仪表盘
-                </div>
-                <div class="nav-item" onclick="switchTab(this, 'users')">
-                    <span class="icon">👥</span> 用户管理
-                </div>
-                <div class="nav-item" onclick="switchTab(this, 'codes')">
-                    <span class="icon">🎁</span> 兑换码管理
-                </div>
-                <div class="nav-item" onclick="switchTab(this, 'forum')">
-                    <span class="icon">📝</span> 论坛管理
-                </div>
-                <div class="nav-item" onclick="switchTab(this, 'announcements')">
-                    <span class="icon">📢</span> 公告管理
-                </div>
-                <div class="nav-item" onclick="switchTab(this, 'levels')">
-                    <span class="icon">⭐</span> 等级管理
-                </div>
-                <div class="nav-item" onclick="switchTab(this, 'reports')">
-                    <span class="icon">🚩</span> 举报处理
-                </div>
+    <main class="main-content">
+        <!-- Dashboard Tab -->
+        <div id="tab-dashboard" class="tab-content active">
+            <div class="page-header">
+                <h2>仪表盘</h2>
+                <p>系统概览与数据统计</p>
             </div>
-
-            <div class="nav-divider"></div>
-
-            <div class="nav-section">
-                <div class="nav-item" onclick="window.location.href='forum.html'">
-                    <span class="icon">🌐</span> 查看论坛
-                </div>
-                <div class="nav-item" onclick="window.location.href='dashboard.html'">
-                    <span class="icon">🔙</span> 返回面板
-                </div>
-                <div class="nav-item" onclick="handleLogout()">
-                    <span class="icon">🚪</span> 退出登录
-                </div>
-            </div>
-        </aside>
-
-        <main class="main">
-            <div class="header">
-                <h1>仪表盘</h1>
-                <div class="header-right">
-                    <span class="admin-name" id="adminName"></span>
-                    <a href="dashboard.html" class="btn-back">🔙 面板</a>
-                </div>
-            </div>
-
-            <div class="stats-row">
+            <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="value" id="statUsers">0</div>
-                    <div class="label">总用户数</div>
+                    <div class="stat-label">总用户数</div>
+                    <div class="stat-value" id="stat-total">-</div>
+                    <div class="stat-sub">所有注册用户</div>
                 </div>
                 <div class="stat-card">
-                    <div class="value" id="statOnline">0</div>
-                    <div class="label">在线玩家</div>
+                    <div class="stat-label">在线玩家</div>
+                    <div class="stat-value" id="stat-online">-</div>
+                    <div class="stat-sub">当前在线</div>
                 </div>
                 <div class="stat-card">
-                    <div class="value" id="statBanned">0</div>
-                    <div class="label">已封禁</div>
+                    <div class="stat-label">已封禁</div>
+                    <div class="stat-value" id="stat-banned">-</div>
+                    <div class="stat-sub">封禁用户</div>
                 </div>
                 <div class="stat-card">
-                    <div class="value" id="statToday">0</div>
-                    <div class="label">今日注册</div>
+                    <div class="stat-label">今日注册</div>
+                    <div class="stat-value" id="stat-today">-</div>
+                    <div class="stat-sub">今日新增</div>
                 </div>
             </div>
+        </div>
 
-            <div class="table-card" id="usersSection">
-                <div class="table-top">
-                    <span class="title">用户列表</span>
-                    <input type="text" class="search-input" placeholder="搜索用户名或邮箱..." oninput="searchUsers(this.value)">
+        <!-- Users Tab -->
+        <div id="tab-users" class="tab-content">
+            <div class="page-header">
+                <h2>用户管理</h2>
+                <p>管理所有注册用户</p>
+            </div>
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <input type="text" id="user-search" placeholder="搜索用户名或邮箱..." oninput="searchUsers()">
+                    <button class="btn btn-gold" onclick="loadUsers()">刷新</button>
                 </div>
                 <table>
                     <thead>
                         <tr>
                             <th>用户</th>
                             <th>角色</th>
-                            <th>注册时间</th>
                             <th>状态</th>
+                            <th>积分</th>
+                            <th>注册时间</th>
                             <th>操作</th>
                         </tr>
                     </thead>
-                    <tbody id="usersTable">
+                    <tbody id="users-table-body">
+                        <tr><td colspan="6" class="loading">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Codes Tab -->
+        <div id="tab-codes" class="tab-content">
+            <div class="page-header">
+                <h2>兑换码管理</h2>
+                <p>创建和管理兑换码</p>
+            </div>
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <input type="text" id="code-search" placeholder="搜索兑换码..." oninput="searchCodes()">
+                    <div class="btn-group">
+                        <button class="btn btn-gold" onclick="openAddCodeModal()">+ 添加兑换码</button>
+                        <button class="btn btn-blue" onclick="openVerifyCodeModal()">验证兑换码</button>
+                        <button class="btn btn-ghost" onclick="loadCodes()">刷新</button>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>兑换码</th>
+                            <th>奖品</th>
+                            <th>已使用</th>
+                            <th>最大次数</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="codes-table-body">
+                        <tr><td colspan="7" class="loading">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Forum Tab -->
+        <div id="tab-forum" class="tab-content">
+            <div class="page-header">
+                <h2>论坛管理</h2>
+                <p>管理论坛帖子</p>
+            </div>
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <input type="text" id="forum-search" placeholder="搜索帖子标题..." oninput="searchForumPosts()">
+                    <button class="btn btn-gold" onclick="loadForumPosts()">刷新</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>标题</th>
+                            <th>作者</th>
+                            <th>分类</th>
+                            <th>状态</th>
+                            <th>发布时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="forum-table-body">
+                        <tr><td colspan="6" class="loading">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Announcements Tab -->
+        <div id="tab-announcements" class="tab-content">
+            <div class="page-header">
+                <h2>公告管理</h2>
+                <p>发布和管理公告</p>
+            </div>
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <button class="btn btn-gold" onclick="openAddAnnouncementModal()">+ 发布公告</button>
+                    <button class="btn btn-ghost" onclick="loadAnnouncements()">刷新</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>标题</th>
+                            <th>类型</th>
+                            <th>置顶</th>
+                            <th>发布时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="announcements-table-body">
                         <tr><td colspan="5" class="loading">加载中...</td></tr>
                     </tbody>
                 </table>
             </div>
+        </div>
 
-            <div id="codesSection" style="display:none">
-                <div class="table-card">
-                    <div class="table-top">
-                        <span class="title">兑换码列表</span>
-                        <div style="display:flex;gap:0.5rem">
-                            <button class="btn btn-primary" onclick="openModal('verifyCode')">验证兑换码</button>
-                            <button class="btn btn-primary" onclick="openModal('addCode')">+ 添加兑换码</button>
-                        </div>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>兑换码</th>
-                                <th>奖品</th>
-                                <th>图片</th>
-                                <th>使用情况</th>
-                                <th>创建时间</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="codesTable">
-                            <tr><td colspan="6" class="loading">加载中...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+        <!-- Levels Tab -->
+        <div id="tab-levels" class="tab-content">
+            <div class="page-header">
+                <h2>等级管理</h2>
+                <p>管理用户等级和积分</p>
             </div>
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <input type="text" id="level-search" placeholder="搜索用户..." oninput="searchLevelUsers()">
+                    <button class="btn btn-gold" onclick="loadLevels()">刷新</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>用户</th>
+                            <th>积分</th>
+                            <th>等级</th>
+                            <th>角色</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="levels-table-body">
+                        <tr><td colspan="5" class="loading">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-            <div id="forumSection" style="display:none">
-                <div class="table-card">
-                    <div class="table-top">
-                        <span class="title">帖子管理</span>
-                        <span class="stat-hint" id="forumStat"></span>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>标题</th>
-                                <th>作者</th>
-                                <th>分类</th>
-                                <th>状态</th>
-                                <th>浏览</th>
-                                <th>创建时间</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="forumTable">
-                            <tr><td colspan="7" class="loading">加载中...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+        <!-- Reports Tab -->
+        <div id="tab-reports" class="tab-content">
+            <div class="page-header">
+                <h2>举报处理</h2>
+                <p>查看和处理用户举报</p>
             </div>
-
-            <div id="announcementsSection" style="display:none">
-                <div class="table-card">
-                    <div class="table-top">
-                        <span class="title">公告列表</span>
-                        <button class="btn btn-primary" onclick="openModal('addAnnouncement')">+ 发布公告</button>
-                    </div>
-                    <table>
-                        <thead><tr><th>标题</th><th>类型</th><th>置顶</th><th>发布时间</th><th>操作</th></tr></thead>
-                        <tbody id="announcementsTable"><tr><td colspan="5" class="loading">加载中...</td></tr></tbody>
-                    </table>
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <button class="btn btn-gold" onclick="loadReports()">刷新</button>
                 </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>举报人</th>
+                            <th>目标</th>
+                            <th>原因</th>
+                            <th>详情</th>
+                            <th>时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reports-table-body">
+                        <tr><td colspan="6" class="loading">加载中...</td></tr>
+                    </tbody>
+                </table>
             </div>
-            <div id="levelsSection" style="display:none">
-                <div class="table-card">
-                    <div class="table-top">
-                        <span class="title">调整用户等级/积分</span>
-                    </div>
-                    <div style="padding:1.25rem">
-                        <div class="form-group">
-                            <label>搜索用户</label>
-                            <input type="text" id="levelSearch" placeholder="输入用户名或邮箱" oninput="searchUserForLevel()" style="width:100%;padding:0.65rem 0.85rem;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;color:#333;font-size:0.88rem">
-                        </div>
-                        <div id="levelSearchResults" style="margin:0.5rem 0"></div>
-                        <div id="levelEditForm" style="display:none">
-                            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:end;margin-top:0.75rem">
-                                <div class="form-group" style="flex:1;min-width:120px">
-                                    <label>当前积分</label>
-                                    <input type="number" id="editPoints" min="0">
-                                </div>
-                                <div class="form-group" style="flex:1;min-width:120px">
-                                    <label>当前等级</label>
-                                    <input type="number" id="editLevel" min="1" max="10">
-                                </div>
-                                <div class="form-group" style="flex:1;min-width:120px">
-                                    <label>角色</label>
-                                    <select id="editRole">
-                                        <option value="user">普通用户</option>
-                                        <option value="admin">管理员</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <button class="btn btn-primary" onclick="saveUserLevel()" style="margin-top:0.5rem">保存修改</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="table-card" style="margin-top:1rem">
-                    <div class="table-top">
-                        <span class="title">用户等级列表</span>
-                    </div>
-                    <table>
-                        <thead><tr><th>用户</th><th>邮箱</th><th>角色</th><th>等级</th><th>积分</th></tr></thead>
-                        <tbody id="userLevelTable"><tr><td colspan="5" class="loading">加载中...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-            <div id="reportsSection" style="display:none">
-                <div class="table-card">
-                    <div class="table-top"><span class="title">举报列表</span></div>
-                    <table>
-                        <thead><tr><th>举报人</th><th>类型</th><th>原因</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
-                        <tbody id="reportsTable"><tr><td colspan="6" class="loading">加载中...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
-    </div>
+        </div>
+    </main>
 
     <!-- Add Code Modal -->
-    <div class="modal-overlay" id="addCodeModal">
+    <div class="modal-overlay" id="modal-add-code">
         <div class="modal">
-            <div class="modal-header">
-                <span class="modal-title">添加兑换码</span>
-                <button class="modal-close" onclick="closeModal('addCode')">&times;</button>
+            <h3>添加兑换码</h3>
+            <div class="form-group">
+                <label>兑换码</label>
+                <input type="text" id="add-code-code" placeholder="输入兑换码">
             </div>
-            <form onsubmit="handleAddCode(event)">
-                <div class="form-group">
-                    <label>兑换码</label>
-                    <input type="text" id="newCode" placeholder="例如: ABCD-1234-EFGH" required>
-                </div>
-                <div class="form-group">
-                    <label>奖品 (密钥/奖励内容)</label>
-                    <input type="text" id="newPrize" placeholder="奖品内容，如卡密、礼包码等" required>
-                </div>
-                <div class="form-group">
-                    <label>奖品图片链接 (可选)</label>
-                    <input type="url" id="newImageUrl" placeholder="https://example.com/image.png">
-                </div>
-                <div class="form-group">
-                    <label>可使用次数</label>
-                    <input type="number" id="newMaxUses" value="1" min="1">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('addCode')">取消</button>
-                    <button type="submit" class="btn btn-primary">创建兑换码</button>
-                </div>
-            </form>
+            <div class="form-group">
+                <label>奖品</label>
+                <input type="text" id="add-code-prize" placeholder="输入奖品名称">
+            </div>
+            <div class="form-group">
+                <label>图片URL（可选）</label>
+                <input type="text" id="add-code-image" placeholder="https://...">
+            </div>
+            <div class="form-group">
+                <label>最大使用次数</label>
+                <input type="number" id="add-code-max-uses" value="1" min="1">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeModal('modal-add-code')">取消</button>
+                <button class="btn btn-gold" onclick="addCode()">创建</button>
+            </div>
         </div>
     </div>
 
     <!-- Verify Code Modal -->
-    <div class="modal-overlay" id="verifyCodeModal">
+    <div class="modal-overlay" id="modal-verify-code">
         <div class="modal">
-            <div class="modal-header">
-                <span class="modal-title">验证兑换码</span>
-                <button class="modal-close" onclick="closeModal('verifyCode')">&times;</button>
+            <h3>验证兑换码</h3>
+            <div class="form-group">
+                <label>兑换码</label>
+                <input type="text" id="verify-code-input" placeholder="输入要验证的兑换码">
             </div>
-            <form onsubmit="handleVerifyCode(event)">
-                <div class="form-group">
-                    <label>输入兑换码</label>
-                    <input type="text" id="verifyCodeInput" placeholder="输入要验证的兑换码" required>
-                </div>
-                <div id="verifyResult" style="margin-bottom:1rem"></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('verifyCode')">关闭</button>
-                    <button type="submit" class="btn btn-primary">验证</button>
-                </div>
-            </form>
+            <div id="verify-code-result" style="margin-top:12px;font-size:13px;"></div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeModal('modal-verify-code')">关闭</button>
+                <button class="btn btn-blue" onclick="verifyCode()">验证</button>
+            </div>
         </div>
     </div>
 
     <!-- Add Announcement Modal -->
-    <div class="modal-overlay" id="addAnnouncementModal">
+    <div class="modal-overlay" id="modal-add-announcement">
         <div class="modal">
-            <div class="modal-header">
-                <span class="modal-title">发布公告</span>
-                <button class="modal-close" onclick="closeModal('addAnnouncement')">&times;</button>
+            <h3>发布公告</h3>
+            <div class="form-group">
+                <label>标题</label>
+                <input type="text" id="add-ann-title" placeholder="输入公告标题">
             </div>
-            <form onsubmit="handleAddAnnouncement(event)">
-                <div class="form-group">
-                    <label>标题</label>
-                    <input type="text" id="annTitle" placeholder="公告标题" required>
-                </div>
-                <div class="form-group">
-                    <label>类型</label>
-                    <select id="annType">
-                        <option value="公告">公告</option>
-                        <option value="更新日志">更新日志</option>
-                        <option value="维护通知">维护通知</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>内容</label>
-                    <textarea id="annContent" style="width:100%;padding:0.65rem 0.85rem;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;color:#333;font-size:0.88rem;font-family:inherit;min-height:120px;resize:vertical" placeholder="公告内容" required></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('addAnnouncement')">取消</button>
-                    <button type="submit" class="btn btn-primary">发布公告</button>
-                </div>
-            </form>
+            <div class="form-group">
+                <label>类型</label>
+                <select id="add-ann-type">
+                    <option value="info">通知</option>
+                    <option value="update">更新</option>
+                    <option value="event">活动</option>
+                    <option value="warning">警告</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>内容</label>
+                <textarea id="add-ann-content" placeholder="输入公告内容..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeModal('modal-add-announcement')">取消</button>
+                <button class="btn btn-gold" onclick="addAnnouncement()">发布</button>
+            </div>
         </div>
     </div>
 
+    <!-- Edit Level Modal -->
+    <div class="modal-overlay" id="modal-edit-level">
+        <div class="modal">
+            <h3>编辑用户等级</h3>
+            <input type="hidden" id="edit-level-user-id">
+            <div class="form-group">
+                <label>积分</label>
+                <input type="number" id="edit-level-points" min="0">
+            </div>
+            <div class="form-group">
+                <label>角色</label>
+                <select id="edit-level-role">
+                    <option value="user">普通用户</option>
+                    <option value="mod">版主</option>
+                    <option value="admin">管理员</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeModal('modal-edit-level')">取消</button>
+                <button class="btn btn-gold" onclick="saveLevel()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.min.js"></script>
     <script src="utils.js"></script>
+    <script src="modal.js"></script>
     <script>
-        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const SUPABASE_URL = 'https://mxajreukeniayoqyvybe.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4';
+        const supabase = window.supabase || window.Supabase;
+        let client;
+
+        if (supabase && supabase.createClient) {
+            client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } else {
+            client = { from: () => ({ select: () => Promise.resolve({ data: [], error: null }) }) };
+        }
 
         let allUsers = [];
         let allCodes = [];
-        let currentTab = 'dashboard';
+        let allForumPosts = [];
+        let allAnnouncements = [];
+        let allReports = [];
 
-        async function init() {
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const h = String(d.getHours()).padStart(2, '0');
+            const min = String(d.getMinutes()).padStart(2, '0');
+            return `${y}-${m}-${day} ${h}:${min}`;
+        }
+
+        function getInitial(name) {
+            return name ? name.charAt(0).toUpperCase() : '?';
+        }
+
+        function getRoleBadge(role) {
+            const map = {
+                admin: '<span class="badge badge-admin">管理员</span>',
+                mod: '<span class="badge badge-mod">版主</span>',
+                user: '<span class="badge badge-user">用户</span>'
+            };
+            return map[role] || map.user;
+        }
+
+        function getStatusBadge(banned) {
+            return banned
+                ? '<span class="badge badge-banned">已封禁</span>'
+                : '<span class="badge badge-active">正常</span>';
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        async function checkAdmin() {
             try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (!session) { window.location.href = 'login.html'; return; }
-
-                const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
-                if (!profile || profile.role !== 'admin') { window.location.href = 'dashboard.html'; return; }
-
-                document.getElementById('adminName').textContent = profile.username;
-                loadUsers();
-                loadCodes();
-            } catch (err) {
-                console.error('init error:', err);
-                showToast('加载失败，请刷新重试', 'error');
+                const { data: { session } } = await client.auth.getSession();
+                if (!session) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                const { data: profile } = await client
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', session.user.id)
+                    .single();
+                if (!profile || profile.role !== 'admin') {
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+            } catch (e) {
+                console.error('Auth check failed:', e);
             }
         }
 
-        function switchTab(el, tab) {
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            el.classList.add('active');
-            currentTab = tab;
-
-            document.getElementById('usersSection').style.display = tab === 'users' ? 'block' : 'none';
-            document.getElementById('codesSection').style.display = tab === 'codes' ? 'block' : 'none';
-            document.getElementById('forumSection').style.display = tab === 'forum' ? 'block' : 'none';
-            document.getElementById('announcementsSection').style.display = tab === 'announcements' ? 'block' : 'none';
-            document.getElementById('levelsSection').style.display = tab === 'levels' ? 'block' : 'none';
-            document.getElementById('reportsSection').style.display = tab === 'reports' ? 'block' : 'none';
-            document.querySelector('.stats-row').style.display = tab === 'dashboard' ? 'grid' : 'none';
-
-            if (tab === 'forum') loadForum();
-            if (tab === 'announcements') loadAnnouncements();
-            if (tab === 'levels') loadUserLevels();
-            if (tab === 'reports') loadReports();
+        function switchTab(tabName, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            if (el) el.classList.add('active');
+            switch (tabName) {
+                case 'dashboard': loadDashboard(); break;
+                case 'users': loadUsers(); break;
+                case 'codes': loadCodes(); break;
+                case 'forum': loadForumPosts(); break;
+                case 'announcements': loadAnnouncements(); break;
+                case 'levels': loadLevels(); break;
+                case 'reports': loadReports(); break;
+            }
         }
 
-        // ===== 用户管理 =====
-        async function loadUsers() {
+        function openModal(id) {
+            document.getElementById(id).classList.add('show');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+
+        // Dashboard
+        async function loadDashboard() {
             try {
-                const { data } = await supabaseClient.from('profiles').select('*').order('created_at', { ascending: false });
+                const { data: users, error } = await client.from('profiles').select('id, banned, created_at');
+                if (error) throw error;
+                const total = users ? users.length : 0;
+                const banned = users ? users.filter(u => u.banned).length : 0;
+                const today = new Date().toISOString().slice(0, 10);
+                const todayCount = users ? users.filter(u => u.created_at && u.created_at.startsWith(today)).length : 0;
+                document.getElementById('stat-total').textContent = total;
+                document.getElementById('stat-online').textContent = '0';
+                document.getElementById('stat-banned').textContent = banned;
+                document.getElementById('stat-today').textContent = todayCount;
+            } catch (e) {
+                console.error('Dashboard load error:', e);
+            }
+        }
+
+        // Users
+        async function loadUsers() {
+            const tbody = document.getElementById('users-table-body');
+            tbody.innerHTML = '<tr><td colspan="6" class="loading">加载中...</td></tr>';
+            try {
+                const { data, error } = await client.from('profiles').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
                 allUsers = data || [];
-                const today = new Date().toDateString();
-                document.getElementById('statUsers').textContent = allUsers.length;
-                document.getElementById('statBanned').textContent = allUsers.filter(u => u.banned).length;
-                document.getElementById('statToday').textContent = allUsers.filter(u => new Date(u.created_at).toDateString() === today).length;
                 renderUsers(allUsers);
-            } catch (err) {
-                console.error('loadUsers error:', err);
-                showToast('加载用户失败', 'error');
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="6" class="loading">加载失败</td></tr>';
+                console.error(e);
             }
         }
 
         function renderUsers(users) {
-            const tbody = document.getElementById('usersTable');
-            if (users.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="loading">暂无用户</td></tr>'; return; }
-            tbody.innerHTML = users.map(user => `<tr>
-                <td><div class="user-cell"><div class="user-avatar">${(user.username||'?').substring(0,1).toUpperCase()}</div><div class="user-meta"><div class="name">${user.username}</div><div class="email">${user.email}</div></div></div></td>
-                <td><span class="badge ${user.role==='admin'?'badge-admin':'badge-user'}">${user.role==='admin'?'管理员':'玩家'}</span></td>
-                <td>${formatDate(user.created_at)}</td>
-                <td><span class="badge ${user.banned?'badge-banned':'badge-ok'}">${user.banned?'已封禁':'正常'}</span></td>
-                <td><div class="actions"><button class="btn-icon" onclick="toggleBan('${user.id}',${user.banned})" title="${user.banned?'解封':'封禁'}">${user.banned?'🔓':'🚫'}</button><button class="btn-icon danger" onclick="deleteUser('${user.id}')" title="删除">🗑️</button></div></td>
-            </tr>`).join('');
+            const tbody = document.getElementById('users-table-body');
+            if (!users.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">暂无用户</td></tr>';
+                return;
+            }
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar">${getInitial(u.username || u.email)}</div>
+                            <div class="user-info">
+                                <div class="user-name">${escapeHtml(u.username || '未设置')}</div>
+                                <div class="user-email">${escapeHtml(u.email || '')}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${getRoleBadge(u.role)}</td>
+                    <td>${getStatusBadge(u.banned)}</td>
+                    <td>${u.points || 0}</td>
+                    <td>${formatDate(u.created_at)}</td>
+                    <td>
+                        <div class="btn-group">
+                            ${u.banned
+                                ? `<button class="btn btn-green btn-sm" onclick="unbanUser('${u.id}')">解封</button>`
+                                : `<button class="btn btn-red btn-sm" onclick="banUser('${u.id}')">封禁</button>`
+                            }
+                            <button class="btn btn-red btn-sm" onclick="deleteUser('${u.id}')">删除</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        function searchUsers(q) { renderUsers(allUsers.filter(u => (u.username&&u.username.includes(q))||(u.email&&u.email.includes(q)))); }
-        async function toggleBan(id, b) { await supabaseClient.from('profiles').update({banned:!b}).eq('id',id); loadUsers(); }
-        async function deleteUser(id) { if(!await modalConfirm('确定删除？', '删除用户')) return; await supabaseClient.from('profiles').delete().eq('id',id); loadUsers(); }
+        function searchUsers() {
+            const q = document.getElementById('user-search').value.toLowerCase();
+            const filtered = allUsers.filter(u =>
+                (u.username && u.username.toLowerCase().includes(q)) ||
+                (u.email && u.email.toLowerCase().includes(q))
+            );
+            renderUsers(filtered);
+        }
 
-        // ===== 兑换码管理 =====
+        async function banUser(id) {
+            if (!confirm('确定要封禁此用户？')) return;
+            await client.from('profiles').update({ banned: true }).eq('id', id);
+            loadUsers();
+        }
+
+        async function unbanUser(id) {
+            await client.from('profiles').update({ banned: false }).eq('id', id);
+            loadUsers();
+        }
+
+        async function deleteUser(id) {
+            if (!confirm('确定要删除此用户？此操作不可恢复。')) return;
+            await client.from('profiles').delete().eq('id', id);
+            loadUsers();
+        }
+
+        // Codes
         async function loadCodes() {
+            const tbody = document.getElementById('codes-table-body');
+            tbody.innerHTML = '<tr><td colspan="7" class="loading">加载中...</td></tr>';
             try {
-                const { data } = await supabaseClient.from('redemption_codes').select('*').order('created_at', { ascending: false });
+                const { data, error } = await client.from('redemption_codes').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
                 allCodes = data || [];
                 renderCodes(allCodes);
-            } catch (err) {
-                console.error('loadCodes error:', err);
-                showToast('加载兑换码失败', 'error');
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="7" class="loading">加载失败</td></tr>';
+                console.error(e);
             }
         }
 
         function renderCodes(codes) {
-            const tbody = document.getElementById('codesTable');
-            if (codes.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="loading">暂无兑换码</td></tr>'; return; }
-            tbody.innerHTML = codes.map(c => `<tr>
-                <td><code style="background:#f3f4f6;padding:0.2rem 0.5rem;border-radius:4px;font-size:0.82rem">${c.code}</code></td>
-                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.prize}">${c.prize}</td>
-                <td>${c.image_url ? '<img src="'+c.image_url+'" style="width:32px;height:32px;border-radius:6px;object-fit:cover">' : '<span style="color:#ccc">无</span>'}</td>
-                <td><span class="badge ${c.used_count >= c.max_uses ? 'badge-banned' : 'badge-ok'}">${c.used_count}/${c.max_uses}</span></td>
-                <td>${formatDate(c.created_at)}</td>
-                <td><div class="actions"><button class="btn-icon danger" onclick="deleteCode('${c.id}')" title="删除">🗑️</button></div></td>
-            </tr>`).join('');
+            const tbody = document.getElementById('codes-table-body');
+            if (!codes.length) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">暂无兑换码</td></tr>';
+                return;
+            }
+            tbody.innerHTML = codes.map(c => `
+                <tr>
+                    <td><code>${escapeHtml(c.code)}</code></td>
+                    <td>${escapeHtml(c.prize || '-')}</td>
+                    <td>${c.used_count || 0}</td>
+                    <td>${c.max_uses || 1}</td>
+                    <td>${(c.used_count || 0) >= (c.max_uses || 1)
+                        ? '<span class="badge badge-banned">已用完</span>'
+                        : '<span class="badge badge-active">可用</span>'
+                    }</td>
+                    <td>${formatDate(c.created_at)}</td>
+                    <td>
+                        <button class="btn btn-red btn-sm" onclick="deleteCode('${c.id}')">删除</button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        async function handleAddCode(e) {
-            e.preventDefault();
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            const code = document.getElementById('newCode').value.trim();
-            const prize = document.getElementById('newPrize').value.trim();
-            const image_url = document.getElementById('newImageUrl').value.trim();
-            const max_uses = parseInt(document.getElementById('newMaxUses').value) || 1;
+        function searchCodes() {
+            const q = document.getElementById('code-search').value.toLowerCase();
+            const filtered = allCodes.filter(c => c.code && c.code.toLowerCase().includes(q));
+            renderCodes(filtered);
+        }
 
-            const { error } = await supabaseClient.from('redemption_codes').insert([{ code, prize, image_url, max_uses, created_by: session.user.id }]);
-            if (error) { modalAlert('创建失败: ' + error.message, 'error'); return; }
-            closeModal('addCode');
-            document.getElementById('newCode').value = '';
-            document.getElementById('newPrize').value = '';
-            document.getElementById('newImageUrl').value = '';
-            document.getElementById('newMaxUses').value = '1';
+        function openAddCodeModal() {
+            document.getElementById('add-code-code').value = '';
+            document.getElementById('add-code-prize').value = '';
+            document.getElementById('add-code-image').value = '';
+            document.getElementById('add-code-max-uses').value = '1';
+            openModal('modal-add-code');
+        }
+
+        async function addCode() {
+            const code = document.getElementById('add-code-code').value.trim();
+            const prize = document.getElementById('add-code-prize').value.trim();
+            const image_url = document.getElementById('add-code-image').value.trim();
+            const max_uses = parseInt(document.getElementById('add-code-max-uses').value) || 1;
+            if (!code) { alert('请输入兑换码'); return; }
+            await client.from('redemption_codes').insert({
+                code, prize, image_url, max_uses, used_count: 0
+            });
+            closeModal('modal-add-code');
             loadCodes();
         }
 
-        async function handleVerifyCode(e) {
-            e.preventDefault();
-            const code = document.getElementById('verifyCodeInput').value.trim();
-            const resultEl = document.getElementById('verifyResult');
+        function openVerifyCodeModal() {
+            document.getElementById('verify-code-input').value = '';
+            document.getElementById('verify-code-result').innerHTML = '';
+            openModal('modal-verify-code');
+        }
 
-            const { data } = await supabaseClient.from('redemption_codes').select('*').eq('code', code).single();
-            if (!data) { resultEl.innerHTML = '<div style="padding:0.75rem;background:#fef2f2;border-radius:8px;color:#ef4444;font-size:0.88rem">❌ 兑换码不存在</div>'; return; }
-
-            if (data.used_count >= data.max_uses) {
-                resultEl.innerHTML = '<div style="padding:0.75rem;background:#fef2f2;border-radius:8px;color:#ef4444;font-size:0.88rem">❌ 该兑换码已被使用完毕</div>';
+        async function verifyCode() {
+            const code = document.getElementById('verify-code-input').value.trim();
+            if (!code) { alert('请输入兑换码'); return; }
+            const { data } = await client.from('redemption_codes').select('*').eq('code', code).single();
+            const result = document.getElementById('verify-code-result');
+            if (!data) {
+                result.innerHTML = '<span style="color:var(--accent-red)">兑换码不存在</span>';
+            } else if ((data.used_count || 0) >= (data.max_uses || 1)) {
+                result.innerHTML = `<span style="color:var(--accent-red)">兑换码已用完 (${data.used_count}/${data.max_uses})</span>`;
             } else {
-                resultEl.innerHTML = `<div style="padding:0.75rem;background:#f0fdf4;border-radius:8px;color:#22c55e;font-size:0.88rem">
-                    ✅ 兑换码有效<br>
-                    <strong>奖品：</strong>${data.prize}<br>
-                    <strong>剩余次数：</strong>${data.max_uses - data.used_count}
-                    ${data.image_url ? '<br><img src="'+data.image_url+'" style="max-width:120px;border-radius:8px;margin-top:0.5rem">' : ''}
-                </div>`;
+                result.innerHTML = `<span style="color:var(--accent-green)">有效 - 奖品: ${escapeHtml(data.prize || '未知')} (${data.used_count || 0}/${data.max_uses})</span>`;
             }
         }
 
         async function deleteCode(id) {
-            if (!await modalConfirm('确定删除该兑换码？', '删除兑换码')) return;
-            await supabaseClient.from('redemption_codes').delete().eq('id', id);
+            if (!confirm('确定删除此兑换码？')) return;
+            await client.from('redemption_codes').delete().eq('id', id);
             loadCodes();
         }
 
-        function openModal(name) { document.getElementById(name + 'Modal').classList.add('active'); }
-        function closeModal(name) { document.getElementById(name + 'Modal').classList.remove('active'); }
+        // Forum
+        async function loadForumPosts() {
+            const tbody = document.getElementById('forum-table-body');
+            tbody.innerHTML = '<tr><td colspan="6" class="loading">加载中...</td></tr>';
+            try {
+                const { data, error } = await client.from('forum_posts').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                allForumPosts = data || [];
+                renderForumPosts(allForumPosts);
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="6" class="loading">加载失败</td></tr>';
+                console.error(e);
+            }
+        }
 
-        // ===== 论坛管理 =====
-        async function loadForum() {
-            const { data } = await supabaseClient.from('forum_posts').select('*').order('created_at', { ascending: false });
-            const posts = data || [];
-            document.getElementById('forumStat').textContent = '共 ' + posts.length + ' 条';
-            const tbody = document.getElementById('forumTable');
-            if (posts.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="loading">暂无帖子</td></tr>'; return; }
-            tbody.innerHTML = posts.map(p => {
-                const time = formatDate(p.created_at);
-                const statusClass = p.status === '已解决' ? 'badge-admin' : 'badge-user';
-                return `<tr>
-                    <td><div class="name" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.title}</div></td>
-                    <td>${p.username}</td>
-                    <td><span class="badge badge-user">${p.category}</span></td>
-                    <td><span class="badge ${statusClass}">${p.status}</span></td>
-                    <td>${p.views}</td>
-                    <td>${time}</td>
+        function renderForumPosts(posts) {
+            const tbody = document.getElementById('forum-table-body');
+            if (!posts.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">暂无帖子</td></tr>';
+                return;
+            }
+            tbody.innerHTML = posts.map(p => `
+                <tr>
+                    <td>${escapeHtml(p.title || '-')}</td>
+                    <td>${escapeHtml(p.author_name || p.user_id || '-')}</td>
+                    <td>${escapeHtml(p.category || '-')}</td>
                     <td>
-                        <div class="actions">
-                            <button class="btn-icon" onclick="togglePostPin('${p.id}', ${!p.is_pinned})" title="${p.is_pinned?'取消置顶':'置顶'}">${p.is_pinned?'📌':'📍'}</button>
-                            <button class="btn-icon" onclick="togglePostFeatured('${p.id}', ${!p.is_featured})" title="${p.is_featured?'取消精华':'设为精华'}">${p.is_featured?'⭐':'☆'}</button>
-                            <button class="btn-icon danger" onclick="deleteForumPost('${p.id}')" title="删除">🗑️</button>
+                        ${p.pinned ? '<span class="badge badge-pinned">置顶</span> ' : ''}
+                        ${p.featured ? '<span class="badge badge-featured">精选</span>' : ''}
+                        ${!p.pinned && !p.featured ? '<span class="badge badge-user">普通</span>' : ''}
+                    </td>
+                    <td>${formatDate(p.created_at)}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm ${p.pinned ? 'btn-ghost' : 'btn-gold'}" onclick="togglePinPost('${p.id}', ${!p.pinned})">
+                                ${p.pinned ? '取消置顶' : '置顶'}
+                            </button>
+                            <button class="btn btn-sm ${p.featured ? 'btn-ghost' : 'btn-blue'}" onclick="toggleFeaturedPost('${p.id}', ${!p.featured})">
+                                ${p.featured ? '取消精选' : '精选'}
+                            </button>
+                            <button class="btn btn-red btn-sm" onclick="deletePost('${p.id}')">删除</button>
                         </div>
                     </td>
-                </tr>`;
-            }).join('');
+                </tr>
+            `).join('');
         }
 
-        async function togglePostPin(id, pinned) {
-            await supabaseClient.from('forum_posts').update({ is_pinned: pinned }).eq('id', id);
-            loadForum();
+        function searchForumPosts() {
+            const q = document.getElementById('forum-search').value.toLowerCase();
+            const filtered = allForumPosts.filter(p => p.title && p.title.toLowerCase().includes(q));
+            renderForumPosts(filtered);
         }
 
-        async function togglePostFeatured(id, featured) {
-            await supabaseClient.from('forum_posts').update({ is_featured: featured }).eq('id', id);
-            loadForum();
+        async function togglePinPost(id, pin) {
+            await client.from('forum_posts').update({ pinned: pin }).eq('id', id);
+            loadForumPosts();
         }
 
-        async function deleteForumPost(id) {
-            if (!await modalConfirm('确定删除这条帖子？', '删除帖子')) return;
-            await supabaseClient.from('forum_posts').delete().eq('id', id);
-            loadForum();
+        async function toggleFeaturedPost(id, feat) {
+            await client.from('forum_posts').update({ featured: feat }).eq('id', id);
+            loadForumPosts();
         }
 
-        // ===== 公告管理 =====
+        async function deletePost(id) {
+            if (!confirm('确定删除此帖子？')) return;
+            await client.from('forum_posts').delete().eq('id', id);
+            loadForumPosts();
+        }
+
+        // Announcements
         async function loadAnnouncements() {
-            const { data } = await supabaseClient.from('announcements').select('*').order('created_at', { ascending: false });
-            const list = data || [];
-            const tbody = document.getElementById('announcementsTable');
-            if (list.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="loading">暂无公告</td></tr>'; return; }
-            tbody.innerHTML = list.map(a => `<tr>
-                <td><div class="name">${a.title}</div></td>
-                <td><span class="badge badge-user">${a.type}</span></td>
-                <td>${a.pinned ? '📌 是' : '否'}</td>
-                <td>${formatDate(a.created_at)}</td>
-                <td>
-                    <div class="actions">
-                        <button class="btn-icon" onclick="toggleAnnouncementPin('${a.id}', ${!a.pinned})" title="${a.pinned?'取消置顶':'置顶'}">${a.pinned?'📌':'📍'}</button>
-                        <button class="btn-icon danger" onclick="deleteAnnouncement('${a.id}')" title="删除">🗑️</button>
-                    </div>
-                </td>
-            </tr>`).join('');
+            const tbody = document.getElementById('announcements-table-body');
+            tbody.innerHTML = '<tr><td colspan="5" class="loading">加载中...</td></tr>';
+            try {
+                const { data, error } = await client.from('announcements').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                allAnnouncements = data || [];
+                renderAnnouncements(allAnnouncements);
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="5" class="loading">加载失败</td></tr>';
+                console.error(e);
+            }
         }
 
-        async function toggleAnnouncementPin(id, pinned) {
-            await supabaseClient.from('announcements').update({ pinned }).eq('id', id);
+        function renderAnnouncements(anns) {
+            const tbody = document.getElementById('announcements-table-body');
+            if (!anns.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">暂无公告</td></tr>';
+                return;
+            }
+            const typeMap = { info: '通知', update: '更新', event: '活动', warning: '警告' };
+            tbody.innerHTML = anns.map(a => `
+                <tr>
+                    <td>${escapeHtml(a.title || '-')}</td>
+                    <td><span class="badge badge-${a.type === 'warning' ? 'banned' : a.type === 'event' ? 'featured' : 'user'}">${typeMap[a.type] || a.type || '-'}</span></td>
+                    <td>${a.pinned ? '<span class="badge badge-pinned">已置顶</span>' : '<span class="badge badge-user">普通</span>'}</td>
+                    <td>${formatDate(a.created_at)}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm ${a.pinned ? 'btn-ghost' : 'btn-gold'}" onclick="togglePinAnnouncement('${a.id}', ${!a.pinned})">
+                                ${a.pinned ? '取消置顶' : '置顶'}
+                            </button>
+                            <button class="btn btn-red btn-sm" onclick="deleteAnnouncement('${a.id}')">删除</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openAddAnnouncementModal() {
+            document.getElementById('add-ann-title').value = '';
+            document.getElementById('add-ann-type').value = 'info';
+            document.getElementById('add-ann-content').value = '';
+            openModal('modal-add-announcement');
+        }
+
+        async function addAnnouncement() {
+            const title = document.getElementById('add-ann-title').value.trim();
+            const type = document.getElementById('add-ann-type').value;
+            const content = document.getElementById('add-ann-content').value.trim();
+            if (!title || !content) { alert('请填写标题和内容'); return; }
+            await client.from('announcements').insert({ title, type, content, pinned: false });
+            closeModal('modal-add-announcement');
+            loadAnnouncements();
+        }
+
+        async function togglePinAnnouncement(id, pin) {
+            await client.from('announcements').update({ pinned: pin }).eq('id', id);
             loadAnnouncements();
         }
 
         async function deleteAnnouncement(id) {
-            if (!await modalConfirm('确定删除？', '删除公告')) return;
-            await supabaseClient.from('announcements').delete().eq('id', id);
+            if (!confirm('确定删除此公告？')) return;
+            await client.from('announcements').delete().eq('id', id);
             loadAnnouncements();
         }
 
-        async function handleAddAnnouncement(e) {
-            e.preventDefault();
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            const title = document.getElementById('annTitle').value.trim();
-            const content = document.getElementById('annContent').value.trim();
-            const type = document.getElementById('annType').value;
-            if (!title || !content) { modalAlert('请填写标题和内容', 'warning'); return; }
-            await supabaseClient.from('announcements').insert([{ user_id: session.user.id, title, content, type }]);
-            closeModal('addAnnouncement');
-            document.getElementById('annTitle').value = '';
-            document.getElementById('annContent').value = '';
-            loadAnnouncements();
-        }
-
-        // ===== 等级管理 =====
-        let _selectedUserId = null;
-
-        async function searchUserForLevel() {
-            const q = document.getElementById('levelSearch').value.trim();
-            if (q.length < 1) { document.getElementById('levelSearchResults').innerHTML = ''; document.getElementById('levelEditForm').style.display = 'none'; return; }
+        // Levels
+        async function loadLevels() {
+            const tbody = document.getElementById('levels-table-body');
+            tbody.innerHTML = '<tr><td colspan="5" class="loading">加载中...</td></tr>';
             try {
-                const { data } = await supabaseClient.from('profiles').select('*').or('username.ilike.%' + q + '%,email.ilike.%' + q + '%').limit(10);
-                if (!data || data.length === 0) { document.getElementById('levelSearchResults').innerHTML = '<p style="color:#999;font-size:0.85rem">未找到用户</p>'; return; }
-                document.getElementById('levelSearchResults').innerHTML = data.map(u => '<div style="padding:0.5rem;border-bottom:1px solid #f3f4f6;cursor:pointer" onclick="selectUserForLevel(\'' + u.id + '\',\'' + (u.username || '').replace(/'/g,"\\'") + '\')">' +
-                    '<span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#6366f1;color:#fff;font-size:0.7rem;font-weight:600">' + (u.username || '?')[0] + '</span> ' + (u.username || '未设置') + ' <span style="color:#999;font-size:0.75rem">' + u.email + '</span></div>').join('');
-            } catch (err) { console.error('search error:', err); }
+                const { data, error } = await client.from('profiles').select('*').order('points', { ascending: false });
+                if (error) throw error;
+                allUsers = data || [];
+                renderLevels(allUsers);
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="5" class="loading">加载失败</td></tr>';
+                console.error(e);
+            }
         }
 
-        async function selectUserForLevel(userId, username) {
-            _selectedUserId = userId;
-            document.getElementById('levelSearchResults').innerHTML = '<p style="font-size:0.85rem;color:#6366f1">已选择: ' + username + '</p>';
-            document.getElementById('levelEditForm').style.display = 'block';
-            try {
-                const { data: stats } = await supabaseClient.from('user_stats').select('*').eq('user_id', userId).single();
-                const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', userId).single();
-                document.getElementById('editPoints').value = stats ? stats.points : 0;
-                document.getElementById('editLevel').value = stats ? Math.min(Math.floor(stats.points / 50) + 1, 10) : 1;
-                document.getElementById('editRole').value = (profile && profile.role === 'admin') ? 'admin' : 'user';
-            } catch (err) { console.error('selectUser error:', err); }
+        function getLevel(points) {
+            const p = points || 0;
+            if (p >= 10000) return '钻石';
+            if (p >= 5000) return '铂金';
+            if (p >= 2000) return '黄金';
+            if (p >= 500) return '白银';
+            return '青铜';
         }
 
-        async function saveUserLevel() {
-            if (!_selectedUserId) return;
-            const points = parseInt(document.getElementById('editPoints').value) || 0;
-            const role = document.getElementById('editRole').value;
-            try {
-                const { data: existing } = await supabaseClient.from('user_stats').select('id').eq('user_id', _selectedUserId).single();
-                if (existing) {
-                    await supabaseClient.from('user_stats').update({ points }).eq('user_id', _selectedUserId);
-                } else {
-                    await supabaseClient.from('user_stats').insert([{ user_id: _selectedUserId, points }]);
-                }
-                await supabaseClient.from('profiles').update({ role }).eq('id', _selectedUserId);
-                modalAlert('用户信息已更新', 'success');
-                document.getElementById('levelEditForm').style.display = 'none';
-                loadUserLevels();
-            } catch (err) { modalAlert('保存失败: ' + err.message, 'error'); }
+        function renderLevels(users) {
+            const tbody = document.getElementById('levels-table-body');
+            if (!users.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">暂无用户</td></tr>';
+                return;
+            }
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar">${getInitial(u.username || u.email)}</div>
+                            <div class="user-info">
+                                <div class="user-name">${escapeHtml(u.username || '未设置')}</div>
+                                <div class="user-email">${escapeHtml(u.email || '')}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${u.points || 0}</td>
+                    <td>${getLevel(u.points)}</td>
+                    <td>${getRoleBadge(u.role)}</td>
+                    <td>
+                        <button class="btn btn-gold btn-sm" onclick="openEditLevel('${u.id}', ${u.points || 0}, '${u.role || 'user'}')">编辑</button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        async function loadUserLevels() {
-            try {
-                const { data: profiles } = await supabaseClient.from('profiles').select('id, username, email, role').order('created_at', { ascending: false });
-                if (!profiles) return;
-                const { data: statsList } = await supabaseClient.from('user_stats').select('*');
-                const statsMap = {};
-                (statsList || []).forEach(s => { statsMap[s.user_id] = s; });
-                const tbody = document.getElementById('userLevelTable');
-                if (!tbody) return;
-                if (profiles.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="loading">暂无用户</td></tr>'; return; }
-                tbody.innerHTML = profiles.map(p => {
-                    const s = statsMap[p.id] || { points: 0 };
-                    const level = Math.min(Math.floor(s.points / 50) + 1, 10);
-                    return '<tr>' +
-                        '<td><div class="user-cell"><div class="user-avatar">' + (p.username||'?')[0].toUpperCase() + '</div><div class="user-meta"><div class="name">' + (p.username || '未设置') + '</div></div></div></td>' +
-                        '<td style="color:#999;font-size:0.82rem">' + p.email + '</td>' +
-                        '<td><span class="badge ' + (p.role === 'admin' ? 'badge-admin' : 'badge-user') + '">' + (p.role === 'admin' ? '管理员' : '玩家') + '</span></td>' +
-                        '<td>Level ' + level + '</td>' +
-                        '<td>' + s.points + ' 积分</td>' +
-                        '</tr>';
-                }).join('');
-            } catch (err) { console.error('loadUserLevels error:', err); }
+        function searchLevelUsers() {
+            const q = document.getElementById('level-search').value.toLowerCase();
+            const filtered = allUsers.filter(u =>
+                (u.username && u.username.toLowerCase().includes(q)) ||
+                (u.email && u.email.toLowerCase().includes(q))
+            );
+            renderLevels(filtered);
         }
 
-        // ===== 举报管理 =====
+        function openEditLevel(userId, points, role) {
+            document.getElementById('edit-level-user-id').value = userId;
+            document.getElementById('edit-level-points').value = points;
+            document.getElementById('edit-level-role').value = role;
+            openModal('modal-edit-level');
+        }
+
+        async function saveLevel() {
+            const userId = document.getElementById('edit-level-user-id').value;
+            const points = parseInt(document.getElementById('edit-level-points').value) || 0;
+            const role = document.getElementById('edit-level-role').value;
+            await client.from('profiles').update({ points, role }).eq('id', userId);
+            closeModal('modal-edit-level');
+            loadLevels();
+        }
+
+        // Reports
         async function loadReports() {
-            const { data } = await supabaseClient.from('reports').select('*').order('created_at', { ascending: false });
-            const list = data || [];
-            const tbody = document.getElementById('reportsTable');
-            if (list.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="loading">暂无举报</td></tr>'; return; }
-            tbody.innerHTML = list.map(r => `<tr>
-                <td>${r.reporter_id ? r.reporter_id.substring(0,8)+'...' : '未知'}</td>
-                <td><span class="badge badge-user">${r.target_type === 'post' ? '帖子' : '回复'}</span></td>
-                <td>${r.reason}</td>
-                <td><span class="badge ${r.status==='pending'?'badge-user':'badge-admin'}">${r.status === 'pending' ? '待处理' : r.status === 'resolved' ? '已处理' : '已驳回'}</span></td>
-                <td>${formatDate(r.created_at)}</td>
-                <td>
-                    ${r.status === 'pending' ? `<div class="actions"><button class="btn-icon danger" onclick="handleReport('${r.id}', 'dismissed')" title="驳回">❌</button></div>` : ''}
-                </td>
-            </tr>`).join('');
+            const tbody = document.getElementById('reports-table-body');
+            tbody.innerHTML = '<tr><td colspan="6" class="loading">加载中...</td></tr>';
+            try {
+                const { data, error } = await client.from('reports').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                allReports = data || [];
+                renderReports(allReports);
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="6" class="loading">加载失败</td></tr>';
+                console.error(e);
+            }
         }
 
-        async function handleReport(id, status) {
-            await supabaseClient.from('reports').update({ status }).eq('id', id);
+        function renderReports(reports) {
+            const tbody = document.getElementById('reports-table-body');
+            if (!reports.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">暂无举报</td></tr>';
+                return;
+            }
+            tbody.innerHTML = reports.map(r => `
+                <tr>
+                    <td>${escapeHtml(r.reporter_name || r.reporter_id || '-')}</td>
+                    <td>${escapeHtml(r.target_name || r.target_id || '-')}</td>
+                    <td>${escapeHtml(r.reason || '-')}</td>
+                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(r.details || '')}">${escapeHtml(r.details || '-')}</td>
+                    <td>${formatDate(r.created_at)}</td>
+                    <td>
+                        <button class="btn btn-ghost btn-sm" onclick="dismissReport('${r.id}')">驳回</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function dismissReport(id) {
+            if (!confirm('确定驳回此举报？')) return;
+            await client.from('reports').delete().eq('id', id);
             loadReports();
         }
 
-        async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
-        function formatDate(d) { return d ? new Date(d).toLocaleDateString('zh-CN') : '未知'; }
+        function logout() {
+            if (confirm('确定要退出登录？')) {
+                client.auth.signOut();
+                window.location.href = 'login.html';
+            }
+        }
 
-        init();
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAdmin();
+            loadDashboard();
+        });
     </script>
-    <script src="modal.js"></script>
-    <script src="footer.js"></script>
-    <script src="mobile-menu.js"></script>
 </body>
 </html>

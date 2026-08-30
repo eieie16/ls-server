@@ -1,196 +1,374 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>通知 - 凌云城</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
-        nav { position: fixed; top: 0; width: 100%; z-index: 100; padding: 0 3rem; height: 64px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; background: #fff; border-bottom: 1px solid #e5e7eb; }
-        .logo { font-size: 1.05rem; font-weight: 700; color: #6366f1; letter-spacing: 0.05em; }
-        .nav-center { display: flex; gap: 2rem; list-style: none; justify-self: center; }
-        .nav-center a { font-size: 0.88rem; color: #666; text-decoration: none; transition: color 0.15s; font-weight: 500; }
-        .nav-center a:hover { color: #1a1a1a; }
-        .nav-center a.active { color: #6366f1; }
-        .nav-right { display: flex; align-items: center; gap: 0.75rem; justify-self: end; }
-        .nav-btn { padding: 0.5rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none; text-decoration: none; }
-        .nav-btn.outline { background: #fff; color: #333; border: 1px solid #d1d5db; }
-        .nav-btn.filled { background: #6366f1; color: #fff; }
-        .user-badge { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.85rem 0.4rem 0.4rem; background: #f3f4f6; border-radius: 8px; text-decoration: none; color: #333; font-size: 0.85rem; }
-        .user-badge .avatar { width: 30px; height: 30px; border-radius: 8px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>通知中心 - 凌云城</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .page-hero{
+      min-height:50vh;display:flex;align-items:center;justify-content:center;
+      position:relative;overflow:hidden;text-align:center;
+      padding:7rem 1.5rem 3rem;
+    }
+    .page-hero-bg{
+      position:absolute;inset:0;z-index:0;
+      background:
+        radial-gradient(ellipse 70% 50% at 30% 20%,rgba(212,168,83,0.07) 0%,transparent 60%),
+        radial-gradient(ellipse 50% 40% at 75% 70%,rgba(94,234,212,0.04) 0%,transparent 50%);
+    }
+    .page-hero-content{position:relative;z-index:2;max-width:700px}
+    .page-hero h1{
+      font-family:var(--font-display);font-size:clamp(2.4rem,6vw,4.2rem);
+      line-height:1.15;margin-bottom:1rem;
+      animation:fadeUp .8s ease .1s both;
+    }
+    .page-hero h1 .line1{
+      display:block;
+      background:linear-gradient(135deg,#fff 20%,var(--text2));
+      -webkit-background-clip:text;background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+    .page-hero h1 .line2{
+      display:block;position:relative;
+      background:linear-gradient(135deg,var(--gold),var(--gold2),#fff,var(--gold));
+      background-size:300% 300%;
+      -webkit-background-clip:text;background-clip:text;
+      -webkit-text-fill-color:transparent;
+      animation:shimmer 5s ease infinite;
+    }
+    .page-hero h1 .line2::after{
+      content:'';position:absolute;bottom:-6px;left:15%;right:15%;height:2px;
+      background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.35;
+    }
+    .page-hero p{
+      font-size:clamp(.88rem,1.6vw,1.05rem);color:var(--text2);
+      line-height:1.8;max-width:480px;margin-inline:auto;
+      animation:fadeUp .8s ease .25s both;
+    }
+    @keyframes fadeUp{
+      from{opacity:0;transform:translateY(24px)}
+      to{opacity:1;transform:translateY(0)}
+    }
 
-        .container { max-width: 700px; margin: 0 auto; padding: 5.5rem 1.5rem 3rem; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .page-header h1 { font-size: 1.4rem; font-weight: 600; }
-        .btn-mark-read { padding: 0.5rem 1rem; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: background 0.15s; }
-        .btn-mark-read:hover { background: #5558e6; }
+    .notif-section{
+      max-width:700px;margin:0 auto;
+      padding:0 clamp(1rem,4vw,4rem) clamp(3rem,6vh,5rem);
+    }
+    .notif-header{
+      display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:1.5rem;
+    }
+    .notif-header h2{font-size:1rem;font-weight:600}
+    .btn-mark-read{
+      padding:.5rem 1rem;background:transparent;color:var(--text2);
+      border:1px solid var(--border2);border-radius:8px;font-size:.82rem;
+      font-weight:500;cursor:pointer;transition:all .2s;font-family:var(--font-body);
+    }
+    .btn-mark-read:hover{border-color:var(--gold);color:var(--gold)}
 
-        .notif-group { margin-bottom: 1.5rem; }
-        .notif-group-title { font-size: 0.82rem; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; padding-left: 0.25rem; }
-        .notif-item {
-            display: flex; align-items: center; gap: 0.85rem;
-            padding: 0.9rem 1rem; background: #fff; border-radius: 10px;
-            margin-bottom: 0.4rem; cursor: pointer; transition: all 0.15s;
-            text-decoration: none; color: inherit; border: 1px solid transparent;
-        }
-        .notif-item:hover { border-color: #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        .notif-item.unread { background: #f0f0ff; border-color: #c7d2fe; }
-        .notif-icon { font-size: 1.3rem; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .notif-icon.reply { background: #dbeafe; }
-        .notif-icon.mention { background: #fef3c7; }
-        .notif-icon.like { background: #fce7f3; }
-        .notif-icon.system { background: #e5e7eb; }
-        .notif-body { flex: 1; min-width: 0; }
-        .notif-text { font-size: 0.88rem; line-height: 1.5; }
-        .notif-text strong { font-weight: 600; }
-        .notif-time { font-size: 0.75rem; color: #999; margin-top: 0.15rem; }
+    .notif-group{margin-bottom:1.5rem}
+    .notif-group-title{
+      font-size:.78rem;font-weight:600;color:var(--text3);
+      text-transform:uppercase;letter-spacing:.08em;
+      margin-bottom:.75rem;padding-left:.25rem;
+    }
+    .notif-item{
+      display:flex;align-items:center;gap:.85rem;
+      padding:.9rem 1rem;background:var(--surface);
+      border:1px solid var(--border);border-radius:10px;
+      margin-bottom:.5rem;cursor:pointer;transition:all .25s;
+      text-decoration:none;color:inherit;position:relative;
+    }
+    .notif-item:hover{border-color:var(--border2);transform:translateX(3px)}
+    .notif-item.unread{background:var(--surface2);border-color:rgba(212,168,83,0.15)}
+    .notif-item.unread::before{
+      content:'';position:absolute;top:50%;left:6px;width:4px;height:4px;
+      border-radius:50%;background:var(--gold);transform:translateY(-50%);
+    }
 
-        .empty-state { text-align: center; padding: 4rem 2rem; color: #999; }
-        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
-        .empty-state p { font-size: 0.9rem; }
+    .notif-icon{
+      width:36px;height:36px;border-radius:8px;
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;font-size:1.1rem;
+    }
+    .notif-icon.points{background:rgba(52,211,153,0.1)}
+    .notif-icon.prize{background:rgba(212,168,83,0.1)}
+    .notif-icon.level{background:rgba(251,191,36,0.1)}
+    .notif-icon.comment{background:rgba(96,165,250,0.1)}
+    .notif-icon.system{background:var(--surface2)}
 
-        .login-hint { text-align: center; padding: 3rem; color: #999; font-size: 0.88rem; }
-        .login-hint a { color: #6366f1; text-decoration: none; }
+    .notif-body{flex:1;min-width:0}
+    .notif-text{font-size:.88rem;line-height:1.5;color:var(--text)}
+    .notif-text strong{font-weight:600;color:var(--gold)}
+    .notif-time{font-size:.75rem;color:var(--text3);margin-top:.15rem}
 
-        @media (max-width: 640px) {
-            nav { padding: 0 1.5rem; }
-            .nav-center { display: none; }
-        }
-    </style>
+    .notif-actions{display:flex;gap:.5rem;align-items:center;flex-shrink:0}
+    .notif-link{
+      font-size:.78rem;color:var(--gold);text-decoration:none;
+      padding:.3rem .6rem;border-radius:4px;background:var(--gold-dim);
+      transition:all .2s;white-space:nowrap;
+    }
+    .notif-link:hover{background:rgba(212,168,83,0.25)}
+    .notif-delete{
+      background:none;border:none;color:var(--text3);cursor:pointer;
+      padding:.3rem;border-radius:4px;transition:all .2s;font-size:.9rem;
+    }
+    .notif-delete:hover{color:var(--red);background:rgba(248,113,113,0.1)}
+
+    .empty-state{text-align:center;padding:4rem 2rem;color:var(--text3)}
+    .empty-state .icon{font-size:3rem;margin-bottom:1rem;opacity:.5}
+    .empty-state p{font-size:.9rem}
+
+    .login-hint{text-align:center;padding:3rem;color:var(--text3);font-size:.88rem}
+    .login-hint a{color:var(--gold);text-decoration:none}
+
+    @media(max-width:600px){
+      .notif-header{flex-direction:column;gap:.75rem;align-items:flex-start}
+      .notif-item{padding:.75rem}
+      .notif-actions{flex-direction:column;gap:.25rem}
+    }
+  </style>
 </head>
 <body>
-    <nav>
-        <div class="logo">凌云城</div>
-        <ul class="nav-center">
-            <li><a href="index.html">首页</a></li>
-            <li><a href="features.html">特色</a></li>
-            <li><a href="rules.html">规则</a></li>
-            <li><a href="connect.html">加入</a></li>
-            <li><a href="redeem.html">兑换</a></li>
-            <li><a href="forum.html">论坛</a></li>
-        </ul>
-        <div class="nav-right" id="navRight">
-            <a href="dashboard.html" class="user-badge" id="userBadge" style="display:none"><div class="avatar" id="navAvatar"></div><span id="navName"></span></a>
-            <a href="login.html" class="nav-btn outline" id="btnLogin">登录</a>
-            <a href="login.html" class="nav-btn filled" id="btnRegister">注册</a>
-            <button class="nav-btn outline" id="btnLogout" style="display:none" onclick="handleLogout()">退出</button>
-        </div>
-    </nav>
+  <canvas id="particles-canvas"></canvas>
 
-    <div class="container">
-        <div class="page-header">
-            <h1>通知</h1>
-            <button class="btn-mark-read" onclick="markAllRead()">全部标为已读</button>
-        </div>
-        <div id="notifList">
-            <div class="empty-state"><div class="icon">🔔</div><p>加载中...</p></div>
-        </div>
+  <nav class="nav" id="mainNav">
+    <a href="index.html" class="nav-logo">凌云城</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">首页</a></li>
+      <li><a href="features.html">特色</a></li>
+      <li><a href="rules.html">规则</a></li>
+      <li><a href="connect.html">加入</a></li>
+      <li><a href="redeem.html">兑换</a></li>
+      <li><a href="forum.html">论坛</a></li>
+    </ul>
+    <div class="nav-right" id="navAuth">
+      <a href="login.html" class="nav-btn outline">登录</a>
+      <a href="login.html" class="nav-btn filled">注册</a>
     </div>
+    <button class="nav-toggle" id="navToggle" onclick="toggleNav()">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
 
-    <script src="supabase.min.js"></script>
-    <script src="utils.js"></script>
-    <script src="chat-widget.js"></script>
-    <script>
-        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const DEFAULT_AVATAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+  <section class="page-hero">
+    <div class="page-hero-bg"></div>
+    <div class="page-hero-content">
+      <h1>
+        <span class="line1">消息</span>
+        <span class="line2">通知中心</span>
+      </h1>
+      <p>查看你的所有通知消息，及时了解最新动态</p>
+    </div>
+  </section>
 
-        let currentUser = null;
+  <section class="notif-section">
+    <div class="notif-header">
+      <h2>所有通知</h2>
+      <button class="btn-mark-read" onclick="markAllRead()">全部标为已读</button>
+    </div>
+    <div id="notifList">
+      <div class="empty-state"><div class="icon">🔔</div><p>加载中...</p></div>
+    </div>
+  </section>
 
-        const TYPE_LABELS = {
-            reply: '💬 回复',
-            mention: '📣 提及',
-            like: '❤️ 点赞',
-            system: '🔔 系统'
-        };
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo">凌云城</span>
+        <p>优质的中文 FiveM 轻 RP 服务器，为你提供轻松愉快的角色扮演体验。</p>
+      </div>
+      <div class="footer-col">
+        <h4>导航</h4>
+        <ul>
+          <li><a href="features.html">服务器特色</a></li>
+          <li><a href="rules.html">服务器规则</a></li>
+          <li><a href="connect.html">如何加入</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>社区</h4>
+        <ul>
+          <li><a href="https://kook.vip/71Hw5z" target="_blank">Kook</a></li>
+          <li><a href="https://qm.qq.com/q/zzUzFa6ytw" target="_blank">QQ 群</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 凌云城-轻RP 4.0</span>
+      <span>本站与 Rockstar Games 无任何关联</span>
+    </div>
+  </footer>
 
-        async function init() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) {
-                document.getElementById('notifList').innerHTML = '<div class="login-hint"><a href="login.html">登录</a>后查看通知</div>';
-                return;
-            }
-            currentUser = session;
-            const { data: profile } = await supabaseClient.from('profiles').select('avatar_url, username').eq('id', session.user.id).single();
-            const navAvatar = document.getElementById('navAvatar');
-            navAvatar.innerHTML = (profile && profile.avatar_url) ? '<img src="'+profile.avatar_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">' : DEFAULT_AVATAR;
-            document.getElementById('navName').textContent = (profile && profile.username) || session.user.email;
-            document.getElementById('userBadge').style.display = 'flex';
-            document.getElementById('btnLogin').style.display = 'none';
-            document.getElementById('btnRegister').style.display = 'none';
-            document.getElementById('btnLogout').style.display = 'inline-block';
-            await loadNotifications();
+  <script src="supabase.min.js"></script>
+  <script src="utils.js"></script>
+  <script>
+    const SUPABASE_URL="https://mxajreukeniayoqyvybe.supabase.co";
+    const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
+    const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+    // 粒子系统
+    (function(){
+      const c=document.getElementById('particles-canvas');
+      const ctx=c.getContext('2d');
+      let w,h,particles=[];
+      function resize(){w=c.width=window.innerWidth;h=c.height=window.innerHeight}
+      window.addEventListener('resize',resize);resize();
+      class Particle{
+        constructor(){this.reset()}
+        reset(){
+          this.x=Math.random()*w;this.y=Math.random()*h;
+          this.size=Math.random()*1.5+.5;
+          this.speedX=(Math.random()-.5)*.3;this.speedY=(Math.random()-.5)*.3;
+          this.opacity=Math.random()*.4+.1;
+          this.color=Math.random()>.7?'212,168,83':'255,255,255';
+        }
+        update(){this.x+=this.speedX;this.y+=this.speedY;if(this.x<0||this.x>w||this.y<0||this.y>h)this.reset()}
+        draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fillStyle=`rgba(${this.color},${this.opacity})`;ctx.fill()}
+      }
+      for(let i=0;i<60;i++)particles.push(new Particle());
+      function animate(){ctx.clearRect(0,0,w,h);particles.forEach(p=>{p.update();p.draw()});requestAnimationFrame(animate)}
+      animate();
+    })();
+
+    // 导航滚动
+    window.addEventListener('scroll',()=>{
+      document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>50);
+    });
+    function toggleNav(){
+      document.getElementById('navLinks').classList.toggle('open');
+      document.getElementById('navToggle').classList.toggle('open');
+    }
+
+    const NOTIF_ICONS={
+      points:'✅',
+      prize:'🎁',
+      level:'🏆',
+      comment:'💬',
+      system:'⚠️'
+    };
+    const NOTIF_CLASSES={
+      points:'points',
+      prize:'prize',
+      level:'level',
+      comment:'comment',
+      system:'system'
+    };
+
+    let currentUser=null;
+
+    async function init(){
+      try{
+        const{data:{session}}=await supabaseClient.auth.getSession();
+        const navAuth=document.getElementById('navAuth');
+        if(session){
+          currentUser=session;
+          const{data:p}=await supabaseClient.from('profiles').select('avatar_url,username').eq('id',session.user.id).single();
+          const name=(p&&p.username)||'玩家';
+          const avatar=p&&p.avatar_url?`<img src="${p.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">`:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+          navAuth.innerHTML=`
+            <a href="dashboard.html" class="user-badge"><div class="avatar">${avatar}</div><span>${name}</span></a>
+            <a href="#" class="nav-btn outline" onclick="logout(event)">退出</a>`;
+          await loadNotifications();
+        }else{
+          document.getElementById('notifList').innerHTML='<div class="login-hint"><a href="login.html">登录</a>后查看通知</div>';
+        }
+      }catch(e){console.error('init error:',e)}
+    }
+
+    async function loadNotifications(){
+      if(!currentUser)return;
+      try{
+        const{data}=await supabaseClient.from('notifications')
+          .select('*').eq('user_id',currentUser.user.id)
+          .order('created_at',{ascending:false});
+
+        const notifs=data||[];
+        if(notifs.length===0){
+          document.getElementById('notifList').innerHTML='<div class="empty-state"><div class="icon">🔔</div><p>暂无通知</p></div>';
+          return;
         }
 
-        async function loadNotifications() {
-            try {
-                const { data } = await supabaseClient.from('notifications')
-                    .select('*').eq('user_id', currentUser.user.id).order('created_at', { ascending: false });
-                const notifs = data || [];
-                if (notifs.length === 0) {
-                    document.getElementById('notifList').innerHTML = '<div class="empty-state"><div class="icon">🔔</div><p>暂无通知</p></div>';
-                    return;
-                }
-                const unread = notifs.filter(n => !n.read);
-                const read = notifs.filter(n => n.read);
-                let html = '';
-                if (unread.length) {
-                    html += '<div class="notif-group"><div class="notif-group-title">未读</div>';
-                    html += unread.map(renderNotif).join('');
-                    html += '</div>';
-                }
-                if (read.length) {
-                    html += '<div class="notif-group"><div class="notif-group-title">已读</div>';
-                    html += read.map(renderNotif).join('');
-                    html += '</div>';
-                }
-                document.getElementById('notifList').innerHTML = html;
-            } catch (err) {
-                showToast('加载失败', 'error');
-            }
-        }
+        const unread=notifs.filter(n=>!n.is_read);
+        const read=notifs.filter(n=>n.is_read);
+        let html='';
 
-        function renderNotif(n) {
-            const icon = TYPE_LABELS[n.type] || '🔔';
-            const iconClass = n.type || 'system';
-            const time = new Date(n.created_at).toLocaleString('zh-CN');
-            const href = n.link || '#';
-            return `<a href="${href}" class="notif-item ${n.read ? '' : 'unread'}" onclick="markRead('${n.id}', event)">
-                <div class="notif-icon ${iconClass}">${icon.split(' ')[0]}</div>
-                <div class="notif-body">
-                    <div class="notif-text">${n.content}</div>
-                    <div class="notif-time">${time}</div>
-                </div>
-            </a>`;
+        if(unread.length){
+          html+='<div class="notif-group"><div class="notif-group-title">未读</div>';
+          html+=unread.map(renderNotif).join('');
+          html+='</div>';
         }
-
-        async function markRead(id, e) {
-            if (e) e.preventDefault();
-            await supabaseClient.from('notifications').update({ read: true }).eq('id', id);
-            const el = document.querySelector(`.notif-item[onclick*="${id}"]`);
-            if (el) el.classList.remove('unread');
-            if (typeof updateBellCount === 'function') updateBellCount();
-            const href = el ? el.getAttribute('href') : '#';
-            if (href && href !== '#') window.location.href = href;
+        if(read.length){
+          html+='<div class="notif-group"><div class="notif-group-title">已读</div>';
+          html+=read.map(renderNotif).join('');
+          html+='</div>';
         }
+        document.getElementById('notifList').innerHTML=html;
+      }catch(e){
+        console.error('load notifs error:',e);
+        document.getElementById('notifList').innerHTML='<div class="empty-state"><div class="icon">❌</div><p>加载失败，请刷新重试</p></div>';
+      }
+    }
 
-        async function markAllRead() {
-            await supabaseClient.from('notifications').update({ read: true }).eq('user_id', currentUser.user.id).eq('read', false);
-            document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
-            if (typeof updateBellCount === 'function') updateBellCount();
+    function renderNotif(n){
+      const icon=NOTIF_ICONS[n.type]||'🔔';
+      const iconClass=NOTIF_CLASSES[n.type]||'system';
+      const time=new Date(n.created_at).toLocaleString('zh-CN');
+      const hasLink=n.link_url&&n.link_url!=='#';
+      const linkBtn=hasLink?`<a href="${n.link_url}" class="notif-link" onclick="event.stopPropagation()">查看</a>`:'';
+      return `<div class="notif-item ${n.is_read?'':'unread'}" onclick="markRead('${n.id}',this)">
+        <div class="notif-icon ${iconClass}">${icon}</div>
+        <div class="notif-body">
+          <div class="notif-text">${n.message}</div>
+          <div class="notif-time">${time}</div>
+        </div>
+        <div class="notif-actions">
+          ${linkBtn}
+          <button class="notif-delete" onclick="event.stopPropagation();deleteNotif('${n.id}',this)" title="删除">✕</button>
+        </div>
+      </div>`;
+    }
+
+    async function markRead(id,el){
+      if(!el)return;
+      await supabaseClient.from('notifications').update({is_read:true}).eq('id',id);
+      el.classList.remove('unread');
+    }
+
+    async function markAllRead(){
+      if(!currentUser)return;
+      await supabaseClient.from('notifications').update({is_read:true}).eq('user_id',currentUser.user.id).eq('is_read',false);
+      document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));
+    }
+
+    async function deleteNotif(id,btn){
+      const item=btn.closest('.notif-item');
+      if(item){
+        item.style.transition='all .3s';
+        item.style.opacity='0';
+        item.style.transform='translateX(30px)';
+        setTimeout(()=>item.remove(),300);
+      }
+      await supabaseClient.from('notifications').delete().eq('id',id);
+      setTimeout(()=>{
+        const list=document.getElementById('notifList');
+        if(list&&list.querySelectorAll('.notif-item').length===0){
+          list.innerHTML='<div class="empty-state"><div class="icon">🔔</div><p>暂无通知</p></div>';
         }
+      },400);
+    }
 
-        async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
-        init();
-    </script>
-    <script src="modal.js"></script>
-    <script src="footer.js"></script>
-    <script src="mobile-menu.js"></script>
+    async function logout(e){
+      e.preventDefault();
+      await supabaseClient.auth.signOut();
+      location.reload();
+    }
+
+    init();
+  </script>
+  <script src="modal.js"></script>
+  <script src="mobile-menu.js"></script>
 </body>
 </html>

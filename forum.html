@@ -1,397 +1,376 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>论坛 - 凌云城</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>论坛 - 凌云城</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .forum-page{padding:clamp(4rem,10vh,7rem) clamp(1rem,4vw,4rem) 2rem;max-width:1000px;margin:0 auto}
 
-        nav { position: fixed; top: 0; width: 100%; z-index: 100; padding: 0 3rem; height: 64px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; background: #fff; border-bottom: 1px solid #e5e7eb; }
-        .logo { font-size: 1.05rem; font-weight: 700; color: #6366f1; letter-spacing: 0.05em; }
-        .nav-center { display: flex; gap: 2rem; list-style: none; justify-self: center; }
-        .nav-center a { font-size: 0.88rem; color: #666; text-decoration: none; transition: color 0.15s; font-weight: 500; }
-        .nav-center a:hover { color: #1a1a1a; }
-        .nav-center a.active { color: #6366f1; }
-        .nav-right { display: flex; align-items: center; gap: 0.75rem; justify-self: end; }
-        .nav-btn { padding: 0.5rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none; text-decoration: none; }
-        .nav-btn.outline { background: #fff; color: #333; border: 1px solid #d1d5db; }
-        .nav-btn.outline:hover { background: #f9fafb; }
-        .nav-btn.filled { background: #6366f1; color: #fff; }
-        .nav-btn.filled:hover { background: #5558e6; }
-        .user-badge { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.85rem 0.4rem 0.4rem; background: #f3f4f6; border-radius: 8px; text-decoration: none; color: #333; font-size: 0.85rem; font-weight: 500; }
-        .user-badge:hover { background: #e5e7eb; }
-        .user-badge .avatar { width: 30px; height: 30px; border-radius: 8px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+    .forum-header{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:2rem}
+    .forum-header h1{font-family:var(--font-heading);font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:700}
 
-        .container { max-width: 900px; margin: 0 auto; padding: 5.5rem 1.5rem 3rem; }
+    .search-box{position:relative;width:100%;max-width:420px}
+    .search-box input{
+      width:100%;padding:.65rem 1rem .65rem 2.6rem;
+      background:var(--surface);border:1px solid var(--border);border-radius:8px;
+      color:var(--text);font-size:.88rem;font-family:var(--font-body);
+      transition:border-color .2s;
+    }
+    .search-box input:focus{outline:none;border-color:var(--gold)}
+    .search-box input::placeholder{color:var(--text3)}
+    .search-box svg{position:absolute;left:.85rem;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
 
-        .forum-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .forum-header h1 { font-size: 1.4rem; font-weight: 600; }
-        .btn-new { padding: 0.6rem 1.25rem; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 0.88rem; font-weight: 500; cursor: pointer; text-decoration: none; transition: background 0.15s; }
-        .btn-new:hover { background: #5558e6; }
+    .toolbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem}
+    .tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:3px;flex-wrap:wrap}
+    .tab-btn{
+      padding:.5rem 1rem;border-radius:6px;font-size:.82rem;font-weight:500;
+      cursor:pointer;transition:all .2s;color:var(--text3);
+      border:none;background:none;font-family:var(--font-body);white-space:nowrap;
+    }
+    .tab-btn:hover{color:var(--text2)}
+    .tab-btn.active{background:var(--surface2);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.2)}
 
-        .filter-bar { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
-        .filter-btn { padding: 0.4rem 0.85rem; border-radius: 6px; border: 1px solid #e5e7eb; background: #fff; color: #666; font-size: 0.82rem; cursor: pointer; transition: all 0.15s; }
-        .filter-btn:hover { border-color: #6366f1; color: #6366f1; }
-        .filter-btn.active { background: #6366f1; color: #fff; border-color: #6366f1; }
-        .filter-btn .count { background: rgba(0,0,0,0.08); padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.3rem; }
-        .filter-btn.active .count { background: rgba(255,255,255,0.25); }
+    .btn-new-post{
+      display:inline-flex;align-items:center;gap:.4rem;
+      padding:.6rem 1.4rem;border-radius:8px;font-size:.85rem;font-weight:600;
+      background:var(--gold);color:#000;border:none;cursor:pointer;
+      text-decoration:none;transition:all .25s;font-family:var(--font-body);white-space:nowrap;
+    }
+    .btn-new-post:hover{background:var(--gold2);box-shadow:0 4px 20px rgba(212,168,83,0.35);transform:translateY(-1px)}
 
-        .announcement-item {
-            background: linear-gradient(135deg, #fef3c7, #fffbeb);
-            border: 1px solid #fbbf24;
-            border-radius: 10px; padding: 1rem 1.25rem;
-            display: flex; align-items: center; gap: 1rem;
-            text-decoration: none; color: inherit; transition: all 0.15s;
-        }
-        .announcement-item:hover { border-color: #f59e0b; box-shadow: 0 2px 12px rgba(245,158,11,0.1); }
-        .announcement-label { font-size: 0.75rem; font-weight: 600; color: #d97706; margin-bottom: 0.2rem; }
+    .post-list{display:flex;flex-direction:column;gap:.5rem}
 
-        .post-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .post-card{
+      display:flex;align-items:center;gap:1rem;
+      padding:1rem 1.3rem;background:var(--surface);
+      border:1px solid var(--border);border-radius:var(--radius);
+      text-decoration:none;color:inherit;transition:all .25s;
+      position:relative;overflow:hidden;
+    }
+    .post-card::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(212,168,83,0.15),transparent);
+      opacity:0;transition:opacity .3s;
+    }
+    .post-card:hover{border-color:var(--border2);transform:translateX(4px);box-shadow:0 4px 20px rgba(0,0,0,0.2)}
+    .post-card:hover::before{opacity:1}
 
-        .post-item {
-            background: #fff; border-radius: 10px; padding: 1rem 1.25rem;
-            display: flex; align-items: center; gap: 1rem;
-            text-decoration: none; color: inherit; transition: all 0.15s;
-            border: 1px solid transparent;
-        }
-        .post-item:hover { border-color: #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .post-card.pinned{border-left:3px solid var(--gold)}
+    .post-card.featured{border-left:3px solid var(--cyan)}
 
-        .post-avatar {
-            width: 42px; height: 42px; border-radius: 10px; background: #e5e7eb;
-            display: flex; align-items: center; justify-content: center;
-            color: #999; flex-shrink: 0; overflow: hidden;
-        }
-        .post-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-circle{
+      width:42px;height:42px;border-radius:50%;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;
+      font-family:var(--font-heading);font-weight:700;font-size:1rem;
+      color:#000;overflow:hidden;
+    }
+    .avatar-circle img{width:100%;height:100%;object-fit:cover}
+    .avatar-circle-initial{
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+    }
 
-        .post-body { flex: 1; min-width: 0; }
-        .post-title { font-size: 0.92rem; font-weight: 600; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem; }
-        .post-title span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .tag { padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.7rem; font-weight: 500; flex-shrink: 0; }
-        .tag-cat { background: #ede9fe; color: #6366f1; }
-        .tag-solved { background: #dcfce7; color: #16a34a; }
-        .tag-unsolved { background: #fef2f2; color: #ef4444; }
-        .post-meta { font-size: 0.78rem; color: #999; }
+    .post-body{flex:1;min-width:0}
+    .post-title-row{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.25rem}
+    .post-title-text{
+      font-size:.92rem;font-weight:600;color:var(--text);
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;
+    }
+    .post-meta{font-size:.78rem;color:var(--text3);display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+    .post-meta .dot{width:3px;height:3px;border-radius:50%;background:var(--text3);flex-shrink:0}
 
-        .post-stats { display: flex; gap: 1.25rem; flex-shrink: 0; text-align: center; }
-        .post-stats .stat { font-size: 0.78rem; color: #999; }
-        .post-stats .stat strong { display: block; font-size: 0.95rem; color: #555; font-weight: 600; }
+    .post-badges{display:flex;align-items:center;gap:.4rem;flex-shrink:0;flex-wrap:wrap}
+    .badge-pinned{background:var(--gold-dim);color:var(--gold)}
+    .badge-featured{background:var(--cyan-dim);color:var(--cyan)}
+    .badge-feedback{background:var(--cyan-dim);color:var(--cyan)}
+    .badge-help{background:rgba(248,113,113,0.12);color:var(--red)}
+    .badge-suggestion{background:var(--gold-dim);color:var(--gold)}
+    .badge-job{background:rgba(52,211,153,0.12);color:#34d399}
 
-        .empty-state { text-align: center; padding: 4rem 2rem; color: #999; }
-        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
-        .empty-state p { font-size: 0.9rem; }
+    .post-stats{display:flex;align-items:center;gap:1rem;flex-shrink:0}
+    .stat-item{display:flex;align-items:center;gap:.3rem;font-size:.78rem;color:var(--text3)}
+    .stat-item svg{width:14px;height:14px}
 
-        .search-bar { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-        .search-bar input {
-            flex: 1; padding: 0.6rem 1rem; border: 1px solid #e5e7eb; border-radius: 8px;
-            font-size: 0.88rem; background: #fff;
-        }
-        .search-bar input:focus { outline: none; border-color: #6366f1; }
-        .search-bar button {
-            padding: 0.6rem 1rem; background: #6366f1; color: #fff; border: none;
-            border-radius: 8px; font-size: 0.85rem; cursor: pointer;
-        }
-        .search-bar button:hover { background: #5558e6; }
+    .load-more-wrap{text-align:center;padding:1.5rem 0}
+    .load-more{
+      padding:.65rem 2rem;border-radius:8px;font-size:.85rem;font-weight:500;
+      background:var(--surface);border:1px solid var(--border);color:var(--text2);
+      cursor:pointer;transition:all .2s;font-family:var(--font-body);
+    }
+    .load-more:hover{border-color:var(--gold);color:var(--gold)}
 
-        .search-dropdown {
-            position: absolute; top: 100%; left: 0; right: 60px; background: #fff;
-            border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            max-height: 300px; overflow-y: auto; z-index: 50;
-        }
-        .search-item { padding: 0.6rem 1rem; cursor: pointer; font-size: 0.85rem; border-bottom: 1px solid #f3f4f6; }
-        .search-item:hover { background: #f3f4f6; }
-        .search-item.history { color: #999; }
-        .search-item .tag-hint { font-size: 0.72rem; color: #6366f1; margin-left: 0.5rem; }
-        .search-section-title { padding: 0.4rem 1rem; font-size: 0.72rem; color: #999; background: #fafafa; }
+    .empty-state{text-align:center;padding:4rem 1.5rem;color:var(--text3)}
+    .empty-state .icon{font-size:2.5rem;margin-bottom:.8rem;opacity:.5}
+    .empty-state p{font-size:.9rem}
 
-        .pagination { display: flex; justify-content: center; gap: 0.3rem; margin-top: 1.25rem; }
-        .page-btn {
-            padding: 0.4rem 0.75rem; border: 1px solid #e5e7eb; background: #fff;
-            border-radius: 6px; font-size: 0.82rem; cursor: pointer; color: #555;
-        }
-        .page-btn:hover { border-color: #6366f1; color: #6366f1; }
-        .page-btn.active { background: #6366f1; color: #fff; border-color: #6366f1; }
-        .page-dots { padding: 0.4rem 0.3rem; color: #999; font-size: 0.82rem; }
+    .loading{text-align:center;padding:3rem;color:var(--text3);font-size:.88rem}
 
-        .btn-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        @media (max-width: 640px) {
-            nav { padding: 0 1.5rem; }
-            .nav-center { display: none; }
-            .post-stats { display: none; }
-            .post-item { padding: 0.85rem 1rem; }
-        }
-    </style>
+    @media(max-width:640px){
+      .forum-header{flex-direction:column;align-items:flex-start}
+      .search-box{max-width:100%}
+      .toolbar{flex-direction:column;align-items:stretch}
+      .post-card{padding:.85rem 1rem}
+      .post-stats{display:none}
+      .post-badges{display:none}
+    }
+  </style>
 </head>
 <body>
-    <nav>
-        <div class="logo">凌云城</div>
-        <ul class="nav-center">
-            <li><a href="index.html">首页</a></li>
-            <li><a href="features.html">特色</a></li>
-            <li><a href="rules.html">规则</a></li>
-            <li><a href="connect.html">加入</a></li>
-            <li><a href="redeem.html">兑换</a></li>
-            <li><a href="forum.html" class="active">论坛</a></li>
-        </ul>
-        <div class="nav-right" id="navRight">
-            <a href="dashboard.html" class="user-badge" id="userBadge" style="display:none"><div class="avatar" id="navAvatar"></div><span id="navName"></span></a>
-            <a href="login.html" class="nav-btn outline" id="btnLogin">登录</a>
-            <a href="login.html" class="nav-btn filled" id="btnRegister">注册</a>
-            <button class="nav-btn outline" id="btnLogout" style="display:none" onclick="handleLogout()">退出</button>
-        </div>
-    </nav>
+  <nav class="nav" id="mainNav">
+    <a href="index.html" class="nav-logo">凌云城</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">首页</a></li>
+      <li><a href="features.html">特色</a></li>
+      <li><a href="rules.html">规则</a></li>
+      <li><a href="connect.html">加入</a></li>
+      <li><a href="redeem.html">兑换</a></li>
+      <li><a href="forum.html" class="active">论坛</a></li>
+    </ul>
+    <div class="nav-right" id="navAuth">
+      <a href="login.html" class="nav-btn outline">登录</a>
+      <a href="login.html" class="nav-btn filled">注册</a>
+    </div>
+    <button class="nav-toggle" id="navToggle" onclick="toggleNav()">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
 
-    <div class="container">
-        <div class="forum-header">
-            <h1>论坛</h1>
-            <a href="forum-new.html" class="btn-new" id="btnNewPost" style="display:none">+ 发帖</a>
-        </div>
-
-        <div class="filter-bar" id="filterBar">
-            <button class="filter-btn active" onclick="filterPosts('all', this)">全部</button>
-            <button class="filter-btn" onclick="filterPosts('讨论', this)">💬 讨论</button>
-            <button class="filter-btn" onclick="filterPosts('问题', this)">❓ 问题</button>
-            <button class="filter-btn" onclick="filterPosts('建议', this)">💡 建议</button>
-            <button class="filter-btn" onclick="filterPosts('展示', this)">🎉 展示</button>
-            <button class="filter-btn" onclick="filterPosts('公告', this)">📢 公告</button>
-        </div>
-
-        <div class="search-bar" style="position:relative">
-            <input type="text" id="searchInput" placeholder="搜索帖子标题或内容..." onkeydown="if(event.key==='Enter')doSearch()" oninput="showSearchSuggestions()" onfocus="showSearchSuggestions()">
-            <button onclick="doSearch()">🔍 搜索</button>
-            <div class="search-dropdown" id="searchDropdown" style="display:none"></div>
-        </div>
-
-        <div id="announcementsList"></div>
-        <div class="post-list" id="postList">
-            <div class="empty-state"><div class="icon">📝</div><p>加载中...</p></div>
-        </div>
-        <div id="pagination"></div>
+  <div class="forum-page">
+    <div class="section-header" style="padding:clamp(2rem,6vh,5rem) 0 clamp(1.5rem,3vh,2.5rem)">
+      <h1><span class="art-text">论坛</span></h1>
+      <p>分享你的想法，参与社区讨论</p>
     </div>
 
-    <script src="supabase.min.js"></script>
-    <script src="utils.js"></script>
-    <script src="chat-widget.js"></script>
-    <script src="notifications-bell.js"></script>
-    <script>
-        const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const DEFAULT_AVATAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+    <div class="search-box" style="margin-bottom:1.5rem">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="搜索帖子标题..." oninput="applyFilters()">
+    </div>
 
-        let allPosts = [];
-        let filteredPosts = [];
-        let currentFilter = 'all';
-        let currentPage = 1;
-        let searchQuery = '';
-        const PAGE_SIZE = 15;
-        let announcementsData = [];
+    <div class="toolbar">
+      <div class="tabs" id="tabs">
+        <button class="tab-btn active" data-cat="all">全部</button>
+        <button class="tab-btn" data-cat="玩家反馈">玩家反馈</button>
+        <button class="tab-btn" data-cat="问题求助">问题求助</button>
+        <button class="tab-btn" data-cat="建议意见">建议意见</button>
+        <button class="tab-btn" data-cat="工作申请">工作申请</button>
+      </div>
+      <a href="forum-new.html" class="btn-new-post" id="btnNewPost">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        发帖
+      </a>
+    </div>
 
-        async function init() {
-            try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (session) {
-                    let avatarUrl = '';
-                    const { data: profile } = await supabaseClient.from('profiles').select('avatar_url, username').eq('id', session.user.id).single();
-                    if (profile) avatarUrl = profile.avatar_url || '';
-                    const navAvatar = document.getElementById('navAvatar');
-                    navAvatar.innerHTML = avatarUrl ? '<img src="'+avatarUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">' : DEFAULT_AVATAR;
-                    document.getElementById('navName').textContent = (profile && profile.username) || session.user.email;
-                    document.getElementById('userBadge').style.display = 'flex';
-                    document.getElementById('btnLogin').style.display = 'none';
-                    document.getElementById('btnRegister').style.display = 'none';
-                    document.getElementById('btnLogout').style.display = 'inline-block';
-                    document.getElementById('btnNewPost').style.display = 'inline-block';
-                }
-                const { data: pinned } = await supabaseClient.from('forum_posts').select('*').eq('is_pinned', true).order('created_at', { ascending: false });
-                const { data: anns } = await supabaseClient.from('announcements').select('*').order('pinned', { ascending: false }).order('created_at', { ascending: false });
-                announcementsData = [...(pinned || []), ...(anns || [])];
-                renderAnnouncements();
-                loadPosts();
-            } catch (err) {
-                console.error('init error:', err);
-                showToast('加载失败，请刷新重试', 'error');
-            }
-        }
+    <div class="post-list" id="postList">
+      <div class="loading">加载中...</div>
+    </div>
 
-        async function loadPosts() {
-            try {
-                const { data } = await supabaseClient.from('forum_posts').select('*').order('created_at', { ascending: false });
-                allPosts = data || [];
-                applyFilters();
-            } catch (err) {
-                console.error('loadPosts error:', err);
-                showToast('加载帖子失败', 'error');
-            }
-        }
+    <div class="load-more-wrap" id="loadMoreWrap" style="display:none">
+      <button class="load-more" id="loadMoreBtn" onclick="loadMore()">加载更多</button>
+    </div>
+  </div>
 
-        function applyFilters() {
-            if (currentFilter === '公告') {
-                document.getElementById('announcementsList').style.display = '';
-                document.getElementById('postList').innerHTML = '<div class="empty-state"><div class="icon">📢</div><p>以下是公告和置顶内容</p></div>';
-                document.getElementById('pagination').innerHTML = '';
-                return;
-            }
-            document.getElementById('announcementsList').style.display = 'none';
-            filteredPosts = allPosts;
-            if (currentFilter !== 'all') {
-                filteredPosts = filteredPosts.filter(p => p.category === currentFilter);
-            }
-            if (searchQuery) {
-                const q = searchQuery.toLowerCase();
-                filteredPosts = filteredPosts.filter(p =>
-                    p.title.toLowerCase().includes(q) || p.content.toLowerCase().includes(q)
-                );
-            }
-            currentPage = 1;
-            renderPosts();
-        }
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo">凌云城</span>
+        <p>优质的中文 FiveM 轻 RP 服务器，为你提供轻松愉快的角色扮演体验。</p>
+      </div>
+      <div class="footer-col">
+        <h4>导航</h4>
+        <ul>
+          <li><a href="features.html">服务器特色</a></li>
+          <li><a href="rules.html">服务器规则</a></li>
+          <li><a href="connect.html">如何加入</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>社区</h4>
+        <ul>
+          <li><a href="https://kook.vip/71Hw5z" target="_blank">Kook</a></li>
+          <li><a href="https://qm.qq.com/q/zzUzFa6ytw" target="_blank">QQ 群</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 凌云城-轻RP 4.0</span>
+      <span>本站与 Rockstar Games 无任何关联</span>
+    </div>
+  </footer>
 
-        function renderPosts() {
-            const list = document.getElementById('postList');
-            const totalPages = Math.ceil(filteredPosts.length / PAGE_SIZE);
-            const start = (currentPage - 1) * PAGE_SIZE;
-            const pagePosts = filteredPosts.slice(start, start + PAGE_SIZE);
+  <script src="supabase.min.js"></script>
+  <script src="utils.js"></script>
+  <script>
+    const SUPABASE_URL="https://mxajreukeniayoqyvybe.supabase.co";
+    const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
+    const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-            if (pagePosts.length === 0) {
-                list.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>' + (searchQuery ? '没有找到匹配的帖子' : '暂无帖子，快来发第一个帖子吧！') + '</p></div>';
-                document.getElementById('pagination').innerHTML = '';
-                return;
-            }
+    let currentUser=null;
+    let allPosts=[];
+    let displayedPosts=[];
+    let currentFilter='all';
+    let postLimit=20;
+    let totalCount=0;
 
-            list.innerHTML = pagePosts.map(p => {
-                const time = new Date(p.created_at).toLocaleDateString('zh-CN');
-                const isSolved = p.status === '已解决';
-                const titleHtml = searchQuery ? highlightMatch(p.title, searchQuery) : p.title;
-                return `<a href="forum-post.html?id=${p.id}" class="post-item">
-                    <div class="post-avatar">${p.avatar_url ? '<img src="'+p.avatar_url+'">' : DEFAULT_AVATAR}</div>
-                    <div class="post-body">
-                        <div class="post-title">
-                            <span>${titleHtml}</span>
-                            <span class="tag tag-cat">${p.category}</span>
-                            <span class="tag ${isSolved ? 'tag-solved' : 'tag-unsolved'}">${p.status}</span>
-                            ${p.tags ? p.tags.split(' ').filter(t=>t).map(t => '<span class="tag" style="background:#dbeafe;color:#2563eb">#' + t.replace(/^#/,'') + '</span>').join(' ') : ''}
-                        </div>
-                        <div class="post-meta">${p.username} · ${time}</div>
-                    </div>
-                    <div class="post-stats">
-                        <div class="stat"><strong>${p.views}</strong>浏览</div>
-                    </div>
-                </a>`;
-            }).join('');
+    const CATEGORY_BADGE={
+      '玩家反馈':'badge-feedback',
+      '问题求助':'badge-help',
+      '建议意见':'badge-suggestion',
+      '工作申请':'badge-job'
+    };
 
-            renderPagination('pagination', currentPage, totalPages, function(page) {
-                currentPage = page;
-                renderPosts();
-                window.scrollTo({ top: 200, behavior: 'smooth' });
-            });
-        }
+    function getInitial(name){
+      return name?name.charAt(0).toUpperCase():'?';
+    }
 
-        function highlightMatch(text, query) {
-            const regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-            return text.replace(regex, '<mark style="background:#fef08a;padding:0 2px;border-radius:2px">$1</mark>');
-        }
+    function formatDate(iso){
+      const d=new Date(iso);
+      const now=new Date();
+      const diffMs=now-d;
+      const diffMin=Math.floor(diffMs/60000);
+      const diffH=Math.floor(diffMs/3600000);
+      const diffD=Math.floor(diffMs/86400000);
+      if(diffMin<1) return '刚刚';
+      if(diffMin<60) return diffMin+'分钟前';
+      if(diffH<24) return diffH+'小时前';
+      if(diffD<7) return diffD+'天前';
+      return d.toLocaleDateString('zh-CN');
+    }
 
-        function filterPosts(cat, el) {
-            currentFilter = cat;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            applyFilters();
-        }
+    function renderPostCard(p){
+      const pinned=p.is_pinned||p.pinned;
+      const featured=p.is_featured||p.featured;
+      const cls=pinned?'pinned':featured?'featured':'';
+      const badgeClass=CATEGORY_BADGE[p.category]||'badge-feedback';
+      let badges='';
+      if(pinned) badges+='<span class="badge badge-pinned">📌 置顶</span>';
+      if(featured) badges+='<span class="badge badge-featured">⭐ 精华</span>';
+      badges+='<span class="badge '+badgeClass+'">'+p.category+'</span>';
+      const avatarHtml=p.avatar_url
+        ?'<img src="'+p.avatar_url+'" alt="">'
+        :'<span>'+getInitial(p.username)+'</span>';
+      const avatarClass=p.avatar_url?'avatar-circle':'avatar-circle avatar-circle-initial';
 
-        function renderAnnouncements() {
-            const el = document.getElementById('announcementsList');
-            if (!announcementsData.length) { el.innerHTML = ''; return; }
-            el.innerHTML = announcementsData.map(a => {
-                const time = new Date(a.created_at).toLocaleDateString('zh-CN');
-                return `<a href="${a.link || '#'}" class="announcement-item">
-                    <div class="post-avatar" style="background:#fef3c7;color:#d97706">📌</div>
-                    <div class="post-body">
-                        <div class="announcement-label">${a.pinned ? '📌 置顶公告' : '📢 公告'}</div>
-                        <div class="post-title"><span>${a.title}</span></div>
-                        <div class="post-meta">${a.author || '管理员'} · ${time}</div>
-                    </div>
-                </a>`;
-            }).join('');
-        }
+      return '<a href="forum-post.html?id='+p.id+'" class="post-card '+cls+'">'+
+        '<div class="'+avatarClass+'">'+avatarHtml+'</div>'+
+        '<div class="post-body">'+
+          '<div class="post-title-row"><span class="post-title-text">'+p.title+'</span></div>'+
+          '<div class="post-meta">'+p.username+'<span class="dot"></span>'+formatDate(p.created_at)+'</div>'+
+        '</div>'+
+        '<div class="post-badges">'+badges+'</div>'+
+        '<div class="post-stats">'+
+          '<span class="stat-item">'+
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'+
+            (p.like_count||0)+
+          '</span>'+
+          '<span class="stat-item">'+
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'+
+            (p.comment_count||p.reply_count||0)+
+          '</span>'+
+        '</div>'+
+      '</a>';
+    }
 
-        const SEARCH_HISTORY_KEY = 'forum_search_history';
-
-        function getSearchHistory() {
-            try { return JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY) || '[]'); } catch(e) { return []; }
-        }
-
-        function saveSearchHistory(query) {
-            if (!query) return;
-            let history = getSearchHistory();
-            history = history.filter(h => h !== query);
-            history.unshift(query);
-            if (history.length > 10) history = history.slice(0, 10);
-            localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history));
-        }
-
-        function showSearchSuggestions() {
-            const input = document.getElementById('searchInput');
-            const dropdown = document.getElementById('searchDropdown');
-            const query = input.value.trim().toLowerCase();
-            let html = '';
-
-            const history = getSearchHistory();
-            if (history.length > 0 && !query) {
-                html += '<div class="search-section-title">搜索历史 <span style="float:right;cursor:pointer" onclick="clearSearchHistory()">清除</span></div>';
-                html += history.map(h => '<div class="search-item history" onclick="selectSearch(\'' + h.replace(/'/g,"\\'") + '\')">🕐 ' + h + '</div>').join('');
-            }
-
-            if (query) {
-                const matches = allPosts.filter(p => p.title.toLowerCase().includes(query)).slice(0, 5);
-                if (matches.length > 0) {
-                    html += '<div class="search-section-title">相关帖子</div>';
-                    html += matches.map(p => '<div class="search-item" onclick="selectSearch(\'' + p.title.replace(/'/g,"\\'") + '\')">' + p.title.substring(0, 50) + '</div>').join('');
-                }
-            }
-
-            if (!html) { dropdown.style.display = 'none'; return; }
-            dropdown.innerHTML = html;
-            dropdown.style.display = 'block';
-        }
-
-        function selectSearch(query) {
-            document.getElementById('searchInput').value = query;
-            document.getElementById('searchDropdown').style.display = 'none';
-            doSearch();
-        }
-
-        function clearSearchHistory() {
-            localStorage.removeItem(SEARCH_HISTORY_KEY);
-            document.getElementById('searchDropdown').style.display = 'none';
-        }
-
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.search-bar')) {
-                var dd = document.getElementById('searchDropdown');
-                if (dd) dd.style.display = 'none';
-            }
+    function applyFilters(){
+      const query=(document.getElementById('searchInput').value||'').trim().toLowerCase();
+      let filtered=allPosts;
+      if(currentFilter!=='all'){
+        filtered=filtered.filter(function(p){return p.category===currentFilter});
+      }
+      if(query){
+        filtered=filtered.filter(function(p){
+          return p.title.toLowerCase().indexOf(query)!==-1;
         });
+      }
+      displayedPosts=filtered.slice(0,postLimit);
+      totalCount=filtered.length;
+      renderPosts();
+    }
 
-        function doSearch() {
-            searchQuery = document.getElementById('searchInput').value.trim();
-            if (searchQuery) saveSearchHistory(searchQuery);
-            document.getElementById('searchDropdown').style.display = 'none';
-            applyFilters();
-        }
+    function renderPosts(){
+      const list=document.getElementById('postList');
+      if(displayedPosts.length===0){
+        const q=document.getElementById('searchInput').value.trim();
+        const msg=q?'没有找到匹配的帖子':'暂无帖子，快来发第一个帖子吧！';
+        list.innerHTML='<div class="empty-state"><div class="icon">📝</div><p>'+msg+'</p></div>';
+        document.getElementById('loadMoreWrap').style.display='none';
+        return;
+      }
+      list.innerHTML=displayedPosts.map(renderPostCard).join('');
+      document.getElementById('loadMoreWrap').style.display=totalCount>postLimit?'block':'none';
+    }
 
-        async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
-        init();
-    </script>
-    <script src="modal.js"></script>
-    <script src="footer.js"></script>
-    <script src="mobile-menu.js"></script>
+    function loadMore(){
+      postLimit+=20;
+      applyFilters();
+    }
+
+    function initTabs(){
+      document.querySelectorAll('.tab-btn').forEach(function(btn){
+        btn.addEventListener('click',function(){
+          document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
+          btn.classList.add('active');
+          currentFilter=btn.dataset.cat;
+          postLimit=20;
+          applyFilters();
+        });
+      });
+    }
+
+    async function init(){
+      initTabs();
+
+      const {data:{session}}=await supabaseClient.auth.getSession();
+      const navAuth=document.getElementById('navAuth');
+      if(session){
+        currentUser=session;
+        const{data:p}=await supabaseClient.from('profiles').select('avatar_url,username').eq('id',session.user.id).single();
+        const name=(p&&p.username)||'玩家';
+        const avatar=p&&p.avatar_url?`<img src="${p.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">`:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+        navAuth.innerHTML=
+          '<a href="dashboard.html" class="user-badge"><div class="avatar">'+avatar+'</div><span>'+name+'</span></a>'+
+          '<a href="#" class="nav-btn outline" onclick="logout(event)">退出</a>';
+      }else{
+        document.getElementById('btnNewPost').addEventListener('click',function(e){
+          e.preventDefault();
+          window.location.href='login.html';
+        });
+      }
+
+      try{
+        const{data,error}=await supabaseClient.from('forum_posts')
+          .select('*')
+          .order('pinned',{ascending:false})
+          .order('featured',{ascending:false})
+          .order('created_at',{ascending:false})
+          .limit(100);
+        if(error) throw error;
+        allPosts=data||[];
+        applyFilters();
+      }catch(e){
+        console.error('load error:',e);
+        document.getElementById('postList').innerHTML='<div class="empty-state"><div class="icon">⚠️</div><p>加载失败，请刷新重试</p></div>';
+      }
+    }
+
+    async function logout(e){
+      e.preventDefault();
+      await supabaseClient.auth.signOut();
+      location.reload();
+    }
+
+    window.addEventListener('scroll',function(){
+      document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>50);
+    });
+    function toggleNav(){
+      document.getElementById('navLinks').classList.toggle('open');
+      document.getElementById('navToggle').classList.toggle('open');
+    }
+
+    init();
+  </script>
+  <script src="modal.js"></script>
+  <script src="mobile-menu.js"></script>
 </body>
 </html>

@@ -3,82 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>发帖 - 凌云城</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>发表新帖 - 凌云城</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+    <link rel="stylesheet" href="style.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', 'Noto Sans SC', sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
-        nav { position: fixed; top: 0; width: 100%; z-index: 100; padding: 0 3rem; height: 64px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; background: #fff; border-bottom: 1px solid #e5e7eb; }
-        .logo { font-size: 1.05rem; font-weight: 700; color: #6366f1; letter-spacing: 0.05em; }
-        .nav-center { display: flex; gap: 2rem; list-style: none; justify-self: center; }
-        .nav-center a { font-size: 0.88rem; color: #666; text-decoration: none; transition: color 0.15s; font-weight: 500; }
-        .nav-center a:hover { color: #1a1a1a; }
-        .nav-center a.active { color: #6366f1; }
-        .nav-right { display: flex; align-items: center; gap: 0.75rem; justify-self: end; }
-        .nav-btn { padding: 0.5rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none; text-decoration: none; }
-        .nav-btn.outline { background: #fff; color: #333; border: 1px solid #d1d5db; }
-        .nav-btn.filled { background: #6366f1; color: #fff; }
-        .user-badge { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.85rem 0.4rem 0.4rem; background: #f3f4f6; border-radius: 8px; text-decoration: none; color: #333; font-size: 0.85rem; }
-        .user-badge .avatar { width: 30px; height: 30px; border-radius: 8px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-
-        .container { max-width: 700px; margin: 0 auto; padding: 5.5rem 1.5rem 3rem; }
-        .breadcrumb { font-size: 0.82rem; color: #999; margin-bottom: 1.25rem; }
-        .breadcrumb a { color: #6366f1; text-decoration: none; }
-        .breadcrumb a:hover { text-decoration: underline; }
-
-        .new-post-card { background: #fff; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .new-post-card h1 { font-size: 1.2rem; font-weight: 600; margin-bottom: 1.5rem; }
-        .form-group { margin-bottom: 1.25rem; }
-        .form-group label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.4rem; color: #555; }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 0.65rem 0.85rem; border: 1px solid #e5e7eb;
-            border-radius: 8px; font-size: 0.88rem; font-family: inherit; transition: border-color 0.15s;
+        .page-header{
+            padding:clamp(6rem,12vh,8rem) 1.5rem clamp(2rem,5vh,3rem);
+            text-align:center;position:relative;
         }
-        .form-group input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
-
-        .form-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; }
-        .form-actions .btn-secondary { background: #f3f4f6; color: #555; }
-        .form-actions .btn-secondary:hover { background: #e5e7eb; }
-        .title-count { font-size: 0.72rem; color: #999; text-align: right; margin-top: 0.2rem; }
-        .title-count.warn { color: #ef4444; }
-        .btn { padding: 0.6rem 1.5rem; border-radius: 8px; font-size: 0.88rem; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
-        .btn-cancel { background: #f3f4f6; color: #666; }
-        .btn-cancel:hover { background: #e5e7eb; }
-        .btn-primary { background: #6366f1; color: #fff; }
-        .btn-primary:hover { background: #5558e6; }
-
-        .preview-overlay {
-            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;
+        .page-header h1{
+            font-family:var(--font-heading);font-size:clamp(1.8rem,4vw,2.5rem);
+            font-weight:700;margin-bottom:.4rem;
         }
-        .preview-overlay.show { display: flex; }
-        .preview-box {
-            background: #fff; border-radius: 12px; padding: 2rem; max-width: 700px; width: 90%;
-            max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+        .page-header p{color:var(--text2);font-size:.9rem}
+
+        .form-container{max-width:700px;margin:0 auto;padding:0 1.5rem 4rem}
+        .breadcrumb{font-size:.82rem;color:var(--text3);margin-bottom:1.5rem}
+        .breadcrumb a{color:var(--gold);text-decoration:none}
+        .breadcrumb a:hover{text-decoration:underline}
+
+        .post-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem}
+        .post-card h2{font-size:1.1rem;font-weight:600;margin-bottom:1.5rem;color:var(--text)}
+
+        .form-group{margin-bottom:1.25rem}
+        .form-group label{display:block;font-size:.82rem;font-weight:500;margin-bottom:.4rem;color:var(--text2)}
+        .form-group input,.form-group select,.form-group textarea{
+            width:100%;padding:.65rem .85rem;background:var(--bg2);
+            border:1px solid var(--border);border-radius:8px;color:var(--text);
+            font-size:.88rem;font-family:var(--font-body);transition:border-color .2s;
         }
-        .preview-box h2 { font-size: 1.2rem; margin-bottom: 1rem; }
-        .preview-content { line-height: 1.8; color: #333; }
-        .preview-close { float: right; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #999; }
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+            outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,83,0.1);
+        }
+        .form-group textarea{resize:vertical;min-height:200px;line-height:1.7}
+        .form-group select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a4d58' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 0.85rem center}
+        .form-group select option{background:var(--surface);color:var(--text)}
 
-        .hint { font-size: 0.75rem; color: #999; margin-top: 0.25rem; }
-        .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 0.85rem 1.25rem; border-radius: 8px; font-size: 0.85rem; z-index: 9999; animation: slideIn 0.2s; }
-        .toast.success { background: #10b981; color: #fff; }
-        .toast.error { background: #ef4444; color: #fff; }
-        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .char-counter{font-size:.75rem;color:var(--text3);text-align:right;margin-top:.3rem}
+        .char-counter.warn{color:var(--red)}
+        .form-hint{font-size:.75rem;color:var(--text3);margin-top:.3rem}
 
-        .login-hint { text-align: center; padding: 3rem; color: #999; font-size: 0.9rem; }
-        .login-hint a { color: #6366f1; text-decoration: none; }
+        .form-actions{display:flex;justify-content:flex-end;gap:.75rem;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+        .btn-submit{padding:.65rem 2rem;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .25s;font-family:var(--font-body);background:var(--gold);color:#000}
+        .btn-submit:hover{background:var(--gold2);box-shadow:0 4px 20px rgba(212,168,83,0.35)}
+        .btn-submit:disabled{opacity:.6;cursor:not-allowed}
+        .btn-cancel{padding:.65rem 2rem;border-radius:8px;font-size:.88rem;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:var(--font-body);transition:all .2s;text-decoration:none}
+        .btn-cancel:hover{border-color:var(--text2);color:var(--text)}
+        .btn-spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,0.2);border-top-color:#000;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
 
-        @media (max-width: 640px) { nav { padding: 0 1.5rem; } .nav-center { display: none; } }
+        .login-hint{text-align:center;padding:4rem 1.5rem;color:var(--text3)}
+        .login-hint a{color:var(--gold);text-decoration:none}
+        .login-hint a:hover{text-decoration:underline}
+        .login-hint .icon{font-size:3rem;margin-bottom:1rem;display:block;opacity:.5}
+
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @media(max-width:640px){.post-card{padding:1.5rem}.form-actions{flex-direction:column-reverse}.btn-submit,.btn-cancel{width:100%;text-align:center}}
     </style>
 </head>
 <body>
-    <nav>
-        <div class="logo">凌云城</div>
-        <ul class="nav-center">
+    <nav class="nav" id="mainNav">
+        <a href="index.html" class="nav-logo">凌云城</a>
+        <ul class="nav-links" id="navLinks">
             <li><a href="index.html">首页</a></li>
             <li><a href="features.html">特色</a></li>
             <li><a href="rules.html">规则</a></li>
@@ -86,215 +71,252 @@
             <li><a href="redeem.html">兑换</a></li>
             <li><a href="forum.html" class="active">论坛</a></li>
         </ul>
-        <div class="nav-right" id="navRight">
-            <a href="dashboard.html" class="user-badge" id="userBadge" style="display:none"><div class="avatar" id="navAvatar"></div><span id="navName"></span></a>
+        <div class="nav-right" id="navAuth">
+            <a href="dashboard.html" class="user-badge" id="userBadge" style="display:none">
+                <div class="avatar" id="navAvatar"></div>
+                <span id="navName"></span>
+            </a>
             <a href="login.html" class="nav-btn outline" id="btnLogin">登录</a>
             <a href="login.html" class="nav-btn filled" id="btnRegister">注册</a>
             <button class="nav-btn outline" id="btnLogout" style="display:none" onclick="handleLogout()">退出</button>
         </div>
+        <button class="nav-toggle" id="navToggle" onclick="toggleNav()">
+            <span></span><span></span><span></span>
+        </button>
     </nav>
 
-    <div class="container">
-        <div class="breadcrumb"><a href="forum.html">论坛</a> / 发帖</div>
-        <div id="formArea"></div>
+    <section class="page-header">
+        <h1>发表<span class="art-text">新帖</span></h1>
+        <p>分享你的想法，与社区交流</p>
+    </section>
+
+    <div class="form-container">
+        <div class="breadcrumb"><a href="forum.html">论坛</a> / 发表新帖</div>
+        <div id="formArea">
+            <div class="login-hint">
+                <span class="icon">🔒</span>
+                <p>请先<a href="login.html">登录</a>后再发表帖子</p>
+            </div>
+        </div>
     </div>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <span class="logo">凌云城</span>
+                <p>优质的中文 FiveM 轻 RP 服务器，为你提供轻松愉快的角色扮演体验。</p>
+            </div>
+            <div class="footer-col">
+                <h4>导航</h4>
+                <ul>
+                    <li><a href="features.html">服务器特色</a></li>
+                    <li><a href="rules.html">服务器规则</a></li>
+                    <li><a href="connect.html">如何加入</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>社区</h4>
+                <ul>
+                    <li><a href="https://kook.vip/71Hw5z" target="_blank">Kook</a></li>
+                    <li><a href="https://qm.qq.com/q/zzUzFa6ytw" target="_blank">QQ 群</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2026 凌云城-轻RP 4.0</span>
+            <span>本站与 Rockstar Games 无任何关联</span>
+        </div>
+    </footer>
 
     <script src="supabase.min.js"></script>
     <script src="utils.js"></script>
-    <script src="editor.js"></script>
-    <script src="chat-widget.js"></script>
-    <script src="notifications-bell.js"></script>
+    <script src="modal.js"></script>
     <script>
         const SUPABASE_URL = "https://mxajreukeniayoqyvybe.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const DEFAULT_AVATAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
-        const DRAFT_KEY = 'forum_draft';
+        const DEFAULT_AVATAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+        const MAX_TITLE = 80;
+        const MIN_CONTENT = 10;
+        const MAX_CONTENT = 10000;
 
         let currentUser = null;
         let currentProfile = null;
-        let editor = null;
-        let lastPostTime = 0;
         let _submitting = false;
 
         async function init() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) { document.getElementById('formArea').innerHTML = '<div class="login-hint"><a href="login.html">登录</a>后才能发帖</div>'; return; }
+            if (!session) return;
 
             currentUser = session;
             const { data: profile } = await supabaseClient.from('profiles').select('avatar_url, username').eq('id', session.user.id).single();
             currentProfile = profile || { username: session.user.email, avatar_url: '' };
 
             const navAvatar = document.getElementById('navAvatar');
-            navAvatar.innerHTML = currentProfile.avatar_url ? '<img src="'+currentProfile.avatar_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">' : DEFAULT_AVATAR;
+            navAvatar.innerHTML = currentProfile.avatar_url
+                ? '<img src="' + currentProfile.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:6px">'
+                : DEFAULT_AVATAR;
             document.getElementById('navName').textContent = currentProfile.username;
             document.getElementById('userBadge').style.display = 'flex';
             document.getElementById('btnLogin').style.display = 'none';
             document.getElementById('btnRegister').style.display = 'none';
             document.getElementById('btnLogout').style.display = 'inline-block';
 
-            document.getElementById('formArea').innerHTML = `
-                <div class="new-post-card">
-                    <h1>发布新帖</h1>
-                    <div class="form-group">
-                        <label>分类</label>
-                        <select id="category">
-                            <option value="讨论">💬 讨论</option>
-                            <option value="问题">❓ 问题</option>
-                            <option value="建议">💡 建议</option>
-                            <option value="展示">🎉 展示</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>标题</label>
-                        <input type="text" id="title" placeholder="请输入帖子标题" maxlength="100" oninput="updateTitleCount()">
-                        <div class="title-count" id="titleCount">0 / 100</div>
-                    </div>
-                    <div class="form-group">
-                        <label>内容</label>
-                        <div id="editorContainer"></div>
-                    </div>
-                    <div class="form-group">
-                        <label>话题标签（可选，多个用空格分隔）</label>
-                        <input type="text" id="tags" placeholder="例如: 车辆改装 警局招募" maxlength="100">
-                        <div class="hint">用空格分隔多个标签，如 #车辆改装 #警局招募</div>
-                    </div>
-                    <div class="form-actions">
-                        <button class="btn btn-cancel" onclick="window.location.href='forum.html'">取消</button>
-                        <button class="btn btn-secondary" onclick="previewPost()">👁️ 预览</button>
-                        <button class="btn btn-primary" onclick="submitPost()">发布</button>
-                    </div>
-                </div>
-            `;
-            editor = createEditor('editorContainer', { height: 260, placeholder: '请输入帖子内容...' });
-
-            // 预览弹窗
-            document.body.insertAdjacentHTML('beforeend', '<div class="preview-overlay" id="previewOverlay" onclick="if(event.target===this)closePreview()"><div class="preview-box"><button class="preview-close" onclick="closePreview()">✕</button><h2 id="previewTitle"></h2><div class="preview-content" id="previewContent"></div></div></div>');
-
-            // 离开页面提示
-            window.addEventListener('beforeunload', function(e) {
-                if (hasUnsavedContent()) { e.preventDefault(); e.returnValue = ''; }
-            });
-
-            // 恢复草稿
-            loadDraft();
-            // 自动保存草稿
-            setInterval(saveDraft, 5000);
+            renderForm();
         }
 
-        function saveDraft() {
-            if (!editor) return;
-            const title = document.getElementById('title');
-            const category = document.getElementById('category');
-            if (!title || !category) return;
-            const content = editor.getHTML();
-            const plainText = content.replace(/<[^>]*>/g, '').trim();
-            if (!title.value && !plainText) return;
-            const tagsEl = document.getElementById('tags');
-            localStorage.setItem(DRAFT_KEY, JSON.stringify({
-                title: title.value, category: category.value, content: content, tags: tagsEl ? tagsEl.value : '', time: Date.now()
-            }));
-        }
-
-        function loadDraft() {
-            const raw = localStorage.getItem(DRAFT_KEY);
-            if (!raw) return;
-            try {
-                const draft = JSON.parse(raw);
-                if (Date.now() - draft.time > 24 * 60 * 60 * 1000) { localStorage.removeItem(DRAFT_KEY); return; }
-                document.getElementById('title').value = draft.title || '';
-                document.getElementById('category').value = draft.category || '讨论';
-                if (document.getElementById('tags') && draft.tags) document.getElementById('tags').value = draft.tags;
-                if (editor && draft.content) editor.setHTML(draft.content);
-                showToast('已恢复上次编辑的草稿', 'success');
-            } catch(e) {}
-        }
-
-        function clearDraft() { localStorage.removeItem(DRAFT_KEY); }
-
-        function hasUnsavedContent() {
-            var title = document.getElementById('title');
-            var content = editor ? editor.getHTML() : '';
-            return (title && title.value.trim()) || content.replace(/<[^>]*>/g, '').trim();
+        function renderForm() {
+            document.getElementById('formArea').innerHTML =
+                '<div class="post-card">' +
+                    '<h2>填写帖子信息</h2>' +
+                    '<div class="form-group">' +
+                        '<label for="postTitle">标题 <span style="color:var(--red)">*</span></label>' +
+                        '<input type="text" id="postTitle" placeholder="请输入帖子标题" maxlength="' + MAX_TITLE + '" oninput="updateTitleCount()">' +
+                        '<div class="char-counter" id="titleCount">0 / ' + MAX_TITLE + '</div>' +
+                    '</div>' +
+                    '<div class="form-group">' +
+                        '<label for="postCategory">分类</label>' +
+                        '<select id="postCategory">' +
+                            '<option value="玩家反馈">💬 玩家反馈</option>' +
+                            '<option value="问题求助">❓ 问题求助</option>' +
+                            '<option value="建议意见">💡 建议意见</option>' +
+                            '<option value="工作申请">📋 工作申请</option>' +
+                        '</select>' +
+                    '</div>' +
+                    '<div class="form-group">' +
+                        '<label for="postContent">内容 <span style="color:var(--red)">*</span></label>' +
+                        '<textarea id="postContent" placeholder="请输入帖子内容，不少于' + MIN_CONTENT + '个字符..." rows="12" oninput="updateContentCount()"></textarea>' +
+                        '<div class="char-counter" id="contentCount">0 / ' + MAX_CONTENT + '</div>' +
+                        '<div class="form-hint">最少 ' + MIN_CONTENT + ' 个字符</div>' +
+                    '</div>' +
+                    '<div class="form-actions">' +
+                        '<a href="forum.html" class="btn-cancel">取消</a>' +
+                        '<button type="button" class="btn-submit" id="btnSubmit" onclick="submitPost()">发表帖子</button>' +
+                    '</div>' +
+                '</div>';
         }
 
         function updateTitleCount() {
-            var title = document.getElementById('title');
+            var title = document.getElementById('postTitle');
             var el = document.getElementById('titleCount');
             if (!title || !el) return;
             var len = title.value.length;
-            el.textContent = len + ' / 100';
-            el.className = 'title-count' + (len > 90 ? ' warn' : '');
+            el.textContent = len + ' / ' + MAX_TITLE;
+            el.className = 'char-counter' + (len > MAX_TITLE - 10 ? ' warn' : '');
         }
 
-        function previewPost() {
-            var title = document.getElementById('title').value.trim() || '无标题';
-            var content = editor ? editor.getHTML() : '<p style="color:#999">暂无内容</p>';
-            document.getElementById('previewTitle').textContent = title;
-            document.getElementById('previewContent').innerHTML = content;
-            document.getElementById('previewOverlay').classList.add('show');
+        function updateContentCount() {
+            var content = document.getElementById('postContent');
+            var el = document.getElementById('contentCount');
+            if (!content || !el) return;
+            var len = content.value.length;
+            el.textContent = len + ' / ' + MAX_CONTENT;
+            el.className = 'char-counter' + (len < MIN_CONTENT ? ' warn' : '');
         }
 
-        function closePreview() { document.getElementById('previewOverlay').classList.remove('show'); }
+        function sanitizeForInsert(str) {
+            if (!str) return '';
+            if (typeof DOMPurify !== 'undefined') {
+                return DOMPurify.sanitize(str);
+            }
+            return sanitizeHTML(str);
+        }
 
         async function submitPost() {
-            if (_submitting) { showToast('请勿重复提交', 'error'); return; }
+            if (_submitting) return;
+            if (!currentUser) { showToast('请先登录', 'error'); return; }
+
+            var title = document.getElementById('postTitle').value.trim();
+            var category = document.getElementById('postCategory').value;
+            var content = document.getElementById('postContent').value.trim();
+
+            if (!title) {
+                showToast('请输入标题', 'error');
+                document.getElementById('postTitle').focus();
+                return;
+            }
+            if (title.length > MAX_TITLE) {
+                showToast('标题最多' + MAX_TITLE + '个字符', 'error');
+                return;
+            }
+            if (!content) {
+                showToast('请输入内容', 'error');
+                document.getElementById('postContent').focus();
+                return;
+            }
+            if (content.length < MIN_CONTENT) {
+                showToast('内容至少需要' + MIN_CONTENT + '个字符', 'error');
+                document.getElementById('postContent').focus();
+                return;
+            }
+
+            var banned = checkBannedWords(title + content);
+            if (banned) {
+                showToast('内容包含敏感词: ' + banned, 'error');
+                return;
+            }
+
             _submitting = true;
+            var btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="btn-spinner"></span>发布中...';
+
             try {
-                const title = document.getElementById('title').value.trim();
-                const content = editor ? editor.getHTML() : '';
-                const category = document.getElementById('category').value;
-                const plainText = content.replace(/<[^>]*>/g, '').trim();
-
-                if (!title) { showToast('请输入标题', 'error'); return; }
-                if (!plainText) { showToast('请输入内容', 'error'); return; }
-
-                // 频率限制：30秒内不能重复发帖
-                if (Date.now() - lastPostTime < 30000) {
-                    showToast('发帖太频繁，请30秒后再试', 'error'); return;
-                }
-
-                // 敏感词检查
-                const banned = checkBannedWords(title + plainText);
-                if (banned) { showToast('内容包含敏感词: ' + banned, 'error'); return; }
-
-                const btn = document.querySelector('.btn-primary');
-                setLoading(btn, true);
-
-                const safeContent = sanitizeHTML(content);
-                const tags = document.getElementById('tags') ? document.getElementById('tags').value.trim() : '';
-                const { error } = await supabaseClient.from('forum_posts').insert([{
-                    user_id: currentUser.user.id, username: currentProfile.username,
-                    avatar_url: currentProfile.avatar_url || '', category, title, content: safeContent, tags
+                var safeContent = sanitizeForInsert(content);
+                var { error } = await supabaseClient.from('forum_posts').insert([{
+                    user_id: currentUser.user.id,
+                    username: currentProfile.username,
+                    avatar_url: currentProfile.avatar_url || '',
+                    category: category,
+                    title: title,
+                    content: safeContent,
+                    status: '未解决',
+                    views: 0,
+                    is_pinned: false
                 }]);
 
-                setLoading(btn, false);
-                if (error) { showToast('发布失败: ' + error.message, 'error'); return; }
+                if (error) {
+                    showToast('发布失败: ' + error.message, 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '发表帖子';
+                    _submitting = false;
+                    return;
+                }
 
-                const { data: stats } = await supabaseClient.from('user_stats').select('*').eq('user_id', currentUser.user.id).single();
+                var { data: stats } = await supabaseClient.from('user_stats').select('*').eq('user_id', currentUser.user.id).single();
                 if (stats) {
                     await supabaseClient.from('user_stats').update({ points: stats.points + 5, post_count: stats.post_count + 1 }).eq('user_id', currentUser.user.id);
                 } else {
                     await supabaseClient.from('user_stats').insert([{ user_id: currentUser.user.id, points: 5, post_count: 1 }]);
                 }
 
-                lastPostTime = Date.now();
-                clearDraft();
                 showToast('发布成功！', 'success');
-                setTimeout(() => window.location.href = 'forum.html', 1000);
-            } catch(err) {
+                setTimeout(function() { window.location.href = 'forum.html'; }, 1000);
+            } catch (err) {
                 console.error('submit error:', err);
                 showToast('发布失败: ' + (err.message || '未知错误'), 'error');
-            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '发表帖子';
                 _submitting = false;
             }
         }
 
-        async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; }
+        async function handleLogout() {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        function toggleNav() {
+            document.getElementById('navLinks').classList.toggle('open');
+            document.getElementById('navToggle').classList.toggle('open');
+        }
+
+        window.addEventListener('scroll', function() {
+            document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 50);
+        });
+
         init();
     </script>
-    <script src="modal.js"></script>
-    <script src="footer.js"></script>
     <script src="mobile-menu.js"></script>
 </body>
 </html>
