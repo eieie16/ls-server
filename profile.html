@@ -341,7 +341,7 @@
         const nextPoints=level<LEVELS.length-1?LEVELS[level+1]:LEVELS[level];
         const levelName=LEVEL_NAMES[level]||'新手玩家';
         const isOwnProfile=myUserId===userId;
-        const role=(stats&&stats.role)||'user';
+        const role=profile.role||'user';
 
         const initial=(profile.username||'?')[0].toUpperCase();
         const avatarHtml=profile.avatar_url
@@ -392,7 +392,7 @@
           </div>
 
           <div class="inventory-card">
-            <h2>🎒 背包物品</h2>
+            <h2>🎁 兑换记录</h2>
             <div id="inventoryList"><div class="empty">加载中...</div></div>
           </div>
         `;
@@ -406,7 +406,7 @@
 
     async function loadInventory(userId){
       try{
-        const{data}=await supabaseClient.from('user_inventory')
+        const{data}=await supabaseClient.from('redeem_logs')
           .select('*').eq('user_id',userId).order('created_at',{ascending:false});
 
         const container=document.getElementById('inventoryList');
@@ -420,7 +420,7 @@
           return`<div class="inventory-item">
             <div class="item-icon">🎁</div>
             <div>
-              <div class="item-name">${item.item_name}</div>
+              <div class="item-name">${item.prize||item.code}</div>
               <div class="item-meta">${t}</div>
             </div>
           </div>`;

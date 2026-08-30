@@ -834,7 +834,8 @@
         const LEVEL_NAMES = ['新手玩家', '初级玩家', '进阶玩家', '资深玩家', '精英玩家', '社区达人', '论坛元老', '凌云精英', '凌云大师', '凌云传奇', '凌云之巅'];
 
         let currentUser = null;
-        let userData = null;
+        let profileData = null;
+        let statsData = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
@@ -852,31 +853,38 @@
 
         async function loadUserData() {
             try {
-                const { data, error } = await supabase
+                const { data: profile, error: profileErr } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                if (profileErr) throw profileErr;
+                profileData = profile;
+
+                const { data: stats, error: statsErr } = await supabase
                     .from('user_stats')
                     .select('*')
                     .eq('user_id', currentUser.id)
                     .single();
 
-                if (error && error.code === 'PGRST116') {
-                    const { error: insertError } = await supabase
+                if (statsErr && statsErr.code === 'PGRST116') {
+                    const { error: insertErr } = await supabase
                         .from('user_stats')
-                        .insert({
-                            user_id: currentUser.id,
-                            username: currentUser.email.split('@')[0],
-                            points: 0,
-                            level: 1,
-                            checkin_streak: 0,
-                            total_checkins: 0,
-                            role: 'user'
-                        });
-
-                    if (insertError) throw insertError;
-                    return loadUserData();
+                        .insert({ user_id: currentUser.id, points: 0, level: 1, checkin_streak: 0 });
+                    if (insertErr) throw insertErr;
+                    const { data: newStats } = await supabase
+                        .from('user_stats')
+                        .select('*')
+                        .eq('user_id', currentUser.id)
+                        .single();
+                    statsData = newStats;
+                } else if (statsErr) {
+                    throw statsErr;
+                } else {
+                    statsData = stats;
                 }
 
-                if (error) throw error;
-                userData = data;
                 updateUI();
             } catch (err) {
                 showToast('加载用户数据失败', 'error');
@@ -885,27 +893,28 @@
         }
 
         function updateUI() {
-            if (!userData) return;
+            if (!profileData) return;
 
-            const avatar = userData.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.id}`;
+            const avatar = profileData.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.id}`;
             document.getElementById('profileAvatar').src = avatar;
             document.getElementById('navAvatar').src = avatar;
             document.getElementById('modalPreview').src = avatar;
 
-            document.getElementById('profileName').textContent = userData.username;
-            document.getElementById('navUsername').textContent = userData.username;
-            document.getElementById('profileEmail').textContent = currentUser.email;
-            document.getElementById('usernameInput').value = userData.username;
+            document.getElementById('profileName').textContent = profileData.username;
+            document.getElementById('navUsername').textContent = profileData.username;
+            document.getElementById('profileEmail').textContent = profileData.email;
+            document.getElementById('usernameInput').value = profileData.username;
 
             const roleBadge = document.getElementById('roleBadge');
-            roleBadge.textContent = userData.role === 'admin' ? '管理员' : '用户';
-            roleBadge.className = `role-badge ${userData.role}`;
+            roleBadge.textContent = profileData.role === 'admin' ? '管理员' : '用户';
+            roleBadge.className = `role-badge ${profileData.role}`;
 
-            if (userData.role === 'admin') {
+            if (profileData.role === 'admin') {
                 document.getElementById('adminLink').style.display = 'block';
             }
 
-            updateLevelInfo(userData.points);
+            const points = statsData?.points || 0;
+            updateLevelInfo(points);
             updateCheckinUI();
             updateStats();
         }
@@ -913,17 +922,11 @@
         function updateLevelInfo(points) {
             let level = 0;
             for (let i = LEVELS.length - 1; i >= 0; i--) {
-                if (points >= LEVELS[i]) {
-                    level = i;
-                    break;
-                }
+                if (points >= LEVELS[i]) { level = i; break; }
             }
-
             const nextLevel = level < LEVELS.length - 1 ? LEVELS[level + 1] : LEVELS[level];
-            const currentLevelPoints = LEVELS[level];
-            const progress = level < LEVELS.length - 1
-                ? ((points - currentLevelPoints) / (nextLevel - currentLevelPoints)) * 100
-                : 100;
+            const cur = LEVELS[level];
+            const progress = level < LEVELS.length - 1 ? ((points - cur) / (nextLevel - cur)) * 100 : 100;
 
             document.getElementById('levelIcon').textContent = level + 1;
             document.getElementById('levelName').textContent = LEVEL_NAMES[level];
@@ -935,38 +938,39 @@
 
         async function updateCheckinUI() {
             const today = new Date().toISOString().split('T')[0];
+            const weekStart = getWeekStart();
+
             const { data } = await supabase
                 .from('checkin_logs')
-                .select('checkin_date')
+                .select('created_at')
                 .eq('user_id', currentUser.id)
-                .gte('checkin_date', getWeekStart())
-                .order('checkin_date', { ascending: true });
+                .gte('created_at', weekStart)
+                .order('created_at', { ascending: true });
 
-            const checkedDays = (data || []).map(d => d.checkin_date);
+            const checkedDates = (data || []).map(d => d.created_at.split('T')[0]);
             const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
             const container = document.getElementById('checkinDays');
             container.innerHTML = '';
 
             for (let i = 0; i < 7; i++) {
-                const date = new Date(getWeekStart());
+                const date = new Date(weekStart);
                 date.setDate(date.getDate() + i);
                 const dateStr = date.toISOString().split('T')[0];
-                const isChecked = checkedDays.includes(dateStr);
-
+                const isChecked = checkedDates.includes(dateStr);
                 const dayEl = document.createElement('div');
                 dayEl.className = `checkin-day ${isChecked ? 'checked' : ''}`;
                 dayEl.innerHTML = `周${dayNames[i]}<br>${date.getDate()}日`;
                 container.appendChild(dayEl);
             }
 
-            document.getElementById('checkinStreak').textContent = userData?.checkin_streak || 0;
-            document.getElementById('totalCheckins').textContent = userData?.total_checkins || 0;
+            document.getElementById('checkinStreak').textContent = statsData?.checkin_streak || 0;
 
-            const hasCheckedToday = checkedDays.includes(today);
-            const checkinBtn = document.getElementById('checkinBtn');
-            if (hasCheckedToday) {
-                checkinBtn.disabled = true;
-                checkinBtn.textContent = '今日已签到';
+            const totalCheckins = checkedDates.length;
+            document.getElementById('totalCheckins').textContent = totalCheckins;
+
+            if (checkedDates.includes(today)) {
+                document.getElementById('checkinBtn').disabled = true;
+                document.getElementById('checkinBtn').textContent = '今日已签到';
             }
         }
 
@@ -974,15 +978,16 @@
             const now = new Date();
             const day = now.getDay();
             const diff = now.getDate() - day;
-            const weekStart = new Date(now.setDate(diff));
-            weekStart.setHours(0, 0, 0, 0);
-            return weekStart.toISOString().split('T')[0];
+            const ws = new Date(now);
+            ws.setDate(diff);
+            ws.setHours(0, 0, 0, 0);
+            return ws.toISOString().split('T')[0];
         }
 
         function updateStats() {
-            document.getElementById('statPlayTime').textContent = userData?.play_time || 0;
-            document.getElementById('statEarned').textContent = userData?.points || 0;
-            document.getElementById('statRank').textContent = userData?.rank || '--';
+            document.getElementById('statPlayTime').textContent = profileData?.play_time || 0;
+            document.getElementById('statEarned').textContent = statsData?.points || 0;
+            document.getElementById('statRank').textContent = '#--';
         }
 
         async function handleCheckin() {
@@ -992,8 +997,9 @@
                 .from('checkin_logs')
                 .select('id')
                 .eq('user_id', currentUser.id)
-                .eq('checkin_date', today)
-                .single();
+                .gte('created_at', today)
+                .lt('created_at', today + 'T23:59:59')
+                .maybeSingle();
 
             if (existing) {
                 showToast('今日已签到', 'error');
@@ -1001,44 +1007,26 @@
             }
 
             try {
-                const { error: logError } = await supabase
+                const { error: logErr } = await supabase
                     .from('checkin_logs')
-                    .insert({
-                        user_id: currentUser.id,
-                        checkin_date: today
-                    });
+                    .insert({ user_id: currentUser.id, points_earned: 10 });
 
-                if (logError) throw logError;
+                if (logErr) throw logErr;
 
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayStr = yesterday.toISOString().split('T')[0];
+                const newPoints = (statsData?.points || 0) + 10;
+                const newStreak = (statsData?.checkin_streak || 0) + 1;
 
-                const { data: yesterdayCheckin } = await supabase
-                    .from('checkin_logs')
-                    .select('id')
-                    .eq('user_id', currentUser.id)
-                    .eq('checkin_date', yesterdayStr)
-                    .single();
-
-                const newStreak = yesterdayCheckin ? (userData.checkin_streak || 0) + 1 : 1;
-
-                const { error: statsError } = await supabase
+                const { error: statsErr } = await supabase
                     .from('user_stats')
-                    .update({
-                        points: userData.points + 10,
-                        checkin_streak: newStreak,
-                        total_checkins: (userData.total_checkins || 0) + 1
-                    })
+                    .update({ points: newPoints, checkin_streak: newStreak })
                     .eq('user_id', currentUser.id);
 
-                if (statsError) throw statsError;
+                if (statsErr) throw statsErr;
 
-                userData.points += 10;
-                userData.checkin_streak = newStreak;
-                userData.total_checkins = (userData.total_checkins || 0) + 1;
+                statsData.points = newPoints;
+                statsData.checkin_streak = newStreak;
 
-                updateLevelInfo(userData.points);
+                updateLevelInfo(newPoints);
                 updateCheckinUI();
                 updateStats();
                 showToast('签到成功！获得10积分', 'success');
@@ -1050,25 +1038,17 @@
 
         async function updateUsername() {
             const newUsername = document.getElementById('usernameInput').value.trim();
-            if (!newUsername) {
-                showToast('用户名不能为空', 'error');
-                return;
-            }
-
+            if (!newUsername) { showToast('用户名不能为空', 'error'); return; }
             if (newUsername.length < 2 || newUsername.length > 20) {
-                showToast('用户名长度需在2-20个字符之间', 'error');
-                return;
+                showToast('用户名长度需在2-20个字符之间', 'error'); return;
             }
-
             try {
                 const { error } = await supabase
-                    .from('user_stats')
+                    .from('profiles')
                     .update({ username: newUsername })
-                    .eq('user_id', currentUser.id);
-
+                    .eq('id', currentUser.id);
                 if (error) throw error;
-
-                userData.username = newUsername;
+                profileData.username = newUsername;
                 document.getElementById('profileName').textContent = newUsername;
                 document.getElementById('navUsername').textContent = newUsername;
                 showToast('用户名更新成功', 'success');
@@ -1080,8 +1060,8 @@
 
         function openAvatarModal() {
             document.getElementById('avatarModal').classList.add('active');
-            document.getElementById('avatarUrlInput').value = userData?.avatar_url || '';
-            document.getElementById('modalPreview').src = userData?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.id}`;
+            document.getElementById('avatarUrlInput').value = profileData?.avatar_url || '';
+            document.getElementById('modalPreview').src = profileData?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.id}`;
         }
 
         function closeAvatarModal() {
@@ -1090,25 +1070,18 @@
 
         document.getElementById('avatarUrlInput').addEventListener('input', function () {
             const url = this.value.trim();
-            if (url) {
-                document.getElementById('modalPreview').src = url;
-            } else {
-                document.getElementById('modalPreview').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.id}`;
-            }
+            document.getElementById('modalPreview').src = url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.id}`;
         });
 
         async function saveAvatar() {
             const url = document.getElementById('avatarUrlInput').value.trim();
-
             try {
                 const { error } = await supabase
-                    .from('user_stats')
-                    .update({ avatar_url: url || null })
-                    .eq('user_id', currentUser.id);
-
+                    .from('profiles')
+                    .update({ avatar_url: url || '' })
+                    .eq('id', currentUser.id);
                 if (error) throw error;
-
-                userData.avatar_url = url;
+                profileData.avatar_url = url;
                 const avatar = url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.id}`;
                 document.getElementById('profileAvatar').src = avatar;
                 document.getElementById('navAvatar').src = avatar;
@@ -1123,17 +1096,15 @@
         async function removeAvatar() {
             try {
                 const { error } = await supabase
-                    .from('user_stats')
-                    .update({ avatar_url: null })
-                    .eq('user_id', currentUser.id);
-
+                    .from('profiles')
+                    .update({ avatar_url: '' })
+                    .eq('id', currentUser.id);
                 if (error) throw error;
-
-                userData.avatar_url = null;
-                const defaultAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.id}`;
-                document.getElementById('profileAvatar').src = defaultAvatar;
-                document.getElementById('navAvatar').src = defaultAvatar;
-                document.getElementById('modalPreview').src = defaultAvatar;
+                profileData.avatar_url = '';
+                const def = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.id}`;
+                document.getElementById('profileAvatar').src = def;
+                document.getElementById('navAvatar').src = def;
+                document.getElementById('modalPreview').src = def;
                 document.getElementById('avatarUrlInput').value = '';
                 closeAvatarModal();
                 showToast('头像已移除', 'success');
@@ -1145,20 +1116,15 @@
 
         async function handleLogout() {
             const { error } = await supabase.auth.signOut();
-            if (error) {
-                showToast('退出失败', 'error');
-            } else {
-                window.location.href = 'login.html';
-            }
+            if (error) { showToast('退出失败', 'error'); }
+            else { window.location.href = 'login.html'; }
         }
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             toast.textContent = message;
             toast.className = `toast ${type} show`;
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
     </script>
 </body>

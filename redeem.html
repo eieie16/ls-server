@@ -320,7 +320,7 @@
           return;
         }
 
-        const{data:codeData}=await supabaseClient.from('codes')
+        const{data:codeData}=await supabaseClient.from('redemption_codes')
           .select('*').eq('code',code).single();
 
         if(!codeData){
@@ -330,33 +330,23 @@
           return;
         }
 
-        if(codeData.used>=codeData.max_uses){
+        if(codeData.used_count>=codeData.max_uses){
           resultEl.className='result show error';
           resultEl.innerHTML='<h3>❌ 兑换码已被使用完毕</h3>';
           btn.className='btn-redeem';
           return;
         }
 
-        await supabaseClient.from('codes')
-          .update({used:codeData.used+1}).eq('id',codeData.id);
+        await supabaseClient.from('redemption_codes')
+          .update({used_count:codeData.used_count+1}).eq('id',codeData.id);
 
         const prizeName=codeData.prize||'未知奖品';
-        let prizeData=null;
-        if(codeData.prize_data){
-          try{prizeData=typeof codeData.prize_data==='string'?JSON.parse(codeData.prize_data):codeData.prize_data}catch(e){}
-        }
 
-        await supabaseClient.from('user_redemptions').insert([{
+        await supabaseClient.from('redeem_logs').insert([{
           user_id:currentUser.user.id,
-          code_id:codeData.id,
+          username:currentUser.user.email.split('@')[0],
           code:code,
           prize:prizeName
-        }]);
-
-        await supabaseClient.from('user_inventory').insert([{
-          user_id:currentUser.user.id,
-          item_name:prizeName,
-          item_data:prizeData
         }]);
 
         resultEl.className='result show success';
@@ -383,7 +373,7 @@
     async function loadMyRedemptions(){
       if(!currentUser)return;
       try{
-        const{data}=await supabaseClient.from('user_redemptions')
+        const{data}=await supabaseClient.from('redeem_logs')
           .select('*').eq('user_id',currentUser.user.id)
           .order('created_at',{ascending:false}).limit(20);
 

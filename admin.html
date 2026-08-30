@@ -882,9 +882,12 @@
             const tbody = document.getElementById('users-table-body');
             tbody.innerHTML = '<tr><td colspan="6" class="loading">加载中...</td></tr>';
             try {
-                const { data, error } = await client.from('profiles').select('*').order('created_at', { ascending: false });
-                if (error) throw error;
-                allUsers = data || [];
+                const { data: profiles, error: pErr } = await client.from('profiles').select('*').order('created_at', { ascending: false });
+                if (pErr) throw pErr;
+                const { data: statsList } = await client.from('user_stats').select('user_id,points');
+                const statsMap = {};
+                (statsList || []).forEach(s => { statsMap[s.user_id] = s.points || 0; });
+                allUsers = (profiles || []).map(p => ({ ...p, points: statsMap[p.id] || 0 }));
                 renderUsers(allUsers);
             } catch (e) {
                 tbody.innerHTML = '<tr><td colspan="6" class="loading">加载失败</td></tr>';
@@ -1186,9 +1189,13 @@
             const tbody = document.getElementById('levels-table-body');
             tbody.innerHTML = '<tr><td colspan="5" class="loading">加载中...</td></tr>';
             try {
-                const { data, error } = await client.from('profiles').select('*').order('points', { ascending: false });
-                if (error) throw error;
-                allUsers = data || [];
+                const { data: profiles, error: pErr } = await client.from('profiles').select('*');
+                if (pErr) throw pErr;
+                const { data: statsList } = await client.from('user_stats').select('user_id,points');
+                const statsMap = {};
+                (statsList || []).forEach(s => { statsMap[s.user_id] = s.points || 0; });
+                allUsers = (profiles || []).map(p => ({ ...p, points: statsMap[p.id] || 0 }));
+                allUsers.sort((a, b) => b.points - a.points);
                 renderLevels(allUsers);
             } catch (e) {
                 tbody.innerHTML = '<tr><td colspan="5" class="loading">加载失败</td></tr>';
@@ -1252,7 +1259,8 @@
             const userId = document.getElementById('edit-level-user-id').value;
             const points = parseInt(document.getElementById('edit-level-points').value) || 0;
             const role = document.getElementById('edit-level-role').value;
-            await client.from('profiles').update({ points, role }).eq('id', userId);
+            await client.from('profiles').update({ role }).eq('id', userId);
+            await client.from('user_stats').update({ points }).eq('user_id', userId);
             closeModal('modal-edit-level');
             loadLevels();
         }
