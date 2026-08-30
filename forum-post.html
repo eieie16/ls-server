@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>帖子详情 - 凌云城论坛</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="supabase.min.js"></script>
     <style>
         .page-wrapper {
             max-width: 900px;
@@ -498,27 +498,23 @@
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="index.html" class="nav-logo">凌云城</a>
-            <button class="mobile-menu-toggle" aria-label="菜单">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            <div class="nav-links">
-                <a href="index.html">首页</a>
-                <a href="features.html">特色</a>
-                <a href="rules.html">规则</a>
-                <a href="join.html">加入</a>
-                <a href="redeem.html">兑换</a>
-                <a href="forum.html" class="active">论坛</a>
-            </div>
-            <div class="nav-auth" id="navAuth">
-                <a href="login.html" class="btn-login">登录</a>
-                <a href="register.html" class="btn-register">注册</a>
-            </div>
+    <nav class="nav" id="mainNav">
+        <a href="index.html" class="nav-logo">凌云城</a>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="index.html">首页</a></li>
+            <li><a href="features.html">特色</a></li>
+            <li><a href="rules.html">规则</a></li>
+            <li><a href="connect.html">加入</a></li>
+            <li><a href="redeem.html">兑换</a></li>
+            <li><a href="forum.html" class="active">论坛</a></li>
+        </ul>
+        <div class="nav-right" id="navAuth">
+            <a href="login.html" class="nav-btn outline">登录</a>
+            <a href="login.html" class="nav-btn filled">注册</a>
         </div>
+        <button class="nav-toggle" id="navToggle" onclick="toggleNav()">
+            <span></span><span></span><span></span>
+        </button>
     </nav>
 
     <main class="page-wrapper">
@@ -544,15 +540,31 @@
         </div>
     </main>
 
-    <footer>
+    <footer class="footer">
         <div class="footer-inner">
-            <div class="footer-brand">凌云城 <span>FiveM</span></div>
-            <div class="footer-copy">&copy; 2025 凌云城. All rights reserved.</div>
-            <div class="footer-links">
-                <a href="rules.html">规则</a>
-                <a href="join.html">加入</a>
-                <a href="forum.html">论坛</a>
+            <div class="footer-brand">
+                <span class="logo">凌云城</span>
+                <p>优质的中文 FiveM 轻 RP 服务器，为你提供轻松愉快的角色扮演体验。</p>
             </div>
+            <div class="footer-col">
+                <h4>导航</h4>
+                <ul>
+                    <li><a href="features.html">服务器特色</a></li>
+                    <li><a href="rules.html">服务器规则</a></li>
+                    <li><a href="connect.html">如何加入</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>社区</h4>
+                <ul>
+                    <li><a href="https://kook.vip/71Hw5z" target="_blank">Kook</a></li>
+                    <li><a href="https://qm.qq.com/q/zzUzFa6ytw" target="_blank">QQ 群</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2026 凌云城-轻RP 4.0</span>
+            <span>本站与 Rockstar Games 无任何关联</span>
         </div>
     </footer>
 
@@ -591,6 +603,11 @@
             }, 3000);
         }
 
+        function toggleNav() {
+            document.getElementById('navLinks').classList.toggle('open');
+            document.getElementById('navToggle').classList.toggle('open');
+        }
+
         async function checkAuth() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
@@ -608,10 +625,8 @@
             if (currentUser) {
                 const initial = (currentUser.email || 'U').charAt(0).toUpperCase();
                 navAuth.innerHTML = `
-                    <div style="display:flex;align-items:center;gap:0.6rem;">
-                        <div style="width:32px;height:32px;border-radius:50%;background:var(--accent,#4fc3f7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;">${initial}</div>
-                        <button onclick="logout()" style="background:none;border:1px solid var(--border,#333);color:var(--text-muted,#999);padding:0.4rem 0.8rem;border-radius:6px;cursor:pointer;font-size:0.85rem;">退出</button>
-                    </div>
+                    <a href="dashboard.html" class="user-badge"><div class="avatar"><div style="width:28px;height:28px;border-radius:6px;background:var(--gold);color:#000;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem">${initial}</div></div><span>${currentUser.email.split('@')[0]}</span></a>
+                    <button onclick="logout()" class="nav-btn outline">退出</button>
                 `;
             }
         }
