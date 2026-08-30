@@ -576,7 +576,7 @@
     <script>
         const SUPABASE_URL = 'https://mxajreukeniayoqyvybe.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentUser = null;
         let currentPost = null;
@@ -609,7 +609,7 @@
         }
 
         async function checkAuth() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await client.auth.getSession();
             if (!session) {
                 window.location.href = 'login.html';
                 return;
@@ -632,7 +632,7 @@
         }
 
         async function logout() {
-            await supabase.auth.signOut();
+            await client.auth.signOut();
             window.location.href = 'login.html';
         }
 
@@ -652,7 +652,7 @@
                 return;
             }
 
-            const { data, error } = await supabase
+            const { data, error } = await client
                 .from('forum_posts')
                 .select('*')
                 .eq('id', postId)
@@ -728,7 +728,7 @@
 
         async function checkLiked() {
             if (!currentUser || !currentPost) return;
-            const { data } = await supabase
+            const { data } = await client
                 .from('post_likes')
                 .select('id')
                 .eq('post_id', currentPost.id)
@@ -755,7 +755,7 @@
             btn.disabled = true;
 
             if (userLiked) {
-                const { error } = await supabase
+                const { error } = await client
                     .from('post_likes')
                     .delete()
                     .eq('post_id', currentPost.id)
@@ -764,20 +764,20 @@
                 if (!error) {
                     userLiked = false;
                     currentPost.like_count = Math.max(0, (currentPost.like_count || 1) - 1);
-                    await supabase.from('forum_posts').update({ like_count: currentPost.like_count }).eq('id', currentPost.id);
+                    await client.from('forum_posts').update({ like_count: currentPost.like_count }).eq('id', currentPost.id);
                     btn.classList.remove('liked');
                     document.getElementById('likeHeart').textContent = '♡';
                     document.getElementById('likeCount').textContent = currentPost.like_count;
                 }
             } else {
-                const { error } = await supabase
+                const { error } = await client
                     .from('post_likes')
                     .insert({ post_id: currentPost.id, user_id: currentUser.id });
 
                 if (!error) {
                     userLiked = true;
                     currentPost.like_count = (currentPost.like_count || 0) + 1;
-                    await supabase.from('forum_posts').update({ like_count: currentPost.like_count }).eq('id', currentPost.id);
+                    await client.from('forum_posts').update({ like_count: currentPost.like_count }).eq('id', currentPost.id);
                     btn.classList.add('liked');
                     document.getElementById('likeHeart').textContent = '♥';
                     document.getElementById('likeCount').textContent = currentPost.like_count;
@@ -788,7 +788,7 @@
 
         async function loadComments() {
             const postId = getPostId();
-            const { data, error } = await supabase
+            const { data, error } = await client
                 .from('forum_replies')
                 .select('*')
                 .eq('post_id', postId)
@@ -842,7 +842,7 @@
 
             const authorName = currentUser.email ? currentUser.email.split('@')[0] : '匿名';
 
-            const { error } = await supabase.from('forum_replies').insert({
+            const { error } = await client.from('forum_replies').insert({
                 post_id: postId,
                 user_id: currentUser.id,
                 username: authorName,
@@ -866,7 +866,7 @@
         async function deleteComment(commentId) {
             if (!confirm('确定要删除这条评论吗？')) return;
 
-            const { error } = await supabase
+            const { error } = await client
                 .from('forum_replies')
                 .delete()
                 .eq('id', commentId)
@@ -896,7 +896,7 @@
         }
 
         async function updatePost(title, content) {
-            const { error } = await supabase
+            const { error } = await client
                 .from('forum_posts')
                 .update({ title, content })
                 .eq('id', currentPost.id)
@@ -916,7 +916,7 @@
         async function deletePost() {
             if (!confirm('确定要删除这篇帖子吗？此操作不可恢复。')) return;
 
-            const { error } = await supabase
+            const { error } = await client
                 .from('forum_posts')
                 .delete()
                 .eq('id', currentPost.id)

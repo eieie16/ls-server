@@ -762,12 +762,11 @@
     <script>
         const SUPABASE_URL = 'https://mxajreukeniayoqyvybe.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4';
-        const supabase = window.supabase;
         let client;
-
-        if (supabase && supabase.createClient) {
-            client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        } else {
+        try {
+            client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } catch(e) {
+            console.error('Supabase init failed:', e);
             client = { from: () => ({ select: () => Promise.resolve({ data: [], error: null }) }) };
         }
 
