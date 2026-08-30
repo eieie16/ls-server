@@ -341,8 +341,8 @@
       try{
         const{data,error}=await supabaseClient.from('forum_posts')
           .select('*')
-          .order('pinned',{ascending:false})
-          .order('featured',{ascending:false})
+          .order('is_pinned',{ascending:false})
+          .order('is_featured',{ascending:false})
           .order('created_at',{ascending:false})
           .limit(100);
         if(error) throw error;

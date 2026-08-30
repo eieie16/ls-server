@@ -677,13 +677,11 @@
 
         function renderPost() {
             const post = currentPost;
-            const initial = (post.author_name || 'U').charAt(0).toUpperCase();
+            const initial = (post.username || 'U').charAt(0).toUpperCase();
             const date = new Date(post.created_at).toLocaleDateString('zh-CN', {
                 year: 'numeric', month: 'long', day: 'numeric',
                 hour: '2-digit', minute: '2-digit'
             });
-            const roleClass = post.author_role === 'admin' ? '' : post.author_role === 'moderator' ? ' moderator' : ' member';
-            const roleLabel = post.author_role === 'admin' ? '管理员' : post.author_role === 'moderator' ? '版主' : '成员';
             const isOwner = currentUser && post.user_id === currentUser.id;
 
             const safeContent = (typeof DOMPurify !== 'undefined')
@@ -705,12 +703,11 @@
                     <div class="post-meta">
                         <div class="author-info">
                             <div class="author-avatar">${initial}</div>
-                            <span class="author-name">${escapeHtml(post.author_name || '匿名')}</span>
-                            <span class="role-badge${roleClass}">${roleLabel}</span>
+                            <span class="author-name">${escapeHtml(post.username || '匿名')}</span>
                         </div>
                         <span class="post-date">${date}</span>
                         ${post.category ? `<span class="category-badge">${escapeHtml(post.category)}</span>` : ''}
-                        ${post.featured ? '<span class="featured-badge">置顶</span>' : ''}
+                        ${post.is_featured ? '<span class="featured-badge">精华</span>' : ''}
                     </div>
                 </div>
                 <div class="post-content">${safeContent}</div>
@@ -732,7 +729,7 @@
         async function checkLiked() {
             if (!currentUser || !currentPost) return;
             const { data } = await supabase
-                .from('forum_likes')
+                .from('post_likes')
                 .select('id')
                 .eq('post_id', currentPost.id)
                 .eq('user_id', currentUser.id)
@@ -759,7 +756,7 @@
 
             if (userLiked) {
                 const { error } = await supabase
-                    .from('forum_likes')
+                    .from('post_likes')
                     .delete()
                     .eq('post_id', currentPost.id)
                     .eq('user_id', currentUser.id);
@@ -774,7 +771,7 @@
                 }
             } else {
                 const { error } = await supabase
-                    .from('forum_likes')
+                    .from('post_likes')
                     .insert({ post_id: currentPost.id, user_id: currentUser.id });
 
                 if (!error) {
@@ -792,7 +789,7 @@
         async function loadComments() {
             const postId = getPostId();
             const { data, error } = await supabase
-                .from('forum_comments')
+                .from('forum_replies')
                 .select('*')
                 .eq('post_id', postId)
                 .order('created_at', { ascending: true });
@@ -807,7 +804,7 @@
 
             document.getElementById('commentsTitle').textContent = `评论 (${data.length})`;
             document.getElementById('commentList').innerHTML = data.map(c => {
-                const initial = (c.author_name || 'U').charAt(0).toUpperCase();
+                const initial = (c.username || 'U').charAt(0).toUpperCase();
                 const date = new Date(c.created_at).toLocaleDateString('zh-CN', {
                     month: 'long', day: 'numeric',
                     hour: '2-digit', minute: '2-digit'
@@ -821,7 +818,7 @@
                     <div class="comment-item">
                         <div class="comment-header">
                             <div class="comment-avatar">${initial}</div>
-                            <span class="comment-author">${escapeHtml(c.author_name || '匿名')}</span>
+                            <span class="comment-author">${escapeHtml(c.username || '匿名')}</span>
                             <span class="comment-date">${date}</span>
                             ${isOwner ? `<button class="comment-delete-btn" onclick="deleteComment('${c.id}')">删除</button>` : ''}
                         </div>
@@ -845,10 +842,10 @@
 
             const authorName = currentUser.email ? currentUser.email.split('@')[0] : '匿名';
 
-            const { error } = await supabase.from('forum_comments').insert({
+            const { error } = await supabase.from('forum_replies').insert({
                 post_id: postId,
                 user_id: currentUser.id,
-                author_name: authorName,
+                username: authorName,
                 content: content
             });
 
@@ -858,12 +855,6 @@
                 btn.textContent = '发表评论';
                 return;
             }
-
-            await supabase.from('forum_posts').update({
-                comment_count: (currentPost.comment_count || 0) + 1
-            }).eq('id', postId);
-
-            currentPost.comment_count = (currentPost.comment_count || 0) + 1;
 
             input.value = '';
             showToast('评论发表成功！');
@@ -876,7 +867,7 @@
             if (!confirm('确定要删除这条评论吗？')) return;
 
             const { error } = await supabase
-                .from('forum_comments')
+                .from('forum_replies')
                 .delete()
                 .eq('id', commentId)
                 .eq('user_id', currentUser.id);
@@ -885,11 +876,6 @@
                 showToast('删除失败: ' + error.message, 'error');
                 return;
             }
-
-            currentPost.comment_count = Math.max(0, (currentPost.comment_count || 1) - 1);
-            await supabase.from('forum_posts').update({
-                comment_count: currentPost.comment_count
-            }).eq('id', currentPost.id);
 
             showToast('评论已删除');
             await loadComments();

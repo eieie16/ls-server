@@ -716,10 +716,9 @@
             <div class="form-group">
                 <label>类型</label>
                 <select id="add-ann-type">
-                    <option value="info">通知</option>
-                    <option value="update">更新</option>
-                    <option value="event">活动</option>
-                    <option value="warning">警告</option>
+                    <option value="公告">公告</option>
+                    <option value="更新日志">更新日志</option>
+                    <option value="维护通知">维护通知</option>
                 </select>
             </div>
             <div class="form-group">
@@ -1072,18 +1071,18 @@
                     <td>${escapeHtml(p.author_name || p.user_id || '-')}</td>
                     <td>${escapeHtml(p.category || '-')}</td>
                     <td>
-                        ${p.pinned ? '<span class="badge badge-pinned">置顶</span> ' : ''}
-                        ${p.featured ? '<span class="badge badge-featured">精选</span>' : ''}
-                        ${!p.pinned && !p.featured ? '<span class="badge badge-user">普通</span>' : ''}
+                        ${p.is_pinned ? '<span class="badge badge-pinned">置顶</span> ' : ''}
+                        ${p.is_featured ? '<span class="badge badge-featured">精选</span>' : ''}
+                        ${!p.is_pinned && !p.is_featured ? '<span class="badge badge-user">普通</span>' : ''}
                     </td>
                     <td>${formatDate(p.created_at)}</td>
                     <td>
                         <div class="btn-group">
-                            <button class="btn btn-sm ${p.pinned ? 'btn-ghost' : 'btn-gold'}" onclick="togglePinPost('${p.id}', ${!p.pinned})">
-                                ${p.pinned ? '取消置顶' : '置顶'}
+                            <button class="btn btn-sm ${p.is_pinned ? 'btn-ghost' : 'btn-gold'}" onclick="togglePinPost('${p.id}', ${!p.is_pinned})">
+                                ${p.is_pinned ? '取消置顶' : '置顶'}
                             </button>
-                            <button class="btn btn-sm ${p.featured ? 'btn-ghost' : 'btn-blue'}" onclick="toggleFeaturedPost('${p.id}', ${!p.featured})">
-                                ${p.featured ? '取消精选' : '精选'}
+                            <button class="btn btn-sm ${p.is_featured ? 'btn-ghost' : 'btn-blue'}" onclick="toggleFeaturedPost('${p.id}', ${!p.is_featured})">
+                                ${p.is_featured ? '取消精选' : '精选'}
                             </button>
                             <button class="btn btn-red btn-sm" onclick="deletePost('${p.id}')">删除</button>
                         </div>
@@ -1099,12 +1098,12 @@
         }
 
         async function togglePinPost(id, pin) {
-            await client.from('forum_posts').update({ pinned: pin }).eq('id', id);
+            await client.from('forum_posts').update({ is_pinned: pin }).eq('id', id);
             loadForumPosts();
         }
 
         async function toggleFeaturedPost(id, feat) {
-            await client.from('forum_posts').update({ featured: feat }).eq('id', id);
+            await client.from('forum_posts').update({ is_featured: feat }).eq('id', id);
             loadForumPosts();
         }
 
@@ -1135,11 +1134,11 @@
                 tbody.innerHTML = '<tr><td colspan="5" class="empty-state">暂无公告</td></tr>';
                 return;
             }
-            const typeMap = { info: '通知', update: '更新', event: '活动', warning: '警告' };
+            const typeMap = { '公告': '公告', '更新日志': '更新日志', '维护通知': '维护通知' };
             tbody.innerHTML = anns.map(a => `
                 <tr>
                     <td>${escapeHtml(a.title || '-')}</td>
-                    <td><span class="badge badge-${a.type === 'warning' ? 'banned' : a.type === 'event' ? 'featured' : 'user'}">${typeMap[a.type] || a.type || '-'}</span></td>
+                    <td><span class="badge badge-${a.type === '维护通知' ? 'banned' : a.type === '更新日志' ? 'featured' : 'user'}">${typeMap[a.type] || a.type || '-'}</span></td>
                     <td>${a.pinned ? '<span class="badge badge-pinned">已置顶</span>' : '<span class="badge badge-user">普通</span>'}</td>
                     <td>${formatDate(a.created_at)}</td>
                     <td>
@@ -1281,10 +1280,10 @@
             }
             tbody.innerHTML = reports.map(r => `
                 <tr>
-                    <td>${escapeHtml(r.reporter_name || r.reporter_id || '-')}</td>
-                    <td>${escapeHtml(r.target_name || r.target_id || '-')}</td>
+                    <td>${escapeHtml(r.reporter_id ? r.reporter_id.substring(0,8)+'...' : '-')}</td>
+                    <td>${escapeHtml(r.target_type + ': ' + (r.target_id ? r.target_id.substring(0,8)+'...' : '-'))}</td>
                     <td>${escapeHtml(r.reason || '-')}</td>
-                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(r.details || '')}">${escapeHtml(r.details || '-')}</td>
+                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(r.admin_note || '')}">${escapeHtml(r.admin_note || '-')}</td>
                     <td>${formatDate(r.created_at)}</td>
                     <td>
                         <button class="btn btn-ghost btn-sm" onclick="dismissReport('${r.id}')">驳回</button>
