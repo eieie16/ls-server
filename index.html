@@ -444,7 +444,7 @@
     (async function(){
       try{
         const{data}=await supabaseClient.from('announcements')
-          .select('*').order('pinned',{ascending:false}).order('created_at',{ascending:false}).limit(3);
+          .select('*').order('pinned',{ascending:false}).order('sort_order',{ascending:false}).order('created_at',{ascending:false}).limit(3);
         if(!data||!data.length){document.getElementById('annList').innerHTML='<div class="empty">暂无公告</div>';return}
         document.getElementById('annList').innerHTML=data.map(a=>{
           const t=new Date(a.created_at).toLocaleDateString('zh-CN');

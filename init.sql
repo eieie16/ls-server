@@ -178,11 +178,15 @@ CREATE TABLE IF NOT EXISTS public.announcements (
     content TEXT NOT NULL,
     type TEXT DEFAULT '公告' CHECK (type IN ('公告', '更新日志', '维护通知')),
     pinned BOOLEAN DEFAULT false,
+    sort_order INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Anyone can read announcements" ON public.announcements FOR SELECT USING (true);
 CREATE POLICY "Admins can manage announcements" ON public.announcements FOR ALL USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+
+-- 公告排序字段
+ALTER TABLE public.announcements ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
 
 -- 点赞表
 CREATE TABLE IF NOT EXISTS public.post_likes (

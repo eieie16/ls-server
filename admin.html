@@ -591,6 +591,7 @@
                 <table>
                     <thead>
                         <tr>
+                            <th>排序</th>
                             <th>标题</th>
                             <th>类型</th>
                             <th>置顶</th>
@@ -599,7 +600,7 @@
                         </tr>
                     </thead>
                     <tbody id="announcements-table-body">
-                        <tr><td colspan="5" class="loading">加载中...</td></tr>
+                        <tr><td colspan="6" class="loading">加载中...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1118,27 +1119,34 @@
         // Announcements
         async function loadAnnouncements() {
             const tbody = document.getElementById('announcements-table-body');
-            tbody.innerHTML = '<tr><td colspan="5" class="loading">加载中...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="loading">加载中...</td></tr>';
             try {
-                const { data, error } = await client.from('announcements').select('*').order('created_at', { ascending: false });
+                const { data, error } = await client.from('announcements').select('*').order('sort_order', { ascending: false }).order('created_at', { ascending: false });
                 if (error) throw error;
                 allAnnouncements = data || [];
                 renderAnnouncements(allAnnouncements);
             } catch (e) {
-                tbody.innerHTML = '<tr><td colspan="5" class="loading">加载失败</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="loading">加载失败</td></tr>';
                 console.error(e);
             }
+        }
         }
 
         function renderAnnouncements(anns) {
             const tbody = document.getElementById('announcements-table-body');
             if (!anns.length) {
-                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">暂无公告</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">暂无公告</td></tr>';
                 return;
             }
             const typeMap = { '公告': '公告', '更新日志': '更新日志', '维护通知': '维护通知' };
-            tbody.innerHTML = anns.map(a => `
+            tbody.innerHTML = anns.map((a, i) => `
                 <tr>
+                    <td>
+                        <div class="btn-group" style="gap:2px">
+                            <button class="btn btn-ghost btn-sm" onclick="moveAnnouncement(${i}, -1)" ${i === 0 ? 'disabled' : ''} title="上移">↑</button>
+                            <button class="btn btn-ghost btn-sm" onclick="moveAnnouncement(${i}, 1)" ${i === anns.length - 1 ? 'disabled' : ''} title="下移">↓</button>
+                        </div>
+                    </td>
                     <td>${escapeHtml(a.title || '-')}</td>
                     <td><span class="badge badge-${a.type === '维护通知' ? 'banned' : a.type === '更新日志' ? 'featured' : 'user'}">${typeMap[a.type] || a.type || '-'}</span></td>
                     <td>${a.pinned ? '<span class="badge badge-pinned">已置顶</span>' : '<span class="badge badge-user">普通</span>'}</td>
@@ -1167,7 +1175,8 @@
             const type = document.getElementById('add-ann-type').value;
             const content = document.getElementById('add-ann-content').value.trim();
             if (!title || !content) { alert('请填写标题和内容'); return; }
-            await client.from('announcements').insert({ title, type, content, pinned: false });
+            const { data: { session } } = await client.auth.getSession();
+            await client.from('announcements').insert({ title, type, content, pinned: false, sort_order: 0, user_id: session?.user?.id || null });
             closeModal('modal-add-announcement');
             loadAnnouncements();
         }
@@ -1180,6 +1189,19 @@
         async function deleteAnnouncement(id) {
             if (!confirm('确定删除此公告？')) return;
             await client.from('announcements').delete().eq('id', id);
+            loadAnnouncements();
+        }
+
+        async function moveAnnouncement(index, direction) {
+            const anns = allAnnouncements;
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= anns.length) return;
+            const a = anns[index];
+            const b = anns[targetIndex];
+            const aOrder = a.sort_order || 0;
+            const bOrder = b.sort_order || 0;
+            await client.from('announcements').update({ sort_order: bOrder }).eq('id', a.id);
+            await client.from('announcements').update({ sort_order: aOrder }).eq('id', b.id);
             loadAnnouncements();
         }
 
