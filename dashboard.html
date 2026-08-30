@@ -859,8 +859,20 @@
                     .eq('id', currentUser.id)
                     .single();
 
-                if (profileErr) throw profileErr;
-                profileData = profile;
+                if (profileErr) {
+                    console.warn('Profile query error, creating profile:', profileErr);
+                    const username = currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || '玩家';
+                    const email = currentUser.email || '';
+                    const { error: insertErr } = await supabase
+                        .from('profiles')
+                        .insert({ id: currentUser.id, username: username, email: email, role: 'user' });
+                    if (insertErr) {
+                        console.error('Profile insert failed:', insertErr);
+                    }
+                    profileData = { id: currentUser.id, username: username, email: email, role: 'user', avatar_url: '' };
+                } else {
+                    profileData = profile;
+                }
 
                 const { data: stats, error: statsErr } = await supabase
                     .from('user_stats')
@@ -869,10 +881,9 @@
                     .single();
 
                 if (statsErr && statsErr.code === 'PGRST116') {
-                    const { error: insertErr } = await supabase
+                    await supabase
                         .from('user_stats')
                         .insert({ user_id: currentUser.id, points: 0, level: 1, checkin_streak: 0 });
-                    if (insertErr) throw insertErr;
                     const { data: newStats } = await supabase
                         .from('user_stats')
                         .select('*')
@@ -880,15 +891,19 @@
                         .single();
                     statsData = newStats;
                 } else if (statsErr) {
-                    throw statsErr;
+                    console.warn('user_stats query error:', statsErr);
+                    statsData = { points: 0, level: 1, checkin_streak: 0 };
                 } else {
                     statsData = stats;
                 }
 
                 updateUI();
             } catch (err) {
-                showToast('加载用户数据失败', 'error');
-                console.error(err);
+                console.error('loadUserData error:', err);
+                profileData = profileData || { username: currentUser.email?.split('@')[0] || '玩家', email: currentUser.email || '', role: 'user', avatar_url: '' };
+                statsData = statsData || { points: 0, level: 1, checkin_streak: 0 };
+                updateUI();
+                showToast('部分数据加载失败', 'error');
             }
         }
 
@@ -896,9 +911,12 @@
             if (!profileData) return;
 
             const avatar = profileData.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.id}`;
-            document.getElementById('profileAvatar').src = avatar;
-            document.getElementById('navAvatar').src = avatar;
-            document.getElementById('modalPreview').src = avatar;
+            const avatarEl = document.getElementById('profileAvatar');
+            if (avatarEl) avatarEl.src = avatar;
+            const navAvatarEl = document.getElementById('navAvatar');
+            if (navAvatarEl) navAvatarEl.src = avatar;
+            const modalPreviewEl = document.getElementById('modalPreview');
+            if (modalPreviewEl) modalPreviewEl.src = avatar;
 
             document.getElementById('profileName').textContent = profileData.username;
             document.getElementById('navUsername').textContent = profileData.username;
