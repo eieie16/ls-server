@@ -828,7 +828,7 @@
         const SUPABASE_URL = 'https://mxajreukeniayoqyvybe.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4';
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const LEVELS = [0, 50, 150, 300, 500, 800, 1200, 1800, 2500, 3500, 5000];
         const LEVEL_NAMES = ['新手玩家', '初级玩家', '进阶玩家', '资深玩家', '精英玩家', '社区达人', '论坛元老', '凌云精英', '凌云大师', '凌云传奇', '凌云之巅'];
@@ -842,7 +842,7 @@
         });
 
         async function checkAuth() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await client.auth.getSession();
             if (!session) {
                 window.location.href = 'login.html';
                 return;
@@ -853,7 +853,7 @@
 
         async function loadUserData() {
             try {
-                const { data: profile, error: profileErr } = await supabase
+                const { data: profile, error: profileErr } = await client
                     .from('profiles')
                     .select('*')
                     .eq('id', currentUser.id)
@@ -863,7 +863,7 @@
                     console.warn('Profile query error, creating profile:', profileErr);
                     const username = currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || '玩家';
                     const email = currentUser.email || '';
-                    const { error: insertErr } = await supabase
+                    const { error: insertErr } = await client
                         .from('profiles')
                         .insert({ id: currentUser.id, username: username, email: email, role: 'user' });
                     if (insertErr) {
@@ -874,17 +874,17 @@
                     profileData = profile;
                 }
 
-                const { data: stats, error: statsErr } = await supabase
+                const { data: stats, error: statsErr } = await client
                     .from('user_stats')
                     .select('*')
                     .eq('user_id', currentUser.id)
                     .single();
 
                 if (statsErr && statsErr.code === 'PGRST116') {
-                    await supabase
+                    await client
                         .from('user_stats')
                         .insert({ user_id: currentUser.id, points: 0, level: 1, checkin_streak: 0 });
-                    const { data: newStats } = await supabase
+                    const { data: newStats } = await client
                         .from('user_stats')
                         .select('*')
                         .eq('user_id', currentUser.id)
@@ -958,7 +958,7 @@
             const today = new Date().toISOString().split('T')[0];
             const weekStart = getWeekStart();
 
-            const { data } = await supabase
+            const { data } = await client
                 .from('checkin_logs')
                 .select('created_at')
                 .eq('user_id', currentUser.id)
@@ -1011,7 +1011,7 @@
         async function handleCheckin() {
             const today = new Date().toISOString().split('T')[0];
 
-            const { data: existing } = await supabase
+            const { data: existing } = await client
                 .from('checkin_logs')
                 .select('id')
                 .eq('user_id', currentUser.id)
@@ -1025,7 +1025,7 @@
             }
 
             try {
-                const { error: logErr } = await supabase
+                const { error: logErr } = await client
                     .from('checkin_logs')
                     .insert({ user_id: currentUser.id, points_earned: 10 });
 
@@ -1034,7 +1034,7 @@
                 const newPoints = (statsData?.points || 0) + 10;
                 const newStreak = (statsData?.checkin_streak || 0) + 1;
 
-                const { error: statsErr } = await supabase
+                const { error: statsErr } = await client
                     .from('user_stats')
                     .update({ points: newPoints, checkin_streak: newStreak })
                     .eq('user_id', currentUser.id);
@@ -1061,7 +1061,7 @@
                 showToast('用户名长度需在2-20个字符之间', 'error'); return;
             }
             try {
-                const { error } = await supabase
+                const { error } = await client
                     .from('profiles')
                     .update({ username: newUsername })
                     .eq('id', currentUser.id);
@@ -1094,7 +1094,7 @@
         async function saveAvatar() {
             const url = document.getElementById('avatarUrlInput').value.trim();
             try {
-                const { error } = await supabase
+                const { error } = await client
                     .from('profiles')
                     .update({ avatar_url: url || '' })
                     .eq('id', currentUser.id);
@@ -1113,7 +1113,7 @@
 
         async function removeAvatar() {
             try {
-                const { error } = await supabase
+                const { error } = await client
                     .from('profiles')
                     .update({ avatar_url: '' })
                     .eq('id', currentUser.id);
@@ -1133,7 +1133,7 @@
         }
 
         async function handleLogout() {
-            const { error } = await supabase.auth.signOut();
+            const { error } = await client.auth.signOut();
             if (error) { showToast('退出失败', 'error'); }
             else { window.location.href = 'login.html'; }
         }
