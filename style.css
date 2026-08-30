@@ -26,6 +26,15 @@
   --font-display:'ZCOOL KuaiLe','Noto Serif SC',serif;
   --font-heading:'Noto Serif SC',serif;
   --font-body:'Noto Sans SC',sans-serif;
+  /* dashboard / legacy aliases */
+  --bg-primary:var(--bg);
+  --bg-secondary:var(--surface);
+  --bg-tertiary:var(--surface2);
+  --text-primary:var(--text);
+  --text-secondary:var(--text2);
+  --text-muted:var(--text3);
+  --accent-color:var(--gold);
+  --border-color:var(--border);
 }
 
 html{scroll-behavior:smooth;overflow-x:hidden}
