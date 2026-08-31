@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>画廊 - 凌云城-轻RP 4.0</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .page-header{
+      padding:clamp(5rem,12vh,9rem) 1.5rem clamp(2rem,5vh,4rem);
+      text-align:center;position:relative;
+    }
+    .page-header::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:100%;
+      background:radial-gradient(ellipse 60% 50% at 50% 30%,rgba(212,168,83,0.06) 0%,transparent 70%);
+      pointer-events:none;
+    }
+    .page-header h1{
+      font-family:var(--font-display);font-size:clamp(2rem,5vw,3.2rem);
+      font-weight:700;margin-bottom:.5rem;position:relative;
+    }
+    .page-header p{color:var(--text2);font-size:.95rem;position:relative}
+
+    .empty-gallery{
+      text-align:center;padding:6rem 1.5rem;color:var(--text3);
+    }
+    .empty-gallery .icon{font-size:3rem;margin-bottom:1rem;opacity:.5}
+    .empty-gallery p{font-size:.95rem;margin-bottom:1.5rem}
+  </style>
+</head>
+<body>
+  <!-- 导航 -->
+  <nav class="nav" id="mainNav">
+    <a href="index.html" class="nav-logo">凌云城</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">首页</a></li>
+      <li><a href="features.html">特色</a></li>
+      <li><a href="rules.html">规则</a></li>
+      <li><a href="connect.html">加入</a></li>
+      <li><a href="redeem.html">兑换</a></li>
+      <li><a href="forum.html">论坛</a></li>
+      <li><a href="gallery.html" class="active">画廊</a></li>
+    </ul>
+    <div class="nav-right" id="navAuth">
+      <a href="login.html" class="nav-btn outline">登录</a>
+      <a href="login.html" class="nav-btn filled">注册</a>
+    </div>
+    <button class="nav-toggle" id="navToggle" onclick="toggleNav()">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1><span class="art-text">凌云城画廊</span></h1>
+    <p>精彩瞬间，尽在眼前</p>
+  </div>
+
+  <!-- 筛选按钮 -->
+  <div class="gallery-filters">
+    <button class="gallery-filter active" data-filter="all">全部</button>
+    <button class="gallery-filter" data-filter="vehicle">载具</button>
+    <button class="gallery-filter" data-filter="scene">场景</button>
+    <button class="gallery-filter" data-filter="roleplay">角色扮演</button>
+    <button class="gallery-filter" data-filter="event">活动</button>
+  </div>
+
+  <!-- 画廊网格 -->
+  <div class="gallery-grid" id="galleryGrid">
+    <!-- 由 JS 动态加载截图 -->
+    <div class="empty-gallery" id="galleryEmpty">
+      <div class="icon">📸</div>
+      <p>暂无截图，管理员可在后台上传</p>
+      <a href="connect.html" class="btn btn-gold">加入服务器</a>
+    </div>
+  </div>
+
+  <!-- 图片预览弹窗 -->
+  <div class="gallery-modal" id="galleryModal">
+    <button class="gallery-modal-close" onclick="closeGalleryModal()">&times;</button>
+    <img id="galleryModalImg" src="" alt="预览">
+  </div>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo">凌云城</span>
+        <p>优质的中文 FiveM 轻 RP 服务器，为你提供轻松愉快的角色扮演体验。</p>
+      </div>
+      <div class="footer-col">
+        <h4>导航</h4>
+        <ul>
+          <li><a href="features.html">服务器特色</a></li>
+          <li><a href="rules.html">服务器规则</a></li>
+          <li><a href="connect.html">如何加入</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>社区</h4>
+        <ul>
+          <li><a href="https://kook.vip/71Hw5z" target="_blank">Kook</a></li>
+          <li><a href="https://qm.qq.com/q/zzUzFa6ytw" target="_blank">QQ 群</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 凌云城-轻RP 4.0</span>
+      <span>本站与 Rockstar Games 无任何关联</span>
+    </div>
+  </footer>
+
+  <script src="supabase.min.js"></script>
+  <script src="utils.js"></script>
+  <script>
+    const SUPABASE_URL="https://mxajreukeniayoqyvybe.supabase.co";
+    const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14YWpyZXVrZW5pYXlvcXl2eWJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NTkyNDYsImV4cCI6MjEwMzQzNTI0Nn0.J3H9pFK2dc3KOLL8d64a7HEznm-fkJUNZN4YdMu5jD4";
+    const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+    // 导航
+    window.addEventListener('scroll',()=>{
+      document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>50);
+    });
+    function toggleNav(){
+      document.getElementById('navLinks').classList.toggle('open');
+      document.getElementById('navToggle').classList.toggle('open');
+    }
+
+    // 滚动动画
+    const observer=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}});
+    },{threshold:0.1});
+    document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+    // 画廊数据（可通过 Supabase 或本地 JSON 扩展）
+    const galleryData=[
+      {src:'https://images.unsplash.com/photo-1542362567-07e89096e8f0?w=800&h=500&fit=crop',title:'城市夜景',cat:'scene'},
+      {src:'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=500&fit=crop',title:'超级跑车',cat:'vehicle'},
+      {src:'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&h=500&fit=crop',title:'街头赛车',cat:'vehicle'},
+      {src:'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&h=500&fit=crop',title:'山脉风光',cat:'scene'},
+      {src:'https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=800&h=500&fit=crop',title:'深夜飙车',cat:'roleplay'},
+      {src:'https://images.unsplash.com/photo-1504215680853-026ed2a45def?w=800&h=500&fit=crop',title:'经典老爷车',cat:'vehicle'},
+    ];
+
+    function renderGallery(filter){
+      const grid=document.getElementById('galleryGrid');
+      const empty=document.getElementById('galleryEmpty');
+      const items=filter==='all'?galleryData:galleryData.filter(i=>i.cat===filter);
+      if(!items.length){grid.innerHTML='';grid.appendChild(empty);empty.style.display='';return}
+      empty.style.display='none';
+      grid.innerHTML=items.map((item,i)=>`
+        <div class="gallery-item reveal" onclick="openGalleryModal('${item.src}')" style="transition-delay:${i*0.08}s">
+          <img src="${item.src}" alt="${item.title}" loading="lazy">
+          <div class="overlay"><span>${item.title}</span></div>
+        </div>
+      `).join('');
+      grid.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+    }
+
+    // 筛选
+    document.querySelectorAll('.gallery-filter').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        document.querySelectorAll('.gallery-filter').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        renderGallery(btn.dataset.filter);
+      });
+    });
+
+    // 弹窗
+    function openGalleryModal(src){
+      document.getElementById('galleryModalImg').src=src;
+      document.getElementById('galleryModal').classList.add('open');
+      document.body.style.overflow='hidden';
+    }
+    function closeGalleryModal(){
+      document.getElementById('galleryModal').classList.remove('open');
+      document.body.style.overflow='';
+    }
+    document.getElementById('galleryModal').addEventListener('click',e=>{
+      if(e.target===e.currentTarget)closeGalleryModal();
+    });
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGalleryModal()});
+
+    // 初始渲染
+    renderGallery('all');
+
+    // 登录状态
+    supabaseClient.auth.getSession().then(async({data:{session}})=>{
+      const navAuth=document.getElementById('navAuth');
+      if(session){
+        const{data:p}=await supabaseClient.from('profiles').select('avatar_url,username').eq('id',session.user.id).single();
+        const name=(p&&p.username)||'玩家';
+        const avatar=p&&p.avatar_url?`<img src="${p.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">`:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+        navAuth.innerHTML=`
+          <a href="dashboard.html" class="user-badge"><div class="avatar">${avatar}</div><span>${name}</span></a>
+          <a href="#" class="nav-btn outline" onclick="logout(event)">退出</a>`;
+      }
+    });
+    async function logout(e){e.preventDefault();await supabaseClient.auth.signOut();location.reload()}
+  </script>
+  <script src="modal.js"></script>
+  <script src="mobile-menu.js"></script>
+</body>
+</html>

@@ -149,6 +149,7 @@
       <li><a href="connect.html" class="active">加入</a></li>
       <li><a href="redeem.html">兑换</a></li>
       <li><a href="forum.html">论坛</a></li>
+      <li><a href="gallery.html">画廊</a></li>
     </ul>
     <div class="nav-right" id="navAuth">
       <a href="login.html" class="nav-btn outline">登录</a>
@@ -243,22 +244,22 @@
     <div class="section-header">
       <h1><span class="art-text">常见问题</span></h1>
     </div>
-    <div class="faq-grid">
+    <div class="faq-accordion">
       <div class="faq-item reveal">
-        <h4>FiveM 是免费的吗？</h4>
-        <p>是的，FiveM 完全免费。只需下载客户端即可加入服务器。</p>
+        <button class="faq-question" onclick="toggleFaq(this)">FiveM 是免费的吗？</button>
+        <div class="faq-answer"><div class="faq-answer-inner">是的，FiveM 完全免费。只需下载客户端即可加入服务器。</div></div>
       </div>
       <div class="faq-item reveal reveal-delay-1">
-        <h4>需要购买 GTA V 吗？</h4>
-        <p>是的，你需要拥有正版 GTA V 才能使用 FiveM 连接服务器。</p>
+        <button class="faq-question" onclick="toggleFaq(this)">需要购买 GTA V 吗？</button>
+        <div class="faq-answer"><div class="faq-answer-inner">是的，你需要拥有正版 GTA V 才能使用 FiveM 连接服务器。</div></div>
       </div>
       <div class="faq-item reveal reveal-delay-2">
-        <h4>服务器什么时候在线？</h4>
-        <p>服务器 24小时 全天候运行，随时都可以加入游戏。</p>
+        <button class="faq-question" onclick="toggleFaq(this)">服务器什么时候在线？</button>
+        <div class="faq-answer"><div class="faq-answer-inner">服务器 24小时 全天候运行，随时都可以加入游戏。</div></div>
       </div>
       <div class="faq-item reveal reveal-delay-3">
-        <h4>如何申请成为管理员？</h4>
-        <p>在 Kook 社区中查看管理员招募信息，通常需要活跃的游戏时间和良好的记录。</p>
+        <button class="faq-question" onclick="toggleFaq(this)">如何申请成为管理员？</button>
+        <div class="faq-answer"><div class="faq-answer-inner">在 Kook 社区中查看管理员招募信息，通常需要活跃的游戏时间和良好的记录。</div></div>
       </div>
     </div>
   </section>
@@ -323,6 +324,21 @@
       entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}});
     },{threshold:0.1});
     document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+    // ===== FAQ 手风琴 =====
+    function toggleFaq(btn){
+      const item=btn.parentElement;
+      const answer=item.querySelector('.faq-answer');
+      const isOpen=item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(i=>{
+        i.classList.remove('open');
+        i.querySelector('.faq-answer').style.maxHeight='0';
+      });
+      if(!isOpen){
+        item.classList.add('open');
+        answer.style.maxHeight=answer.scrollHeight+'px';
+      }
+    }
 
     // ===== 登录状态 =====
     supabaseClient.auth.getSession().then(async({data:{session}})=>{
